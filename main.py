@@ -149,18 +149,19 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-# פונקציית קריאה עמידה עם Fallback ו-Retry לעקיפת שגיאות 503
-def generate_ai(contents, system_instruction=None):
-    models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
+# פונקציית קריאה עמידה עם שמות מודלים תקניים ו-Retry
+def generate_ai(contents):
+    # שמות מודלים מאומתים שנתמכים ב-100% ב-Google GenAI API
+    models_to_try = ["gemini-2.0-flash", "gemini-2.0-flash-lite"]
     last_err = None
     
     for model_name in models_to_try:
         for attempt in range(2):
             try:
-                kwargs = {"model": model_name, "contents": contents}
-                if system_instruction:
-                    kwargs["config"] = {"system_instruction": system_instruction}
-                return client.models.generate_content(**kwargs)
+                return client.models.generate_content(
+                    model=model_name,
+                    contents=contents
+                )
             except Exception as e:
                 last_err = e
                 time.sleep(1)
@@ -229,7 +230,7 @@ with st.sidebar:
     
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
-    st.caption("The Dan Method v8.1 Ultra-Stable")
+    st.caption("The Dan Method v8.2 Production")
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
@@ -366,7 +367,7 @@ elif room == "📝 מחולל מבחני דמה (Mock Exam)":
                         st.session_state.exam_submitted = False
                         st.success("מבחן הדמה מוכן! פתור את השאלות למטה.")
                     except Exception as e:
-                        st.error(f"שגיאה זמנית ביצירת המבחן, לחץ שוב על הכפתור. פירוט: {e}")
+                        st.error(f"שגיאה ביצירת המבחן: {e}")
 
     if st.session_state.mock_exam_data:
         st.markdown("---")
@@ -452,7 +453,7 @@ elif room == "🎬 ספריית וידאו ושיעורים ענקית":
         "מתמטיקה: גאומטריה ופיתגורס": {
             "משפט פיתגורס - בסיס וחישוב צלעות": "https://www.youtube.com/watch?v=xAgLlIAum3c",
             "משפט תאלס והרחבותיו": "https://www.youtube.com/watch?v=sI3q6Q_Hk84",
-            "טריגונומטריה במשולש ישר זווית (Sin, Cos, Tan)": "https://www.youtube.com/watch?aa7bC_rFq4c"
+            "טריגונומטריה במשולש ישר זווית (Sin, Cos, Tan)": "https://www.youtube.com/watch?v=aa7bC_rFq4c"
         },
         "מתמטיקה: אלגברה וחדו\"א": {
             "משוואות ממעלה ראשונה עם סוגריים ושברים": "https://www.youtube.com/watch?v=lj6ONyl932A",
@@ -500,8 +501,11 @@ elif room == "🎬 ספריית וידאו ושיעורים ענקית":
         if st.button("סכם לי את עיקרי הנושא בבולטים ⚡", use_container_width=True):
             prompt = f"סכם ב-4 בולטים ברורים את הנושא: {chosen_video_title} עבור תלמיד ב-{chosen_grade} במגמת {chosen_major}. {anti_yap_rule}"
             with st.spinner("מחלץ סיכום..."):
-                res = generate_ai(prompt)
-                st.markdown(res.text)
+                try:
+                    res = generate_ai(prompt)
+                    st.markdown(res.text)
+                except Exception as e:
+                    st.error(f"שגיאה: {e}")
 
 # ----------------- חדר 3: חיבור לבית ספר וספרים -----------------
 elif room == "🏫 חיבור ל-Classroom וספרי לימוד":
@@ -533,8 +537,11 @@ elif room == "🏫 חיבור ל-Classroom וספרי לימוד":
                 f"{anti_yap_rule}"
             )
             with st.spinner("מנתח מטלה..."):
-                res = generate_ai(prompt)
-                st.markdown(res.text)
+                try:
+                    res = generate_ai(prompt)
+                    st.markdown(res.text)
+                except Exception as e:
+                    st.error(f"שגיאה בניתוח המטלה: {e}")
 
 # ----------------- חדר 4: דפי תרגול להדפסה -----------------
 elif room == "🖨️ דפי תרגול ומבחנים להדפסה":
@@ -564,8 +571,11 @@ elif room == "🖨️ דפי תרגול ומבחנים להדפסה":
                 + ("3. בסוף הדף: מחוון תשובות מלא ומדויק לבדיקה עצמית.\n" if include_answers else "")
             )
             with st.spinner("מייצר דף עבודה..."):
-                res = generate_ai(prompt)
-                st.session_state["printable_sheet"] = res.text
+                try:
+                    res = generate_ai(prompt)
+                    st.session_state["printable_sheet"] = res.text
+                except Exception as e:
+                    st.error(f"שגיאה: {e}")
 
     if "printable_sheet" in st.session_state:
         st.markdown("---")
@@ -593,10 +603,13 @@ elif room == "📸 סורק תמונות ומבחנים":
                 st.warning("ציין קודם מה החומר בתמונה!")
             else:
                 with st.spinner("מפענח..."):
-                    prompt = f"התלמיד ב-{student_context}. החומר: {photo_topic}. הנחיה: {action}. {anti_yap_rule}"
-                    res = generate_ai([prompt, img])
-                    st.success("הפתרון לתמונה:")
-                    st.markdown(res.text)
+                    try:
+                        prompt = f"התלמיד ב-{student_context}. החומר: {photo_topic}. הנחיה: {action}. {anti_yap_rule}"
+                        res = generate_ai([prompt, img])
+                        st.success("הפתרון לתמונה:")
+                        st.markdown(res.text)
+                    except Exception as e:
+                        st.error(f"שגיאה בפענוח התמונה: {e}")
 
 # ----------------- חדר 6: מלטשת תשובות -----------------
 elif room == "💯 מלטשת תשובות למאיות":
@@ -616,8 +629,11 @@ elif room == "💯 מלטשת תשובות למאיות":
                 f"{anti_yap_rule}"
             )
             with st.spinner("מנתח לפי מחוון..."):
-                res = generate_ai(prompt)
-                st.markdown(res.text)
+                try:
+                    res = generate_ai(prompt)
+                    st.markdown(res.text)
+                except Exception as e:
+                    st.error(f"שגיאה: {e}")
 
 # ----------------- חדר 7: מעבדת מתמטיקה -----------------
 elif room == "📐 מעבדת מתמטיקה ומדעים":
@@ -636,8 +652,11 @@ elif room == "📐 מעבדת מתמטיקה ומדעים":
                 f"{anti_yap_rule}"
             )
             with st.spinner(f"פותר לפי רמת {math_units}..."):
-                res = generate_ai(prompt)
-                st.markdown(res.text)
+                try:
+                    res = generate_ai(prompt)
+                    st.markdown(res.text)
+                except Exception as e:
+                    st.error(f"שגיאה: {e}")
 
 # ----------------- חדר 8: שליף חירום -----------------
 elif room == "🚨 שליף חירום (לפני מבחן)":
@@ -654,8 +673,11 @@ elif room == "🚨 שליף חירום (לפני מבחן)":
                 f"{anti_yap_rule}"
             )
             with st.spinner("מחלץ שליף..."):
-                res = generate_ai(prompt)
-                st.markdown(f'<div class="cheat-card">{res.text}</div>', unsafe_allow_html=True)
+                try:
+                    res = generate_ai(prompt)
+                    st.markdown(f'<div class="cheat-card">{res.text}</div>', unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"שגיאה: {e}")
 
 # ----------------- חדר 9: מתכנן לו״ז -----------------
 elif room == "📅 מתכנן לו״ז למבחן":
@@ -678,8 +700,11 @@ elif room == "📅 מתכנן לו״ז למבחן":
                 "חלק את המשימות לפי ימים עם זמני מנוחה ותרגול."
             )
             with st.spinner("מתכנן לו״ז..."):
-                res = generate_ai(prompt)
-                st.markdown(res.text)
+                try:
+                    res = generate_ai(prompt)
+                    st.markdown(res.text)
+                except Exception as e:
+                    st.error(f"שגיאה: {e}")
 
 # ----------------- חדר 10: חוות דעת -----------------
 elif room == "⭐ חוות דעת והצעות":
