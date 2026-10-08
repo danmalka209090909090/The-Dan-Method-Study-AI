@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# עיצוב מודרני מיושר לימין (RTL)
+# עיצוב מודרני, יישור לימין (RTL), מסך פתיחה מרשים
 st.markdown("""
 <style>
     .stApp {
@@ -20,6 +20,64 @@ st.markdown("""
     }
     div[data-testid="stExpander"] {
         text-align: right;
+    }
+    .bsd-text {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+    .hero-container {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+        border: 1px solid #4338ca;
+        border-radius: 20px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
+        margin-bottom: 30px;
+    }
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 900;
+        background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+    }
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: #cbd5e1;
+        max-width: 800px;
+        margin: 0 auto 20px auto;
+        line-height: 1.6;
+    }
+    .feature-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 14px;
+        padding: 22px;
+        height: 100%;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+        text-align: right;
+    }
+    .feature-card:hover {
+        transform: translateY(-4px);
+        border-color: #6366f1;
+    }
+    .vs-box-bad {
+        background: #2d1517;
+        border: 1px solid #7f1d1d;
+        border-radius: 12px;
+        padding: 20px;
+        color: #fecaca;
+    }
+    .vs-box-good {
+        background: #062b1e;
+        border: 1px solid #065f46;
+        border-radius: 12px;
+        padding: 20px;
+        color: #a7f3d0;
     }
     .exam-card {
         background: #1e293b;
@@ -78,8 +136,8 @@ st.markdown("""
 # אתחול Session State
 if "reviews" not in st.session_state:
     st.session_state.reviews = [
-        {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "מבחני הדמה סוגרים את כל החומר לפני מבחן אמיתי!"},
-        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "השליף חירום והסרטונים מעולים."},
+        {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום הציל אותי לפני מבחן בהיסטוריה!"},
+        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "סוגר לי פינות במעבדות ופרויקטים."},
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה מסביר לפי מחוון בגרות בדיוק כמו שצריך."}
     ]
 
@@ -95,7 +153,6 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-# פונקציית עזר לפענוח JSON בטוח
 def extract_json(text):
     text = re.sub(r"^```json\s*", "", text.strip(), flags=re.MULTILINE)
     text = re.sub(r"^```\s*", "", text.strip(), flags=re.MULTILINE)
@@ -104,8 +161,9 @@ def extract_json(text):
 
 # --- סרגל צד (Sidebar) ---
 with st.sidebar:
+    st.markdown('<div class="bsd-text">בס״ד</div>', unsafe_allow_html=True)
     st.title("⚡ The Dan Method")
-    st.caption("פלטפורמת הלימוד והבגרויות המובילה")
+    st.caption("פלטפורמת הלימוד והמאיות של ישראל")
     st.markdown("---")
     
     st.subheader("🎓 1. פרטי לימוד ומגמה:")
@@ -138,10 +196,11 @@ with st.sidebar:
         ])
     
     st.markdown("---")
-    st.subheader("🚪 2. בחר חדר עבודה:")
+    st.subheader("🚪 2. מעבר חדרים:")
     room = st.radio(
-        "מעבר לחדר:",
+        "בחר חדר:",
         [
+            "🏠 מסך פתיחה (ברוכים הבאים)",
             "📝 מחולל מבחני דמה (Mock Exam)",
             "🎬 ספריית וידאו ושיעורים ענקית",
             "🏫 חיבור ל-Classroom וספרי לימוד",
@@ -157,13 +216,95 @@ with st.sidebar:
     
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
-    st.caption("The Dan Method v7.6 Stable")
+    st.caption("The Dan Method v8.0 Official")
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
 
+# ----------------- חדר 0: מסך פתיחה (ברוכים הבאים) -----------------
+if room == "🏠 מסך פתיחה (ברוכים הבאים)":
+    st.markdown('<div class="bsd-text">בס״ד</div>', unsafe_allow_html=True)
+    
+    st.markdown("""
+        <div class="hero-container">
+            <span style="background-color: #38bdf8; color: #0284c7; padding: 4px 14px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; background: rgba(56, 189, 248, 0.15);">
+                🚀 הדור הבא של הלמידה בישראל
+            </span>
+            <h1 class="hero-title">The Dan Method: Study AI</h1>
+            <p class="hero-subtitle">
+                הפלטפורמה הראשונה שנבנתה במיוחד עבור תלמידי ישראל (ז' עד י"ב ובגרות).
+                <br>פירוק מבחנים, פתרונות מדויקים לפי מחוון משרד החינוך, שליפים של 60 שניות — ואפס חפירות.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.subheader("🔥 למה דווקא איתנו? (The Dan Method מול AI רגיל)")
+    col_comp1, col_comp2 = st.columns(2)
+    
+    with col_comp1:
+        st.markdown("""
+            <div class="vs-box-bad">
+                <h3 style="margin-top:0;">❌ כשמשתמשים ב-ChatGPT / בינה מלאכותית רגילה</h3>
+                <ul>
+                    <li><b>חופר בטירוף:</b> פסקאות מבוא וסיום מיותרות כשכל מה שרצית זה תשובה קצרה למבחן.</li>
+                    <li><b>לא מבין בגרות:</b> לא מכיר מחווני בדיקה, יחידות לימוד (3/4/5), או שאלות בגרות ישראליות.</li>
+                    <li><b>שפה מנותקת:</b> עונה כמו ויקיפדיה מתורגמת ולא כמו שתלמיד אמיתי צריך לכתוב.</li>
+                    <li><b>דורש פרומפטים מייגעים:</b> צריך להסביר לו שעה איך לענות.</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with col_comp2:
+        st.markdown("""
+            <div class="vs-box-good">
+                <h3 style="margin-top:0;">⚡ כשמשתמשים ב-The Dan Method</h3>
+                <ul>
+                    <li><b>תכל'ס נטו (Anti-Yap):</b> פילטר מובנה שמנקה בולשיט ומחזיר רק את מה שמביא נקודות.</li>
+                    <li><b>מותאם אישית לכיתה ולמגמה:</b> מתאים את התשובות בדיוק לרמה שלך (ז' עד י"ב, כולל כל המגמות).</li>
+                    <li><b>מחוון 100 ישראלי:</b> מלטש כל תשובה בדיוק לפי מה שהבוחן או המורה מחפשים בעין.</li>
+                    <li><b>הכל בלחיצת כפתור:</b> מבחני דמה, דפי תרגול להדפסה, סרטונים ושליפי חירום בלי להסתבך.</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.subheader("💎 4 עמודי התווך של השיטה:")
+    
+    f1, f2, f3, f4 = st.columns(4)
+    with f1:
+        st.markdown("""
+            <div class="feature-card">
+                <h4 style="color:#38bdf8;">📝 מבחני דמה אמיתיים</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">סימולציית בחינה אינטראקטיבית עם בדיקה אוטומטית לפי מחוון וקבלת ציון מתוך 100.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with f2:
+        st.markdown("""
+            <div class="feature-card">
+                <h4 style="color:#818cf8;">🚨 שליפי חירום 60 שנ'</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">דקה לפני המבחן? קבל את 3 משפטי הברזל, מילת החובה והטעות שכולם נופלים בה.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with f3:
+        st.markdown("""
+            <div class="feature-card">
+                <h4 style="color:#34d399;">📐 פירוק מתמטיקה ומדעים</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">פתרונות צעד-אחר-צעד עם נימוק מתמטי מלא לכל שלב ברמת היחידות שלך.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with f4:
+        st.markdown("""
+            <div class="feature-card">
+                <h4 style="color:#f472b6;">🖨️ דפי תרגול להדפסה</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">מחולל מבחנים ודפי עבודה נקיים להדפסה מיידית בבית כולל מחוון תשובות מלא.</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.info("👈 **איך מתחילים?** בחר את הכיתה והמגמה שלך בסרגל הצד (Sidebar), עבור לחדר הרצוי ותתחיל להפציץ בציונים!")
+
 # ----------------- חדר 1: מחולל מבחני דמה -----------------
-if room == "📝 מחולל מבחני דמה (Mock Exam)":
+elif room == "📝 מחולל מבחני דמה (Mock Exam)":
     st.title("📝 מחולל מבחני דמה מלאים (Mock Exam)")
     st.write(f"המחשב בונה לך סימולציית מבחן מותאמת אישית ל-**{chosen_grade}** ({math_units} / {chosen_major}).")
     
@@ -215,9 +356,8 @@ if room == "📝 מחולל מבחני דמה (Mock Exam)":
                         st.session_state.exam_submitted = False
                         st.success("מבחן הדמה מוכן! פתור את השאלות למטה.")
                     except Exception as e:
-                        st.error(f"שגיאה זמנית ביצירת המבחן, נסה שוב בלחיצה על הכפתור. פירוט: {e}")
+                        st.error(f"שגיאה זמנית ביצירת המבחן, לחץ שוב על הכפתור. פירוט: {e}")
 
-    # הצגת טופס המבחן
     if st.session_state.mock_exam_data:
         st.markdown("---")
         st.subheader("📋 טופס מבחן הדמה שלך:")
@@ -258,7 +398,6 @@ if room == "📝 מחולל מבחני דמה (Mock Exam)":
                 st.session_state.exam_submitted = False
                 st.rerun()
 
-        # בדיקת המבחן והצגת ציונים
         if st.session_state.exam_submitted:
             st.markdown("---")
             with st.spinner("הבוחן בודק את המבחן ומחשב ציון..."):
