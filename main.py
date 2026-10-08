@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# עיצוב מודרני, יישור לימין (RTL), מסך פתיחה מרשים
+# עיצוב מודרני, יישור לימין (RTL), ממשק זום וכרטיסיות
 st.markdown("""
 <style>
     .stApp {
@@ -54,6 +54,55 @@ st.markdown("""
         max-width: 800px;
         margin: 0 auto 20px auto;
         line-height: 1.6;
+    }
+    .zoom-frame {
+        background: radial-gradient(circle at top, #1e293b, #090d16);
+        border: 2px solid #3b82f6;
+        border-radius: 18px;
+        padding: 24px;
+        text-align: center;
+        box-shadow: 0 12px 35px -8px rgba(59, 130, 246, 0.3);
+        margin-bottom: 20px;
+        color: white;
+    }
+    .zoom-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 46px;
+        margin: 0 auto 12px auto;
+        border: 3px solid #60a5fa;
+        box-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+    }
+    .zoom-status-pill {
+        display: inline-block;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid #10b981;
+        color: #34d399;
+        font-size: 0.85rem;
+        font-weight: bold;
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-bottom: 8px;
+    }
+    .zoom-controls {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 14px;
+    }
+    .zoom-btn {
+        background: #1e293b;
+        border: 1px solid #475569;
+        color: #e2e8f0;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
     }
     .feature-card {
         background: #1e293b;
@@ -135,7 +184,7 @@ st.markdown("""
 if "reviews" not in st.session_state:
     st.session_state.reviews = [
         {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום הציל אותי לפני מבחן בהיסטוריה!"},
-        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "סוגר לי פינות במעבדות ופרויקטים."},
+        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "חדר הזום עם המורה עזר לי להבין נושא שלם ברבע שעה."},
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה מסביר לפי מחוון בגרות בדיוק כמו שצריך."}
     ]
 
@@ -143,6 +192,8 @@ if "mock_exam_data" not in st.session_state:
     st.session_state.mock_exam_data = None
 if "exam_submitted" not in st.session_state:
     st.session_state.exam_submitted = False
+if "zoom_chat_history" not in st.session_state:
+    st.session_state.zoom_chat_history = []
 
 api_key = st.secrets.get("GEMINI_API_KEY", "")
 if not api_key:
@@ -216,6 +267,7 @@ with st.sidebar:
         "בחר חדר:",
         [
             "🏠 מסך פתיחה (ברוכים הבאים)",
+            "📹 חדר זום עם מורה פרטי (Live Zoom)",
             "📸 סורק תמונות ושיעורי בית",
             "📝 מחולל מבחני דמה (Mock Exam)",
             "🎬 ספריית וידאו ושיעורים ענקית",
@@ -231,12 +283,12 @@ with st.sidebar:
     
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
-    st.caption("The Dan Method v8.5 Link-Scanner")
+    st.caption("The Dan Method v9.0 Live-Zoom")
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
 
-# ----------------- חדר 0: מסך פתיחה (ברוכים הבאים) -----------------
+# ----------------- חדר 0: מסך פתיחה -----------------
 if room == "🏠 מסך פתיחה (ברוכים הבאים)":
     st.markdown('<div class="bsd-text">בס״ד</div>', unsafe_allow_html=True)
     
@@ -248,7 +300,7 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
             <h1 class="hero-title">The Dan Method: Study AI</h1>
             <p class="hero-subtitle">
                 הפלטפורמה הראשונה שנבנתה במיוחד עבור תלמידי ישראל (ז' עד י"ב ובגרות).
-                <br>פירוק מבחנים, פתרונות מדויקים לפי מחוון משרד החינוך, שליפים של 60 שניות — ואפס חפירות.
+                <br>שיעורי זום עם מורה פרטי חי, פירוק מבחנים, פתרונות לפי מחוון ושליפים של 60 שניות.
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -264,7 +316,7 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
                     <li><b>חופר בטירוף:</b> פסקאות מבוא וסיום מיותרות כשכל מה שרצית זה תשובה קצרה למבחן.</li>
                     <li><b>לא מבין בגרות:</b> לא מכיר מחווני בדיקה, יחידות לימוד (3/4/5), או שאלות בגרות ישראליות.</li>
                     <li><b>שפה מנותקת:</b> עונה כמו ויקיפדיה מתורגמת ולא כמו שתלמיד אמיתי צריך לכתוב.</li>
-                    <li><b>דורש פרומפטים מייגעים:</b> צריך להסביר לו שעה איך לענות.</li>
+                    <li><b>אין שיעור אישי:</b> רק צ'אט יבש ללא תחושת שיעור פרטי אמיתי.</li>
                 </ul>
             </div>
         """, unsafe_allow_html=True)
@@ -274,57 +326,139 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
             <div class="vs-box-good">
                 <h3 style="margin-top:0;">⚡ כשמשתמשים ב-The Dan Method</h3>
                 <ul>
+                    <li><b>חדר זום עם מורה פרטי:</b> שיעור פרטי 1-על-1 חי, סבלני וממוקד שמסביר צעד אחרי צעד.</li>
                     <li><b>תכל'ס נטו (Anti-Yap):</b> פילטר מובנה שמנקה בולשיט ומחזיר רק את מה שמביא נקודות.</li>
                     <li><b>מותאם אישית לכיתה ולמגמה:</b> מתאים את התשובות בדיוק לרמה שלך (ז' עד י"ב, כולל כל המגמות).</li>
                     <li><b>מחוון 100 ישראלי:</b> מלטש כל תשובה בדיוק לפי מה שהבוחן או המורה מחפשים בעין.</li>
-                    <li><b>הכל בלחיצת כפתור:</b> מבחני דמה, דפי תרגול להדפסה, סרטונים ושליפי חירום בלי להסתבך.</li>
                 </ul>
             </div>
         """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.subheader("💎 4 עמודי התווך של השיטה:")
+    st.subheader("💎 עמודי התווך של השיטה:")
     
     f1, f2, f3, f4 = st.columns(4)
     with f1:
         st.markdown("""
             <div class="feature-card">
-                <h4 style="color:#38bdf8;">📝 מבחני דמה אמיתיים</h4>
-                <p style="color:#94a3b8; font-size:0.95rem;">סימולציית בחינה אינטראקטיבית עם בדיקה אוטומטית לפי מחוון וקבלת ציון מתוך 100.</p>
+                <h4 style="color:#38bdf8;">📹 חדר זום 1-על-1</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">שיעור וידאו אינטראקטיבי עם מורה AI סבלני שמלמד שלב אחר שלב.</p>
             </div>
         """, unsafe_allow_html=True)
     with f2:
         st.markdown("""
             <div class="feature-card">
-                <h4 style="color:#818cf8;">🚨 שליפי חירום 60 שנ'</h4>
-                <p style="color:#94a3b8; font-size:0.95rem;">דקה לפני המבחן? קבל את 3 משפטי הברזל, מילת החובה והטעות שכולם נופלים בה.</p>
+                <h4 style="color:#818cf8;">📝 מבחני דמה אמיתיים</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">סימולציית בחינה עם בדיקה אוטומטית לפי מחוון וציון מתוך 100.</p>
             </div>
         """, unsafe_allow_html=True)
     with f3:
         st.markdown("""
             <div class="feature-card">
-                <h4 style="color:#34d399;">📐 פירוק מתמטיקה ומדעים</h4>
+                <h4 style="color:#34d399;">📐 פירוק מתמטיקה</h4>
                 <p style="color:#94a3b8; font-size:0.95rem;">פתרונות צעד-אחר-צעד עם נימוק מתמטי מלא לכל שלב ברמת היחידות שלך.</p>
             </div>
         """, unsafe_allow_html=True)
     with f4:
         st.markdown("""
             <div class="feature-card">
-                <h4 style="color:#f472b6;">🖨️ דפי תרגול להדפסה</h4>
-                <p style="color:#94a3b8; font-size:0.95rem;">מחולל מבחנים ודפי עבודה נקיים להדפסה מיידית בבית כולל מחוון תשובות מלא.</p>
+                <h4 style="color:#f472b6;">🚨 שליפי חירום 60 שנ'</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">דקה לפני המבחן? קבל את 3 משפטי הברזל, מילת החובה והטעות הנפוצה.</p>
             </div>
         """, unsafe_allow_html=True)
 
     st.markdown("---")
     st.info("👈 **איך מתחילים?** בחר את הכיתה והמגמה בסרגל הצד (Sidebar), עבור לחדר הרצוי ותתחיל ללמוד!")
 
-# ----------------- חדר 1: סורק תמונות וקישורים -----------------
+# ----------------- חדר 1: חדר זום עם מורה פרטי AI -----------------
+elif room == "📹 חדר זום עם מורה פרטי (Live Zoom)":
+    st.title("📹 חדר זום עם מורה פרטי (Live Zoom Studio)")
+    st.write(f"שיעור פרטי 1-על-1 בזום מותאם לרמת **{chosen_grade}** ({math_units} / {eng_units} / {chosen_major}):")
+    
+    col_z_cam, col_z_chat = st.columns([1.1, 1.9])
+    
+    with col_z_cam:
+        st.markdown("""
+            <div class="zoom-frame">
+                <div class="zoom-status-pill">● מחובר לשיחה (Live)</div>
+                <div class="zoom-avatar">👨‍🏫</div>
+                <h3 style="margin: 0; color: #60a5fa; font-weight: 800;">המורה דן (AI)</h3>
+                <p style="color: #cbd5e1; font-size: 0.9rem; margin: 4px 0;">מורה פרטי לבגרויות ולחטיבה</p>
+                <div class="zoom-controls">
+                    <span class="zoom-btn">🎙️ מיקרופון פועל</span>
+                    <span class="zoom-btn">📹 מצלמה פעילה</span>
+                    <span class="zoom-btn">🖥️ שיתוף מסך</span>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.subheader("⚙️ הגדרות השיעור")
+        z_subject = st.selectbox("בחר מקצוע לשיעור:", [
+            "מתמטיקה", "אנגלית", chosen_major, "היסטוריה", "אזרחות", "תנ\"ך", "לשון והבעה", "ביולוגיה", "פיזיקה", "מדעי המחשב"
+        ])
+        z_goal = st.radio("מה מטרת השיעור עכשיו?", [
+            "הסבר מאפס על נושא חדש שלא הבנתי בכיתה",
+            "לפתור ביחד תרגיל או שיעורי בית שלב אחרי שלב",
+            "הכנה דחופה למבחן / בוחן פתע"
+        ])
+        
+        if st.button("🧹 התחל שיעור חדש / נקה לוח", use_container_width=True):
+            st.session_state.zoom_chat_history = []
+            st.rerun()
+
+    with col_z_chat:
+        st.subheader(f"💬 שיחת השיעור: {z_subject}")
+        st.caption("המורה מקשיב ועונה בזמן אמת, ממש כמו בשיחת וידאו פרטית.")
+        
+        # הצגת היסטוריית השיחה בחלון הזום
+        chat_box = st.container(height=380)
+        with chat_box:
+            if not st.session_state.zoom_chat_history:
+                st.info(f"👋 **המורה דן:** 'היי! נכנסנו לשיעור ב{z_subject}. תגיד לי על איזה נושא או תרגיל אנחנו עובדים עכשיו, ונתחיל לפרק את זה יחד בכיף!'")
+            else:
+                for m in st.session_state.zoom_chat_history:
+                    if m["role"] == "user":
+                        with st.chat_message("user"):
+                            st.write(m["content"])
+                    else:
+                        with st.chat_message("assistant"):
+                            st.write(m["content"])
+
+        # קלט דיבור/כתיבה לתלמיד
+        user_spoken = st.chat_input("דבר או כתוב למורה כאן בשיעור...")
+        
+        if user_spoken:
+            st.session_state.zoom_chat_history.append({"role": "user", "content": user_spoken})
+            
+            # בניית פרומפט עם הקשר של שיחת זום פרטית
+            history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.zoom_chat_history[-6:]])
+            zoom_prompt = (
+                f"אתה מורה פרטי ישראלי סבלני, חד ומקצועי בשיחת וידאו בזום עם תלמיד.\n"
+                f"פרטי התלמיד: {student_context}.\n"
+                f"מקצוע השיעור כרגע: {z_subject}. מטרת השיעור: {z_goal}.\n\n"
+                "הנחיות התנהגות בשיחת זום:\n"
+                "1. דבר טבעי, חם ובגובה העיניים כמו מורה פרטי טוב שמדבר בלייב.\n"
+                "2. תסביר שלב אחד בכל פעם בצורה סופר ברורה בלי לחפור.\n"
+                "3. בסוף כל תשובה, שאל שאלה קצרה או בדוק אם התלמיד איתך כדי לוודא הבנה.\n"
+                f"{anti_yap_rule}\n\n"
+                f"היסטוריית השיחה האחרונה בשיעור:\n{history_text}\n\n"
+                f"מה שהתלמיד אמר כרגע: {user_spoken}"
+            )
+            
+            with st.spinner("המורה דן עונה בשיחה..."):
+                try:
+                    res_zoom = generate_ai(zoom_prompt)
+                    st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"שגיאה בתקשורת: {e}")
+
+# ----------------- חדר 2: סורק תמונות וקישורים -----------------
 elif room == "📸 סורק תמונות ושיעורי בית":
     st.title("📸 סורק תמונות, דפי עבודה וקישורים")
-    st.write(f"העלה תמונה ישירות מהמכשיר **או הדבק קישור ישיר לתמונה / דף עבודה** עבור **{chosen_grade}**:")
+    st.write(f"העלה תמונה מהמכשיר או הדבק קישור ישיר לתמונה עבור **{chosen_grade}**:")
     
     photo_topic = st.text_input("📚 1. מה החומר / המקצוע / המגמה?", placeholder="תרגיל בפיזיקה, מתמטיקה, קוד, צילום מספר הלימוד...")
-    
     input_method = st.radio("בחר כיצד להזין את התרגיל:", ["📁 העלאת קובץ מהמכשיר", "🔗 הדבקת קישור ישיר (URL) לתמונה"], horizontal=True)
     
     img_to_solve = None
@@ -347,7 +481,7 @@ elif room == "📸 סורק תמונות ושיעורי בית":
                     img_to_solve = Image.open(BytesIO(response.content))
                     st.image(img_to_solve, caption="התמונה שנטענה מהקישור", width=360)
             except Exception as e:
-                st.error(f"לא ניתן לטעון את התמונה מהקישור. ודא שהקישור תקין ומפנה ישירות לקובץ תמונה. (פירוט: {e})")
+                st.error(f"לא ניתן לטעון את התמונה מהקישור: {e}")
 
     action = st.text_input("2. מה לבצע בתמונה?", value="פתור והסבר שלב אחרי שלב בצורה ברורה ומדויקת")
     
@@ -366,7 +500,7 @@ elif room == "📸 סורק תמונות ושיעורי בית":
                 except Exception as e:
                     st.error(f"שגיאה בפענוח: {e}")
 
-# ----------------- חדר 2: מחולל מבחני דמה -----------------
+# ----------------- חדר 3: מחולל מבחני דמה -----------------
 elif room == "📝 מחולל מבחני דמה (Mock Exam)":
     st.title("📝 מחולל מבחני דמה מלאים (Mock Exam)")
     st.write(f"המחשב בונה לך סימולציית מבחן מותאמת אישית ל-**{chosen_grade}** ({math_units} / {chosen_major}).")
@@ -482,7 +616,7 @@ elif room == "📝 מחולל מבחני דמה (Mock Exam)":
                 except Exception as e:
                     st.error(f"שגיאה בבדיקת המבחן: {e}")
 
-# ----------------- חדר 3: ספריית וידאו עשירה -----------------
+# ----------------- חדר 4: ספריית וידאו עשירה -----------------
 elif room == "🎬 ספריית וידאו ושיעורים ענקית":
     st.title("🎬 ספריית וידאו עשירה (ליבה + מגמות)")
     st.write(f"שיעורים ממוקדים לצפייה ישירה עבור **{chosen_grade}**:")
@@ -506,7 +640,7 @@ elif room == "🎬 ספריית וידאו ושיעורים ענקית":
         },
         "מתמטיקה: אלגברה וחדו\"א": {
             "משוואות ממעלה ראשונה עם סוגריים ושברים": "https://www.youtube.com/watch?v=lj6ONyl932A",
-            "משוואה ריבועית ונוסחת שורשים": "https://www.youtube.com/watch?v=fghk_W4x_eM",
+            "משוואה ריבועית ונוסחת שורשים": "https://www.youtube.com/watch?fghk_W4x_eM",
             "חקירת פונקציות ונגזרות (מבוא לחדו\"א)": "https://www.youtube.com/watch?v=5yflv3j7T30"
         },
         "אנגלית: זמנים ודקדוק (Grammar)": {
@@ -556,7 +690,7 @@ elif room == "🎬 ספריית וידאו ושיעורים ענקית":
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- חדר 4: חיבור לבית ספר וספרים -----------------
+# ----------------- חדר 5: חיבור לבית ספר וספרים -----------------
 elif room == "🏫 חיבור ל-Classroom וספרי לימוד":
     st.title("🏫 חיבור לבית הספר: Classroom & ספרי לימוד דיגיטליים")
     st.write("גישה מהירה לפורטלים הלימודיים ומפענח מטלות חכם:")
@@ -592,7 +726,7 @@ elif room == "🏫 חיבור ל-Classroom וספרי לימוד":
                 except Exception as e:
                     st.error(f"שגיאה בניתוח המטלה: {e}")
 
-# ----------------- חדר 5: דפי תרגול להדפסה -----------------
+# ----------------- חדר 6: דפי תרגול להדפסה -----------------
 elif room == "🖨️ דפי תרגול ומבחנים להדפסה":
     st.title("🖨️ מחולל דפי עבודה, תרגול ומבחנים להדפסה")
     st.write(f"הפק דף תרגול מושלם ומעוצב עבור **{chosen_grade}** הניתן להדפסה ישירה:")
@@ -637,7 +771,7 @@ elif room == "🖨️ דפי תרגול ומבחנים להדפסה":
             </div>
         """, unsafe_allow_html=True)
 
-# ----------------- חדר 6: מלטשת תשובות -----------------
+# ----------------- חדר 7: מלטשת תשובות -----------------
 elif room == "💯 מלטשת תשובות למאיות":
     st.title("💯 מלטשת תשובות לציון 100")
     ans_topic = st.text_input("📚 1. מה החומר והמקצוע/המגמה?", placeholder="למשל: סוציולוגיה, ביולוגיה, היסטוריה...")
@@ -661,7 +795,7 @@ elif room == "💯 מלטשת תשובות למאיות":
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- חדר 7: מעבדת מתמטיקה -----------------
+# ----------------- חדר 8: מעבדת מתמטיקה -----------------
 elif room == "📐 מעבדת מתמטיקה ומדעים":
     st.title("📐 מעבדת פירוק מתמטיקה ומדעים")
     math_topic = st.text_input("📚 1. מה הנושא הנלמד כרגע?", placeholder="חקירת פולינום, טריגו, תנועה בפיזיקה...")
@@ -684,7 +818,7 @@ elif room == "📐 מעבדת מתמטיקה ומדעים":
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- חדר 8: שליף חירום -----------------
+# ----------------- חדר 9: שליף חירום -----------------
 elif room == "🚨 שליף חירום (לפני מבחן)":
     st.title("🚨 שליף חירום: 60 שניות לפני מבחן")
     panic_topic = st.text_input("📚 מה החומר / הנושא של המבחן כרגע?", placeholder="משפט חוצה זווית, שיווי משקל שוק, גנטיקה...")
@@ -705,7 +839,7 @@ elif room == "🚨 שליף חירום (לפני מבחן)":
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- חדר 9: מתכנן לו״ז -----------------
+# ----------------- חדר 10: מתכנן לו״ז -----------------
 elif room == "📅 מתכנן לו״ז למבחן":
     st.title("📅 מתכנן לוח זמנים אישי למבחן")
     topics = st.text_area("📚 1. מה כל החומר והנושאים שצריך להספיק למבחן?")
@@ -732,7 +866,7 @@ elif room == "📅 מתכנן לו״ז למבחן":
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- חדר 10: חוות דעת -----------------
+# ----------------- חדר 11: חוות דעת -----------------
 elif room == "⭐ חוות דעת והצעות":
     st.title("⭐ חוות דעת והצעות לשיפור")
     st.write("איך האתר עובד לך? יש פיצ'ר שאתה רוצה שנוסיף? כתוב לנו כאן:")
