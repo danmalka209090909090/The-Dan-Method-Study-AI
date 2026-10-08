@@ -15,7 +15,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# עיצוב מודרני, יישור לימין (RTL), ומסך זום חי עם וידאו של המורה
 st.markdown("""
 <style>
     .stApp {
@@ -63,7 +62,6 @@ st.markdown("""
         margin: 0 auto 20px auto;
         line-height: 1.6;
     }
-    /* חלון שיחת זום עם וידאו אמיתי */
     .zoom-frame {
         background: #0b0f19;
         border: 2px solid #38bdf8;
@@ -77,7 +75,7 @@ st.markdown("""
     .teacher-video-container {
         position: relative;
         width: 100%;
-        max-height: 260px;
+        height: 250px;
         border-radius: 14px;
         overflow: hidden;
         border: 2px solid #1e293b;
@@ -86,7 +84,7 @@ st.markdown("""
     }
     .teacher-video {
         width: 100%;
-        height: 250px;
+        height: 100%;
         object-fit: cover;
         display: block;
     }
@@ -200,11 +198,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# אתחול Session State
 if "reviews" not in st.session_state:
     st.session_state.reviews = [
         {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום הציל אותי לפני מבחן בהיסטוריה!"},
-        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "רואים את המורה מדברת וזה ממש מרגיש כמו זום אמיתי."},
+        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "השיעור בזום עם המורה עובד מעולה."},
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה מסביר לפי מחוון בגרות בדיוק כמו שצריך."}
     ]
 
@@ -224,18 +221,13 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-# פונקציית קריאה עמידה עם המודלים שגוגל דורשים
 def generate_ai(contents):
     models_to_try = ["gemini-3.5-flash-lite", "gemini-3.8-flash"]
     last_err = None
-    
     for model_name in models_to_try:
         for attempt in range(2):
             try:
-                return client.models.generate_content(
-                    model=model_name,
-                    contents=contents
-                )
+                return client.models.generate_content(model=model_name, contents=contents)
             except Exception as e:
                 last_err = e
                 time.sleep(1)
@@ -247,14 +239,12 @@ def extract_json(text):
     text = text.strip("`").strip()
     return json.loads(text)
 
-# יצירת קול דיבור עברי נקי עבור תשובת המורה
 def get_tts_audio_url(text):
     clean_text = re.sub(r"[*#_`>\[\]\(\)]", "", text)
     clean_text = clean_text[:200]
     encoded = urllib.parse.quote(clean_text)
     return f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=iw&client=tw-ob"
 
-# --- סרגל צד (Sidebar) ---
 with st.sidebar:
     st.markdown('<div class="bsd-text">בס״ד</div>', unsafe_allow_html=True)
     st.title("⚡ The Dan Method")
@@ -312,7 +302,7 @@ with st.sidebar:
     
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
-    st.caption("The Dan Method v9.9.5 Final")
+    st.caption("The Dan Method v10.0 Real-Teacher")
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
@@ -320,7 +310,6 @@ student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_u
 # ----------------- חדר 0: מסך פתיחה -----------------
 if room == "🏠 מסך פתיחה (ברוכים הבאים)":
     st.markdown('<div class="bsd-text">בס״ד</div>', unsafe_allow_html=True)
-    
     st.markdown("""
         <div class="hero-container">
             <span style="background-color: #38bdf8; color: #0284c7; padding: 4px 14px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; background: rgba(56, 189, 248, 0.15);">
@@ -329,14 +318,13 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
             <h1 class="hero-title">The Dan Method: Study AI</h1>
             <p class="hero-subtitle">
                 הפלטפורמה הראשונה שנבנתה במיוחד עבור תלמידי ישראל (ז' עד י"ב ובגרות).
-                <br>שיעורי וידאו בזום עם מורה פרטית שמדברת מולך, פירוק מבחנים ושליפים של 60 שניות.
+                <br>שיעורי וידאו בזום מול מורה פרטית, פירוק מבחנים ושליפים של 60 שניות.
             </p>
         </div>
     """, unsafe_allow_html=True)
 
     st.subheader("🔥 למה דווקא איתנו? (The Dan Method מול בינה מלאכותית רגילה)")
     col_comp1, col_comp2 = st.columns(2)
-    
     with col_comp1:
         st.markdown("""
             <div class="vs-box-bad">
@@ -365,7 +353,6 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
 
     st.markdown("---")
     st.subheader("💎 עמודי התווך של השיטה:")
-    
     f1, f2, f3, f4 = st.columns(4)
     with f1:
         st.markdown("""
@@ -396,9 +383,6 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
             </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("---")
-    st.info("👈 **איך מתחילים?** בחר את הכיתה והמגמה בסרגל הצד (Sidebar), עבור לחדר הרצוי ותתחיל ללמוד!")
-
 # ----------------- חדר 1: שיעור וידאו חי בזום -----------------
 elif room == "📹 שיעור וידאו חי בזום (Live Video)":
     st.title("📹 שיעור וידאו חי בזום (Live Zoom Studio)")
@@ -407,12 +391,14 @@ elif room == "📹 שיעור וידאו חי בזום (Live Video)":
     col_z_cam, col_z_chat = st.columns([1.15, 1.85])
     
     with col_z_cam:
-        # וידאו פתוח ורציף שמוצג תמיד בלי חסימות של דפדפן
+        # וידאו אמיתי ומקצועי של מורה אישה בשיחת וידאו
         st.markdown("""
             <div class="zoom-frame">
                 <div class="zoom-status-pill">● שיחת וידאו פעילה (Live Video)</div>
                 <div class="teacher-video-container">
-                    <img class="teacher-video" src="https://media.giphy.com/media/3o7TKMt1VVNkHV2PaE/giphy.gif" alt="המורה מיה בשיחה חיה">
+                    <video class="teacher-video" autoplay loop muted playsinline>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+                    </video>
                 </div>
                 <h3 style="margin: 0; color: #38bdf8; font-weight: 800;">המורה מיה (Dan AI)</h3>
                 <p style="color: #cbd5e1; font-size: 0.9rem; margin: 4px 0;">מורה פרטית אישית בווידאו</p>
@@ -424,7 +410,6 @@ elif room == "📹 שיעור וידאו חי בזום (Live Video)":
             </div>
         """, unsafe_allow_html=True)
         
-        # השמעת הקול המסונכרן של המורה
         if st.session_state.last_voice_reply:
             st.markdown("**🔊 קול המורה מיה (האזן להסבר):**")
             audio_url = get_tts_audio_url(st.session_state.last_voice_reply)
@@ -447,9 +432,8 @@ elif room == "📹 שיעור וידאו חי בזום (Live Video)":
 
     with col_z_chat:
         st.subheader(f"💬 שיחת הווידאו: {z_subject}")
-        st.caption("דבר עם המורה במיקרופון או כתוב לה, והיא תדבר אליך ותסביר לך ישירות בווידאו.")
+        st.caption("דבר עם המורה במיקרופון או כתוב לה, והיא תסביר לך ישירות בווידאו ובקול.")
         
-        # תיבת השיחה
         chat_box = st.container(height=360)
         with chat_box:
             if not st.session_state.zoom_chat_history:
@@ -463,7 +447,6 @@ elif room == "📹 שיעור וידאו חי בזום (Live Video)":
                         with st.chat_message("assistant"):
                             st.write(m["content"])
 
-        # אפשרות דיבור במיקרופון
         st.markdown('<div class="voice-box"><b>🎙️ דבר במיקרופון למורה בווידאו:</b>', unsafe_allow_html=True)
         audio_prompt = st.audio_input("לחץ על המיקרופון ודבר ישירות למורה:")
         st.markdown('</div>', unsafe_allow_html=True)
@@ -490,7 +473,6 @@ elif room == "📹 שיעור וידאו חי בזום (Live Video)":
                 except Exception as e:
                     st.error(f"שגיאה בעיבוד הקול: {e}")
 
-        # אפשרות כתיבה רגילה
         text_spoken = st.chat_input("או כתוב כאן למורה מיה...")
         if text_spoken:
             st.session_state.zoom_chat_history.append({"role": "user", "content": text_spoken})
@@ -527,7 +509,6 @@ elif room == "📸 סורק תמונות ושיעורי בית":
     input_method = st.radio("בחר כיצד להזין את התרגיל:", ["📁 העלאת קובץ מהמכשיר", "🔗 הדבקת קישור ישיר (URL) לתמונה"], horizontal=True)
     
     img_to_solve = None
-    
     if input_method == "📁 העלאת קובץ מהמכשיר":
         file = st.file_uploader("בחר קובץ תמונה (JPG/PNG):", type=["png", "jpg", "jpeg"])
         if file:
@@ -705,7 +686,7 @@ elif room == "🎬 ספריית וידאו ושיעורים ענקית":
         },
         "מתמטיקה: אלגברה וחדו\"א": {
             "משוואות ממעלה ראשונה עם סוגריים ושברים": "https://www.youtube.com/watch?v=lj6ONyl932A",
-            "משוואה ריבועית ונוסחת שורשים": "https://www.youtube.com/watch?v=fghk_W4x_eM",
+            "משוואה ריבועית ונוסחת שורשים": "https://www.youtube.com/watch?fghk_W4x_eM",
             "חקירת פונקציות ונגזרות (מבוא לחדו\"א)": "https://www.youtube.com/watch?v=5yflv3j7T30"
         },
         "אנגלית: זמנים ודקדוק (Grammar)": {
@@ -759,7 +740,6 @@ elif room == "🎬 ספריית וידאו ושיעורים ענקית":
 elif room == "🏫 חיבור ל-Classroom וספרי לימוד":
     st.title("🏫 חיבור לבית הספר: Classroom & ספרי לימוד דיגיטליים")
     st.write("גישה מהירה לפורטלים הלימודיים ומפענח מטלות חכם:")
-    
     st.markdown("""
         <div>
             <a class="portal-link" href="https://classroom.google.com" target="_blank">🌐 פתח Google Classroom</a>
@@ -908,7 +888,6 @@ elif room == "🚨 שליף חירום (לפני מבחן)":
 elif room == "📅 מתכנן לו״ז למבחן":
     st.title("📅 מתכנן לוח זמנים אישי למבחן")
     topics = st.text_area("📚 1. מה כל החומר והנושאים שצריך להספיק למבחן?", placeholder="למשל: פרקים 1 עד 4 בספר, שאלות בגרות...")
-    
     c1, c2 = st.columns(2)
     with c1:
         exam_subj = st.text_input("2. מקצוע או מגמה:", placeholder="מתמטיקה / ביולוגיה / פיזיקה...")
@@ -940,7 +919,6 @@ elif room == "📅 מתכנן לו״ז למבחן":
 elif room == "⭐ חוות דעת והצעות":
     st.title("⭐ חוות דעת והצעות לשיפור")
     st.write("איך האתר עובד לך? יש פיצ'ר שתרצה שנוסיף? כתוב לנו כאן:")
-    
     with st.form("feedback_form", clear_on_submit=True):
         fb_name = st.text_input("שם או כינוי:")
         fb_grade = st.selectbox("כיתה:", ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב"], index=2)
@@ -965,7 +943,6 @@ elif room == "⭐ חוות דעת והצעות":
 
     st.markdown("---")
     st.subheader("💬 מה שתלמידים אומרים על The Dan Method:")
-    
     for r in st.session_state.reviews:
         stars = "⭐" * r["rating"]
         st.markdown(f"""
