@@ -1,6 +1,8 @@
 import streamlit as st
 from google import genai
 from PIL import Image
+import requests
+from io import BytesIO
 import json
 import re
 import time
@@ -214,11 +216,11 @@ with st.sidebar:
         "בחר חדר:",
         [
             "🏠 מסך פתיחה (ברוכים הבאים)",
+            "📸 סורק תמונות ושיעורי בית",
             "📝 מחולל מבחני דמה (Mock Exam)",
             "🎬 ספריית וידאו ושיעורים ענקית",
             "🏫 חיבור ל-Classroom וספרי לימוד",
             "🖨️ דפי תרגול ומבחנים להדפסה",
-            "📸 סורק תמונות ומבחנים",
             "💯 מלטשת תשובות למאיות",
             "📐 מעבדת מתמטיקה ומדעים",
             "🚨 שליף חירום (לפני מבחן)",
@@ -229,7 +231,7 @@ with st.sidebar:
     
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
-    st.caption("The Dan Method v8.3 Verified")
+    st.caption("The Dan Method v8.5 Link-Scanner")
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
@@ -316,7 +318,55 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
     st.markdown("---")
     st.info("👈 **איך מתחילים?** בחר את הכיתה והמגמה בסרגל הצד (Sidebar), עבור לחדר הרצוי ותתחיל ללמוד!")
 
-# ----------------- חדר 1: מחולל מבחני דמה -----------------
+# ----------------- חדר 1: סורק תמונות וקישורים -----------------
+elif room == "📸 סורק תמונות ושיעורי בית":
+    st.title("📸 סורק תמונות, דפי עבודה וקישורים")
+    st.write(f"העלה תמונה ישירות מהמכשיר **או הדבק קישור ישיר לתמונה / דף עבודה** עבור **{chosen_grade}**:")
+    
+    photo_topic = st.text_input("📚 1. מה החומר / המקצוע / המגמה?", placeholder="תרגיל בפיזיקה, מתמטיקה, קוד, צילום מספר הלימוד...")
+    
+    input_method = st.radio("בחר כיצד להזין את התרגיל:", ["📁 העלאת קובץ מהמכשיר", "🔗 הדבקת קישור ישיר (URL) לתמונה"], horizontal=True)
+    
+    img_to_solve = None
+    
+    if input_method == "📁 העלאת קובץ מהמכשיר":
+        file = st.file_uploader("בחר קובץ תמונה (JPG/PNG):", type=["png", "jpg", "jpeg"])
+        if file:
+            try:
+                img_to_solve = Image.open(file)
+                st.image(img_to_solve, caption="התמונה שהועלתה מהמכשיר", width=360)
+            except Exception as e:
+                st.error(f"שגיאה בפתיחת התמונה: {e}")
+    else:
+        url_input = st.text_input("הדבק כאן את כתובת הקישור (URL) לתמונה:", placeholder="https://example.com/homework.jpg")
+        if url_input.strip():
+            try:
+                with st.spinner("טוען תמונה מהקישור..."):
+                    response = requests.get(url_input.strip(), timeout=10)
+                    response.raise_for_status()
+                    img_to_solve = Image.open(BytesIO(response.content))
+                    st.image(img_to_solve, caption="התמונה שנטענה מהקישור", width=360)
+            except Exception as e:
+                st.error(f"לא ניתן לטעון את התמונה מהקישור. ודא שהקישור תקין ומפנה ישירות לקובץ תמונה. (פירוט: {e})")
+
+    action = st.text_input("2. מה לבצע בתמונה?", value="פתור והסבר שלב אחרי שלב בצורה ברורה ומדויקת")
+    
+    if st.button("פענח ופתור ⚡", use_container_width=True):
+        if not photo_topic.strip():
+            st.warning("ציין קודם מה החומר או המקצוע בתמונה!")
+        elif img_to_solve is None:
+            st.warning("העלה תמונה או הדבק קישור תקין לתמונה לפני הלחיצה!")
+        else:
+            with st.spinner("מפענח את התמונה ופותר..."):
+                try:
+                    prompt = f"התלמיד ב-{student_context}. החומר: {photo_topic}. הנחיה: {action}. {anti_yap_rule}"
+                    res = generate_ai([prompt, img_to_solve])
+                    st.success("הפתרון מוכן:")
+                    st.markdown(res.text)
+                except Exception as e:
+                    st.error(f"שגיאה בפענוח: {e}")
+
+# ----------------- חדר 2: מחולל מבחני דמה -----------------
 elif room == "📝 מחולל מבחני דמה (Mock Exam)":
     st.title("📝 מחולל מבחני דמה מלאים (Mock Exam)")
     st.write(f"המחשב בונה לך סימולציית מבחן מותאמת אישית ל-**{chosen_grade}** ({math_units} / {chosen_major}).")
@@ -432,7 +482,7 @@ elif room == "📝 מחולל מבחני דמה (Mock Exam)":
                 except Exception as e:
                     st.error(f"שגיאה בבדיקת המבחן: {e}")
 
-# ----------------- חדר 2: ספריית וידאו עשירה -----------------
+# ----------------- חדר 3: ספריית וידאו עשירה -----------------
 elif room == "🎬 ספריית וידאו ושיעורים ענקית":
     st.title("🎬 ספריית וידאו עשירה (ליבה + מגמות)")
     st.write(f"שיעורים ממוקדים לצפייה ישירה עבור **{chosen_grade}**:")
@@ -506,7 +556,7 @@ elif room == "🎬 ספריית וידאו ושיעורים ענקית":
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- חדר 3: חיבור לבית ספר וספרים -----------------
+# ----------------- חדר 4: חיבור לבית ספר וספרים -----------------
 elif room == "🏫 חיבור ל-Classroom וספרי לימוד":
     st.title("🏫 חיבור לבית הספר: Classroom & ספרי לימוד דיגיטליים")
     st.write("גישה מהירה לפורטלים הלימודיים ומפענח מטלות חכם:")
@@ -542,7 +592,7 @@ elif room == "🏫 חיבור ל-Classroom וספרי לימוד":
                 except Exception as e:
                     st.error(f"שגיאה בניתוח המטלה: {e}")
 
-# ----------------- חדר 4: דפי תרגול להדפסה -----------------
+# ----------------- חדר 5: דפי תרגול להדפסה -----------------
 elif room == "🖨️ דפי תרגול ומבחנים להדפסה":
     st.title("🖨️ מחולל דפי עבודה, תרגול ומבחנים להדפסה")
     st.write(f"הפק דף תרגול מושלם ומעוצב עבור **{chosen_grade}** הניתן להדפסה ישירה:")
@@ -586,29 +636,6 @@ elif room == "🖨️ דפי תרגול ומבחנים להדפסה":
                 </button>
             </div>
         """, unsafe_allow_html=True)
-
-# ----------------- חדר 5: סורק תמונות -----------------
-elif room == "📸 סורק תמונות ומבחנים":
-    st.title("📸 סורק תמונות ושיעורי בית")
-    photo_topic = st.text_input("📚 1. מה החומר / המקצוע / המגמה?", placeholder="תרגיל בפיזיקה, קוד, צילום ספר...")
-    file = st.file_uploader("📷 2. בחר קובץ תמונה (JPG/PNG):", type=["png", "jpg", "jpeg"])
-    action = st.text_input("3. מה לבצע?", value="פתור והסבר שלב אחרי שלב בצורה ברורה")
-    
-    if file:
-        img = Image.open(file)
-        st.image(img, caption="התמונה שהועלתה", width=360)
-        if st.button("פענח ופתור ⚡", use_container_width=True):
-            if not photo_topic.strip():
-                st.warning("ציין קודם מה החומר בתמונה!")
-            else:
-                with st.spinner("מפענח..."):
-                    try:
-                        prompt = f"התלמיד ב-{student_context}. החומר: {photo_topic}. הנחיה: {action}. {anti_yap_rule}"
-                        res = generate_ai([prompt, img])
-                        st.success("הפתרון לתמונה:")
-                        st.markdown(res.text)
-                    except Exception as e:
-                        st.error(f"שגיאה בפענוח התמונה: {e}")
 
 # ----------------- חדר 6: מלטשת תשובות -----------------
 elif room == "💯 מלטשת תשובות למאיות":
