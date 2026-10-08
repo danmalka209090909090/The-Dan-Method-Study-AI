@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# עיצוב מודרני מיושר לימין וכרטיסיות נקיות
+# הגדרת סגנון, יישור לימין (RTL) ועיצוב כרטיסיות
 st.markdown("""
 <style>
     .stApp {
@@ -19,308 +19,283 @@ st.markdown("""
     div[data-testid="stExpander"] {
         text-align: right;
     }
-    .metric-box {
-        background: #1e293b;
-        color: white;
+    .cheat-card {
+        background: #1e1b4b;
+        border: 1px solid #6366f1;
         padding: 16px;
-        border-radius: 12px;
-        text-align: center;
+        border-radius: 10px;
+        color: #e0e7ff;
+        margin-top: 10px;
+    }
+    .review-card {
+        background: #0f172a;
         border: 1px solid #334155;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
     }
 </style>
 """, unsafe_allow_html=True)
 
+# אתחול Session State לחוות דעת
+if "reviews" not in st.session_state:
+    st.session_state.reviews = [
+        {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום הציל אותי לפני מבחן בהיסטוריה!"},
+        {"name": "מאיה ר.", "grade": "כיתה י\"א", "rating": 5, "text": "מפרק המתמטיקה מסביר יותר טוב מהמורה הפרטי שלי."}
+    ]
+
 api_key = st.secrets.get("GEMINI_API_KEY", "")
 if not api_key:
-    st.error("⚠️ חסר GEMINI_API_KEY ב-Secrets של Streamlit.")
+    st.error("⚠️ מפתח GEMINI_API_KEY לא מוגדר ב-Secrets של Streamlit.")
     st.stop()
 
 client = genai.Client(api_key=api_key)
 
-# --- סרגל צד (Sidebar) ---
+# --- סרגל צד (Sidebar): בחירת כיתה וניווט בין חדרים ---
 with st.sidebar:
     st.title("⚡ The Dan Method")
-    st.caption("מערכת ה-AI לכל השכבות: כיתה ז' עד י״ב")
+    st.caption("פלטפורמת הלימוד האישית שלך")
     st.markdown("---")
     
-    grade_level = st.selectbox(
-        "🎓 בחר את שכבת הגיל שלך:",
-        ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב (בגרות)"],
-        index=2
+    st.subheader("🎓 1. בחר את הכיתה שלך:")
+    chosen_grade = st.selectbox(
+        "שכבת לימוד:",
+        ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב (בגרות)"]
     )
     
     st.markdown("---")
-    st.subheader("⏱️ טיימר ריכוז (25 דקות)")
-    st.caption("פוקוס נקי בלי הסחות דעת.")
-    if st.button("התחל סשן למידה 🚀", use_container_width=True):
-        st.info(f"סשן פעיל עבור {grade_level}! שים טלפון על שקט ותתחיל לפוצץ חומר.")
-
-    st.markdown("---")
-    target_score = st.slider("🎯 יעד הציון שלך:", 70, 100, 100)
-    st.success(f"מכוונים ל-{target_score} עגול!")
-
-    st.markdown("---")
-    st.caption("The Dan Method v4.0 Ultimate")
-
-# --- כותרת ראשית ומדדים ---
-col_h, col_b = st.columns([3, 1])
-with col_h:
-    st.title("⚡ The Dan Method: Study AI")
-    st.write(f"מרכז הלימוד המקיף לכל המקצועות • מותאם כעת ל:**{grade_level}**")
-
-with col_b:
-    st.markdown("""
-        <div class="metric-box">
-            <span style="background-color: #f59e0b; color: black; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">ULTIMATE</span>
-            <h3 style="margin: 8px 0; color: #38bdf8;">ז' - י"ב</h3>
-            <p style="margin: 0; font-size: 0.8rem; color: #cbd5e1;">סרטונים + פותר צילומים</p>
-        </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("שכבת לימוד פעילה", grade_level, "מותאם אישית")
-m2.metric("זמן תגובה", "1.1 שנ'", "מהיר")
-m3.metric("ספריית שיעורים", "עשרות סרטונים", "זמינים")
-m4.metric("יעד אישי", f"{target_score}", "💯")
-
-st.write("")
-
-# --- לשוניות המערכת ---
-t_vid, t_photo, t_ans, t_math, t_sum, t_plan, t_chat = st.tabs([
-    "🎬 חדר סרטונים ושיעורים",
-    "📸 פותר תמונות ומבחנים",
-    "💯 משדרג ל-100",
-    "📐 מפרק מתמטיקה",
-    "⚡ שליף סיכום",
-    "📅 בונה לו״ז למבחן",
-    "💬 מורה פרטי צמוד"
-])
-
-# 1. חדר סרטונים ענק
-with t_vid:
-    st.subheader("🎬 ספריית סרטוני הסבר מהירים (עובדים וסוגרים פינה)")
-    st.write("בחר תחום ושכבה כדי לצפות בשיעור ממוקד בלי חפירות:")
+    st.subheader("🚪 2. בחר חדר עבודה:")
+    room = st.radio(
+        "מעבר לחדר:",
+        [
+            "🎬 חדר וידאו ושיעורים",
+            "📸 סורק תמונות ומבחנים",
+            "💯 מלטשת תשובות למאיות",
+            "📐 מעבדת מתמטיקה ומדעים",
+            "🚨 שליף חירום (לפני מבחן)",
+            "🧠 מחולל בחנים אינטראקטיבי",
+            "📅 מתכנן לו״ז למבחן",
+            "⭐ חוות דעת והצעות"
+        ]
+    )
     
-    v_col1, v_col2 = st.columns([1, 1])
+    st.markdown("---")
+    no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
+    st.caption("The Dan Method v5.0")
+
+# תוספת הנחיה לפילטר
+anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
+
+# ----------------- חדר 1: וידאו ושיעורים -----------------
+if room == "🎬 חדר וידאו ושיעורים":
+    st.title("🎬 חדר וידאו ושיעורים מוקלטים")
+    st.write(f"הסברים ממוקדים שמותאמים ספציפית ל-**{chosen_grade}**:")
     
-    with v_col1:
-        subject_choice = st.selectbox("בחר מקצוע:", [
-            "מתמטיקה: חטיבה (משוואות, יחס, שטחים)",
-            "מתמטיקה: תיכון (טריגו, חדו\"א, משוואות ריבועיות)",
-            "אנגלית: דקדוק וזמנים (Grammar)",
-            "מדעים ופיזיקה: כוחות, אנרגיה וחוקי ניוטון",
-            "היסטוריה ואזרחות: סיכומים ממוקדים"
-        ])
-        
-        video_links = {
-            "מתמטיקה: חטיבה (משוואות, יחס, שטחים)": {
-                "פתרון משוואות ממעלה ראשונה": "https://www.youtube.com/watch?v=5VjWl-z_c_U",
-                "יחס ופרופורציה בקלות": "https://www.youtube.com/watch?v=sI3q6Q_Hk84",
-                "שטחים והיקפים של מצולעים": "https://www.youtube.com/watch?v=uK1X_0kZq6g"
-            },
-            "מתמטיקה: תיכון (טריגו, חדו\"א, משוואות ריבועיות)": {
-                "משוואה ריבועית ונוסחת שורשים": "https://www.youtube.com/watch?v=fghk_W4x_eM",
-                "משפט פיתגורס וטריגונומטריה": "https://www.youtube.com/watch?v=aa7bC_rFq4c",
-                "מבוא לנגזרות וחדו\"א": "https://www.youtube.com/watch?v=5yflv3j7T30"
-            },
-            "אנגלית: דקדוק וזמנים (Grammar)": {
-                "Present Simple vs Present Progressive": "https://www.youtube.com/watch?v=x1a_9gq1pLg",
-                "Past Simple בקלות": "https://www.youtube.com/watch?v=0k53_u1N9Yk",
-                "איך לכתוב פסקת חיבור מושלמת (Opinion Essay)": "https://www.youtube.com/watch?v=7P_k3j_4X4w"
-            },
-            "מדעים ופיזיקה: כוחות, אנרגיה וחוקי ניוטון": {
-                "חוקי ניוטון מוסברים ב-5 דקות": "https://www.youtube.com/watch?v=kKKM8Y-u7ds",
-                "אנרגיה פוטנציאלית וקינטית": "https://www.youtube.com/watch?v=ASZv3tIK54k",
-                "מבנה התא ופוטוסינתזה": "https://www.youtube.com/watch?v=68_jtXv9k4c"
-            },
-            "היסטוריה ואזרחות: סיכומים ממוקדים": {
-                "הגורמים למלחמת העולם הראשונה": "https://www.youtube.com/watch?v=SLj5r2nZHB8",
-                "עקרונות הדמוקרטיה (אזרחות)": "https://www.youtube.com/watch?v=cMKe0k_k1Qk",
-                "העלייה הראשונה והשנייה": "https://www.youtube.com/watch?v=QZ0p8V5Q8sY"
+    col_v1, col_v2 = st.columns([1, 1])
+    
+    with col_v1:
+        # סרטונים מותאמים לשכבת הגיל
+        if chosen_grade in ["כיתה ז'", "כיתה ח'", "כיתה ט'"]:
+            video_options = {
+                "מתמטיקה: פתרון משוואות ממעלה ראשונה": "https://www.youtube.com/watch?v=5VjWl-z_c_U",
+                "מתמטיקה: יחס ופרופורציה בקלות": "https://www.youtube.com/watch?v=sI3q6Q_Hk84",
+                "מדעים: כוחות וחוקי ניוטון": "https://www.youtube.com/watch?v=kKKM8Y-u7ds",
+                "אנגלית: זמנים בסיסיים (Present Simple)": "https://www.youtube.com/watch?v=x1a_9gq1pLg"
             }
-        }
+        else:
+            video_options = {
+                "מתמטיקה: משוואה ריבועית ונוסחת שורשים": "https://www.youtube.com/watch?v=fghk_W4x_eM",
+                "מתמטיקה: משפט פיתגורס וטריגונומטריה": "https://www.youtube.com/watch?v=aa7bC_rFq4c",
+                "מתמטיקה: מבוא לנגזרות וחדו\"א": "https://www.youtube.com/watch?v=5yflv3j7T30",
+                "היסטוריה: הגורמים למלחמת העולם הראשונה": "https://www.youtube.com/watch?v=SLj5r2nZHB8"
+            }
+            
+        chosen_v = st.selectbox("בחר שיעור לצפייה:", list(video_options.keys()))
+        st.video(video_options[chosen_v])
         
-        current_options = list(video_links[subject_choice].keys())
-        chosen_lesson = st.selectbox("בחר שיעור:", current_options)
-        st.video(video_links[subject_choice][chosen_lesson])
-
-    with v_col2:
-        st.markdown("**💡 המורה הוירטואלי: 'הסבר לי ב-3 דקות'**")
-        st.caption(f"הסבר מותאם ספציפית ל-**{grade_level}** – פשוט, יסודי ועם דוגמה יומיומית.")
-        custom_topic = st.text_input("איזה נושא תרצה שיסבירו לך?", placeholder="למשל: משפט תאלס, שיווי משקל כימי, מטפורה...")
+    with col_v2:
+        st.subheader("💡 המורה הוירטואלי: הסבר לי נושא")
+        st.caption(f"הסבר מותאם רמה ל-**{chosen_grade}**.")
+        ask_topic = st.text_input("איזה נושא או מושג תרצה להבין?", placeholder="למשל: שטחים, כבידה, מטפורה, משוואה...")
         
-        if st.button("תסביר לי יסודי 🧠", use_container_width=True, key="btn_exp_deep"):
-            if not custom_topic.strip():
+        if st.button("הסבר לי בפשטות 🧠", use_container_width=True):
+            if not ask_topic.strip():
                 st.warning("הזן נושא!")
             else:
                 prompt = (
-                    f"אתה מורה אלוף שמסביר לתלמיד ב-{grade_level}.\n"
-                    f"הסבר את הנושא: {custom_topic}\n\n"
-                    "כללים:\n"
-                    "1. הגדרה סופר ברורה ב-2 משפטים.\n"
-                    "2. דוגמה יומיומית מהחיים שמסבירה את העיקרון מיד.\n"
-                    "3. שלושת שלבי העבודה או הנקודות שחייבים לזכור במבחן.\n"
-                    "התאם את השפה בדיוק לרמת הגיל הזו בלי התנשאות ובלי חפירות."
+                    f"הסבר לתלמיד ב-{chosen_grade} את הנושא הבא בצורה ברורה, מעניינת ולעניין:\n{ask_topic}\n\n"
+                    "1. הגדרה תמציתית ב-2 משפטים.\n"
+                    "2. דוגמה יומיומית שממחישה את זה.\n"
+                    "3. שלושת הדברים שהכי חשוב לזכור במבחן.\n"
+                    f"{anti_yap_rule}"
                 )
                 with st.spinner("מכין הסבר..."):
-                    try:
-                        res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
-                        st.success("ההסבר שלך:")
-                        st.markdown(res.text)
-                    except Exception as e:
-                        st.error(f"שגיאה: {e}")
-
-# 2. פותר תמונות ומבחנים
-with t_photo:
-    st.subheader("📸 פותר תרגילים ודפי עבודה מתמונות")
-    st.write("צילמת שאלה מספר או מהלוח? העלה אותה לכאן וקבל פתרון והסבר.")
-    
-    uploaded_file = st.file_uploader("העלה תמונה (PNG/JPG):", type=["png", "jpg", "jpeg"])
-    photo_prompt = st.text_input("מה תרצה שנעשה עם התמונה? (אופציונלי):", value="פתור את התרגיל או ענה על השאלה בתמונה שלב אחרי שלב")
-    
-    if uploaded_file is not None:
-        img = Image.open(uploaded_file)
-        st.image(img, caption="התמונה שהועלתה", use_container_width=True)
-        
-        if st.button("פענח ופתור את התמונה ⚡", use_container_width=True, key="btn_img_solve"):
-            with st.spinner("מפענח את התמונה ופותר..."):
-                try:
-                    res = client.models.generate_content(
-                        model="gemini-3.8-flash",
-                        contents=[f"התלמיד נמצא ב-{grade_level}. הנחיה: {photo_prompt}", img]
-                    )
-                    st.success("פתרון התמונה:")
+                    res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                    st.success("ההסבר מוכן:")
                     st.markdown(res.text)
-                except Exception as e:
-                    st.error(f"שגיאה בעיבוד התמונה: {e}")
 
-# 3. משדרג ל-100
-with t_ans:
-    st.subheader("💯 משדרג תשובות לציון 100")
-    st.write(f"התאם אישית מחוון בדיקה עבור **{grade_level}**.")
+# ----------------- חדר 2: סורק תמונות -----------------
+elif room == "📸 סורק תמונות ומבחנים":
+    st.title("📸 סורק תמונות ושיעורי בית")
+    st.write(f"העלה צילום מדף העבודה או הספר עבור **{chosen_grade}**:")
     
-    col_q1, col_subj = st.columns([3, 1])
-    with col_q1:
-        quest = st.text_input("השאלה:")
-    with col_subj:
-        subject_name = st.selectbox("מקצוע:", ["היסטוריה / אזרחות / תנ\"ך", "ספרות / עברית", "מדעים / ביולוגיה", "אחר"])
+    file = st.file_uploader("בחר קובץ תמונה (JPG/PNG):", type=["png", "jpg", "jpeg"])
+    action = st.text_input("מה לבצע?", value="פתור והסבר שלב אחרי שלב בצורה ברורה")
+    
+    if file:
+        img = Image.open(file)
+        st.image(img, caption="התמונה שהועלתה", width=360)
         
-    user_draft = st.text_area("התשובה שכתבת:", height=120)
+        if st.button("פענח ופתור ⚡", use_container_width=True):
+            with st.spinner("מפענח את התמונה..."):
+                prompt = f"התלמיד ב-{chosen_grade}. {action}. {anti_yap_rule}"
+                res = client.models.generate_content(model="gemini-3.8-flash", contents=[prompt, img])
+                st.success("הפתרון לתמונה:")
+                st.markdown(res.text)
+
+# ----------------- חדר 3: מלטשת תשובות -----------------
+elif room == "💯 מלטשת תשובות למאיות":
+    st.title("💯 מלטשת תשובות לציון 100")
+    st.write(f"התאמת ניסוח למחוון בחינה עבור **{chosen_grade}**.")
     
-    if st.button("שדרג תשובה לפי מחוון 🚀", use_container_width=True, key="btn_eval"):
-        if not user_draft.strip():
+    q_text = st.text_input("השאלה:")
+    user_ans = st.text_area("התשובה שכתבת:", height=130)
+    
+    if st.button("שדרג לי את התשובה 🚀", use_container_width=True):
+        if not user_ans.strip():
             st.warning("הזן קודם את התשובה שלך!")
         else:
             prompt = (
-                f"אתה מורה קפדן שמעריך תשובה של תלמיד ב-{grade_level} במקצוע {subject_name}.\n"
-                f"שאלה: {quest}\nתשובה: {user_draft}\n\n"
+                f"אתה מעריך בחינות קפדן שבודק תשובה של תלמיד ב-{chosen_grade}.\n"
+                f"שאלה: {q_text}\nתשובה: {user_ans}\n\n"
                 "החזר:\n"
                 "1. **ציון מוערך (מתוך 100)**\n"
                 "2. **מה חסר לקבלת 100 עגול**\n"
-                "3. **תשובת 100 מושלמת ומנוסחת פיקס**"
+                "3. **תשובה מושלמת סופית**: נוסח שסוגר את מלוא הנקודות.\n"
+                f"{anti_yap_rule}"
             )
-            with st.spinner("בודק..."):
-                try:
-                    res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
-                    st.success("הערכת מחוון:")
-                    st.markdown(res.text)
-                except Exception as e:
-                    st.error(f"שגיאה: {e}")
+            with st.spinner("מנתח לפי מחוון..."):
+                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                st.markdown(res.text)
 
-# 4. מפרק מתמטיקה
-with t_math:
-    st.subheader("📐 מפרק מתמטיקה שלב אחרי שלב")
-    st.caption(f"הפתרון יותאם לחומר ולרמה של **{grade_level}**.")
-    math_txt = st.text_area("הקלד תרגיל (משוואות, גאומטריה, פונקציות, שאלות מילוליות):", height=110)
+# ----------------- חדר 4: מעבדת מתמטיקה -----------------
+elif room == "📐 מעבדת מתמטיקה ומדעים":
+    st.title("📐 מעבדת פירוק מתמטיקה ומדעים")
+    st.write(f"פתרון צעד-אחר-צעד עם נימוקים המותאם לרמת **{chosen_grade}**:")
     
-    if st.button("פרק לי את התרגיל 🧠", use_container_width=True, key="btn_math_full"):
-        if not math_txt.strip():
+    math_input = st.text_area("הזן את התרגיל או הבעיה המילולית:", height=120)
+    
+    if st.button("פרק לי את התרגיל 🧠", use_container_width=True):
+        if not math_input.strip():
             st.warning("הזן תרגיל!")
         else:
             prompt = (
-                f"פתור את תרגיל המתמטיקה הבא עבור תלמיד ב-{grade_level}:\n{math_txt}\n\n"
-                "דרישות:\n"
-                "1. פתור שלב אחרי שלב.\n"
-                "2. ליד כל שלב כתוב נימוק פשוט.\n"
-                "3. הדגש בבירור את **התשובה הסופית**."
+                f"פתור את התרגיל הבא שלב אחרי שלב עבור תלמיד ב-{chosen_grade}:\n{math_input}\n\n"
+                "הצג כל שלב בבירור עם הסבר קצר על הכלל או הנוסחה שהופעלו, והדגש את התוצאה הסופית.\n"
+                f"{anti_yap_rule}"
             )
-            with st.spinner("פותר..."):
-                try:
-                    res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
-                    st.success("הפתרון המלא:")
-                    st.markdown(res.text)
-                except Exception as e:
-                    st.error(f"שגיאה: {e}")
-
-# 5. שליף סיכום
-with t_sum:
-    st.subheader("⚡ שליף סיכום מהיר למבחן")
-    sum_in = st.text_area("הדבק כאן חומר קריאה ארוך:", height=140)
-    
-    if st.button("חלץ שליף למבחן 📑", use_container_width=True, key="btn_quick_sum"):
-        if not sum_in.strip():
-            st.warning("הזן טקסט לסיכום!")
-        else:
-            prompt = (
-                f"תמצת את הטקסט הבא לתלמיד ב-{grade_level} שלומד למבחן:\n{sum_in}\n\n"
-                "- עד 4 נקודות קריטיות שחובה לדעת.\n"
-                "- מושגי מפתח ומילות חובה שהבוחן יחפש.\n"
-                "- טיפ זיכרון מהיר."
-            )
-            with st.spinner("מחלץ תמצית..."):
-                try:
-                    res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
-                    st.success("שליף המבחן מוכן:")
-                    st.markdown(res.text)
-                except Exception as e:
-                    st.error(f"שגיאה: {e}")
-
-# 6. בונה לו״ז למבחן
-with t_plan:
-    st.subheader("📅 מתכנן לוח זמנים אישי למבחן")
-    st.write("נשאר מעט זמן למבחן? תן ל-AI לחלק לך את החומר ללו״ז יומי שלא תיתקע בלילה האחרון.")
-    
-    c_p1, c_p2 = st.columns(2)
-    with c_p1:
-        test_sub = st.text_input("מקצוע המבחן:", placeholder="למשל: היסטוריה / מתמטיקה / מדעים")
-        days_left = st.number_input("כמה ימים נשארו למבחן?", min_value=1, max_value=30, value=3)
-    with c_p2:
-        study_hours = st.slider("כמה שעות ביום אתה יכול ללמוד?", 1, 6, 2)
-        topics_list = st.text_area("אילו נושאים צריך להספיק?", placeholder="פרק 1, פרק 3, פתרון בגרויות...")
-
-    if st.button("בנה לי תוכנית עבודה יומית 🎯", use_container_width=True, key="btn_schedule"):
-        prompt = (
-            f"בנה לוח זמנים מפורט ופרקטי לתלמיד ב-{grade_level}.\n"
-            f"מקצוע: {test_sub}\nימים עד המבחן: {days_left}\nשעות לימוד ליום: {study_hours}\nנושאים: {topics_list}\n\n"
-            "חלק ללוח זמנים לפי ימים: מה ללמוד בדיוק בכל יום, מתי לעשות הפסקות ומתי להקדיש זמן לתרגול שאלות ומבחן לדוגמה."
-        )
-        with st.spinner("בונה לו״ז..."):
-            try:
+            with st.spinner("מחשב ומנמק..."):
                 res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
-                st.success("תוכנית הלימודים שלך:")
                 st.markdown(res.text)
-            except Exception as e:
-                st.error(f"שגיאה: {e}")
 
-# 7. צ'אט מורה פרטי
-with t_chat:
-    st.subheader(f"💬 מורה פרטי צמוד 24/7 ({grade_level})")
-    st.write("שאל כל שאלה קטנה שנתקעת עליה תוך כדי הכנת שיעורי בית או חזרה למבחן:")
+# ----------------- חדר 5: שליף חירום -----------------
+elif room == "🚨 שליף חירום (לפני מבחן)":
+    st.title("🚨 שליף חירום: 60 שניות לפני מבחן")
+    st.write("נכנס עוד דקה לכיתה? תזרוק את הנושא ותקבל אך ורק מה שחובה לדעת.")
     
-    quick_q = st.text_input("שאל את המורה:", placeholder="איך זוכרים נוסחה מסוימת? מה ההבדל בין שתי הגדרות?...")
-    if st.button("שלח שאלה למורה 💡", use_container_width=True, key="btn_ask_teacher"):
-        if not quick_q.strip():
-            st.warning("הזן שאלה!")
+    panic_topic = st.text_input("נושא המבחן / הבוחן:", placeholder="למשל: חוקי נירנברג, משפט פיתגורס, פוטוסינתזה...")
+    
+    if st.button("הצל אותי עכשיו ⚡", use_container_width=True):
+        if not panic_topic.strip():
+            st.warning("הזן נושא!")
         else:
             prompt = (
-                f"אתה מורה פרטי סבלני, חכם וחברי של תלמיד ב-{grade_level}.\n"
-                f"ענה ישירות, בקצרה ובפשטות על השאלה הבאה: {quick_q}"
+                f"התלמיד ב-{chosen_grade} נכנס בעוד דקה למבחן על: {panic_topic}.\n"
+                "החזר אך ורק:\n"
+                "1. **3 משפטי זהב** שחייבים לרשום כדי לקבל נקודות.\n"
+                "2. **הטעות הנפוצה ביותר** שנכשלים עליה.\n"
+                "3. **מושג חובה אחד** שחובה לשלב בתשובה.\n"
+                f"{anti_yap_rule}"
             )
-            with st.spinner("המורה כותב תשובה..."):
-                try:
-                    res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
-                    st.info(res.text)
-                except Exception as e:
-                    st.error(f"שגיאה: {e}")
+            with st.spinner("מחלץ שליף..."):
+                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                st.markdown(f'<div class="cheat-card">{res.text}</div>', unsafe_allow_html=True)
+
+# ----------------- חדר 6: מחולל בחנים -----------------
+elif room == "🧠 מחולל בחנים אינטראקטיבי":
+    st.title("🧠 מחולל בחנים אינטראקטיבי")
+    st.write(f"בדוק אם אתה באמת שולט בחומר של **{chosen_grade}**:")
+    
+    quiz_topic = st.text_input("על איזה נושא תרצה שאלות?", placeholder="למשל: מערכת השמש, מלחמת העולם השנייה, שברים...")
+    
+    if st.button("ייצר לי שאלות בדיקה 🎯", use_container_width=True):
+        if not quiz_topic.strip():
+            st.warning("הזן נושא לבחינה!")
+        else:
+            prompt = (
+                f"צור 3 שאלות תרגול ממוקדות עבור תלמיד ב-{chosen_grade} על הנושא: {quiz_topic}.\n"
+                "לכל שאלה ספק 4 אפשרויות (א-ד), ומתחת לכל שאלה הוסף את התשובה הנכונה עם הסבר קצר."
+            )
+            with st.spinner("בונה שאלות..."):
+                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                st.markdown(res.text)
+
+# ----------------- חדר 7: מתכנן לו״ז -----------------
+elif room == "📅 מתכנן לו״ז למבחן":
+    st.title("📅 מתכנן לוח זמנים אישי למבחן")
+    st.write("בנה תוכנית עבודה יומית כדי לא להגיע ללילה לפני המבחן בלחץ:")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        exam_subj = st.text_input("מקצוע:")
+        days = st.number_input("כמה ימים נשארו?", 1, 30, 3)
+    with c2:
+        hours = st.slider("שעות למידה פנויות ביום:", 1, 6, 2)
+        topics = st.text_area("אילו נושאים צריך להספיק?")
+        
+    if st.button("בנה לי תוכנית עבודה 🗓️", use_container_width=True):
+        prompt = (
+            f"בנה לוח זמנים פרקטי ללימוד למבחן עבור תלמיד ב-{chosen_grade}.\n"
+            f"מקצוע: {exam_subj}, ימים: {days}, שעות ביום: {hours}, נושאים: {topics}.\n"
+            "חלק את המשימות לפי ימים, כולל זמני מנוחה ותרגול מעשי."
+        )
+        with st.spinner("מתכנן לו״ז..."):
+            res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+            st.markdown(res.text)
+
+# ----------------- חדר 8: חוות דעת -----------------
+elif room == "⭐ חוות דעת והצעות":
+    st.title("⭐ חוות דעת והצעות לשיפור")
+    st.write("איך האתר עובד לך? יש פיצ'ר שאתה רוצה שנוסיף? כתוב לנו כאן:")
+    
+    with st.form("feedback_form", clear_on_submit=True):
+        fb_name = st.text_input("שם או כינוי:")
+        fb_grade = st.selectbox("כיתה:", ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב"], index=2)
+        fb_rating = st.slider("דירוג החוויה שלך (כוכבים):", 1, 5, 5)
+        fb_text = st.text_area("מה דעתך על האתר? מה כדאי להוסיף או לשפר?")
+        submitted = st.form_submit_button("שלח חוות דעת 🚀")
+        
+        if submitted:
+            if not fb_text.strip():
+                st.warning("כתוב משהו לפני השליחה!")
+            else:
+                st.session_state.reviews.insert(0, {
+                    "name": fb_name if fb_name.strip() else "אנונימי",
+                    "grade": fb_grade,
+                    "rating": fb_rating,
+                    "text": fb_text
+                })
+                st.success("תודה על חוות הדעת! המשוב שלך נוסף בהצלחה.")
+                st.balloons()
+
+    st.markdown("---")
+    st.subheader("💬 מה שתלמידים אומרים על The Dan Method:")
+    
+    for r in st.session_state.reviews:
+        stars = "⭐" * r["rating"]
+        st.markdown(f"""
+            <div class="review-card">
+                <b>{r['name']}</b> ({r['grade']}) — {stars}<br>
+                <span>{r['text']}</span>
+            </div>
+        """, unsafe_allow_html=True)
