@@ -3,6 +3,7 @@ from google import genai
 from PIL import Image
 import json
 import re
+import time
 
 st.set_page_config(
     page_title="The Dan Method: Study AI",
@@ -58,12 +59,7 @@ st.markdown("""
         border-radius: 14px;
         padding: 22px;
         height: 100%;
-        transition: transform 0.2s ease, border-color 0.2s ease;
         text-align: right;
-    }
-    .feature-card:hover {
-        transform: translateY(-4px);
-        border-color: #6366f1;
     }
     .vs-box-bad {
         background: #2d1517;
@@ -153,6 +149,23 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
+# פונקציית קריאה עמידה עם Fallback ו-Retry לעקיפת שגיאות 503
+def generate_ai(contents, system_instruction=None):
+    models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash"]
+    last_err = None
+    
+    for model_name in models_to_try:
+        for attempt in range(2):
+            try:
+                kwargs = {"model": model_name, "contents": contents}
+                if system_instruction:
+                    kwargs["config"] = {"system_instruction": system_instruction}
+                return client.models.generate_content(**kwargs)
+            except Exception as e:
+                last_err = e
+                time.sleep(1)
+    raise last_err
+
 def extract_json(text):
     text = re.sub(r"^```json\s*", "", text.strip(), flags=re.MULTILINE)
     text = re.sub(r"^```\s*", "", text.strip(), flags=re.MULTILINE)
@@ -216,7 +229,7 @@ with st.sidebar:
     
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
-    st.caption("The Dan Method v8.0 Official")
+    st.caption("The Dan Method v8.1 Ultra-Stable")
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
@@ -301,7 +314,7 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
         """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.info("👈 **איך מתחילים?** בחר את הכיתה והמגמה שלך בסרגל הצד (Sidebar), עבור לחדר הרצוי ותתחיל להפציץ בציונים!")
+    st.info("👈 **איך מתחילים?** בחר את הכיתה והמגמה בסרגל הצד (Sidebar), עבור לחדר הרצוי ותתחיל ללמוד!")
 
 # ----------------- חדר 1: מחולל מבחני דמה -----------------
 elif room == "📝 מחולל מבחני דמה (Mock Exam)":
@@ -348,10 +361,7 @@ elif room == "📝 מחולל מבחני דמה (Mock Exam)":
                 )
                 with st.spinner("המחשב מרכיב את מבחן הדמה שלך..."):
                     try:
-                        res = client.models.generate_content(
-                            model="gemini-3.8-flash",
-                            contents=prompt_gen
-                        )
+                        res = generate_ai(prompt_gen)
                         st.session_state.mock_exam_data = extract_json(res.text)
                         st.session_state.exam_submitted = False
                         st.success("מבחן הדמה מוכן! פתור את השאלות למטה.")
@@ -411,7 +421,7 @@ elif room == "📝 מחולל מבחני דמה (Mock Exam)":
                         "2. פירוט עבור כל שאלה: כמה נקודות קיבל, מה היה נכון, מה היה שגוי, ואיך מנסחים תשובת 100 מושלמת לפי מחוון.\n"
                         "3. טיפ זהב אחד להצלחה במבחן האמיתי."
                     )
-                    res_feedback = client.models.generate_content(model="gemini-3.8-flash", contents=prompt_grade)
+                    res_feedback = generate_ai(prompt_grade)
                     st.markdown("""
                         <div class="score-card">
                             <h2 style="color: #38bdf8; margin: 0;">🎉 תוצאות מבחן הדמה שלך</h2>
@@ -442,7 +452,7 @@ elif room == "🎬 ספריית וידאו ושיעורים ענקית":
         "מתמטיקה: גאומטריה ופיתגורס": {
             "משפט פיתגורס - בסיס וחישוב צלעות": "https://www.youtube.com/watch?v=xAgLlIAum3c",
             "משפט תאלס והרחבותיו": "https://www.youtube.com/watch?v=sI3q6Q_Hk84",
-            "טריגונומטריה במשולש ישר זווית (Sin, Cos, Tan)": "https://www.youtube.com/watch?v=aa7bC_rFq4c"
+            "טריגונומטריה במשולש ישר זווית (Sin, Cos, Tan)": "https://www.youtube.com/watch?aa7bC_rFq4c"
         },
         "מתמטיקה: אלגברה וחדו\"א": {
             "משוואות ממעלה ראשונה עם סוגריים ושברים": "https://www.youtube.com/watch?v=lj6ONyl932A",
@@ -490,7 +500,7 @@ elif room == "🎬 ספריית וידאו ושיעורים ענקית":
         if st.button("סכם לי את עיקרי הנושא בבולטים ⚡", use_container_width=True):
             prompt = f"סכם ב-4 בולטים ברורים את הנושא: {chosen_video_title} עבור תלמיד ב-{chosen_grade} במגמת {chosen_major}. {anti_yap_rule}"
             with st.spinner("מחלץ סיכום..."):
-                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                res = generate_ai(prompt)
                 st.markdown(res.text)
 
 # ----------------- חדר 3: חיבור לבית ספר וספרים -----------------
@@ -523,7 +533,7 @@ elif room == "🏫 חיבור ל-Classroom וספרי לימוד":
                 f"{anti_yap_rule}"
             )
             with st.spinner("מנתח מטלה..."):
-                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                res = generate_ai(prompt)
                 st.markdown(res.text)
 
 # ----------------- חדר 4: דפי תרגול להדפסה -----------------
@@ -554,7 +564,7 @@ elif room == "🖨️ דפי תרגול ומבחנים להדפסה":
                 + ("3. בסוף הדף: מחוון תשובות מלא ומדויק לבדיקה עצמית.\n" if include_answers else "")
             )
             with st.spinner("מייצר דף עבודה..."):
-                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                res = generate_ai(prompt)
                 st.session_state["printable_sheet"] = res.text
 
     if "printable_sheet" in st.session_state:
@@ -584,7 +594,7 @@ elif room == "📸 סורק תמונות ומבחנים":
             else:
                 with st.spinner("מפענח..."):
                     prompt = f"התלמיד ב-{student_context}. החומר: {photo_topic}. הנחיה: {action}. {anti_yap_rule}"
-                    res = client.models.generate_content(model="gemini-3.8-flash", contents=[prompt, img])
+                    res = generate_ai([prompt, img])
                     st.success("הפתרון לתמונה:")
                     st.markdown(res.text)
 
@@ -606,7 +616,7 @@ elif room == "💯 מלטשת תשובות למאיות":
                 f"{anti_yap_rule}"
             )
             with st.spinner("מנתח לפי מחוון..."):
-                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                res = generate_ai(prompt)
                 st.markdown(res.text)
 
 # ----------------- חדר 7: מעבדת מתמטיקה -----------------
@@ -626,7 +636,7 @@ elif room == "📐 מעבדת מתמטיקה ומדעים":
                 f"{anti_yap_rule}"
             )
             with st.spinner(f"פותר לפי רמת {math_units}..."):
-                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                res = generate_ai(prompt)
                 st.markdown(res.text)
 
 # ----------------- חדר 8: שליף חירום -----------------
@@ -644,7 +654,7 @@ elif room == "🚨 שליף חירום (לפני מבחן)":
                 f"{anti_yap_rule}"
             )
             with st.spinner("מחלץ שליף..."):
-                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                res = generate_ai(prompt)
                 st.markdown(f'<div class="cheat-card">{res.text}</div>', unsafe_allow_html=True)
 
 # ----------------- חדר 9: מתכנן לו״ז -----------------
@@ -668,7 +678,7 @@ elif room == "📅 מתכנן לו״ז למבחן":
                 "חלק את המשימות לפי ימים עם זמני מנוחה ותרגול."
             )
             with st.spinner("מתכנן לו״ז..."):
-                res = client.models.generate_content(model="gemini-3.8-flash", contents=prompt)
+                res = generate_ai(prompt)
                 st.markdown(res.text)
 
 # ----------------- חדר 10: חוות דעת -----------------
