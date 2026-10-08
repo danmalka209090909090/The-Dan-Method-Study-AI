@@ -149,10 +149,9 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-# פונקציית קריאה עמידה עם שמות מודלים תקניים ו-Retry
+# פונקציית קריאה עמידה עם המודלים שגוגל דורשים
 def generate_ai(contents):
-    # שמות מודלים מאומתים שנתמכים ב-100% ב-Google GenAI API
-    models_to_try = ["gemini-2.0-flash", "gemini-2.0-flash-lite"]
+    models_to_try = ["gemini-3.5-flash-lite", "gemini-3.8-flash"]
     last_err = None
     
     for model_name in models_to_try:
@@ -230,7 +229,7 @@ with st.sidebar:
     
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
-    st.caption("The Dan Method v8.2 Production")
+    st.caption("The Dan Method v8.3 Verified")
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
