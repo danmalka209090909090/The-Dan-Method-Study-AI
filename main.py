@@ -9,33 +9,21 @@ import time
 import urllib.parse
 
 st.set_page_config(
-    page_title="The Dan Method",
+    page_title="The Dan Method: Study AI",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# עיצוב Dark Mode מודרני, נקי ויוקרתי (RTL)
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap');
-    
-    html, body, [class*="css"], .stApp {
-        font-family: 'Heebo', -apple-system, sans-serif !important;
+    .stApp {
         direction: rtl;
         text-align: right;
     }
-    
-    .stApp {
-        background-color: #0b0f17;
-        color: #f1f5f9;
+    div[data-testid="stExpander"] {
+        text-align: right;
     }
-    
-    [data-testid="stSidebar"] {
-        background-color: #111827 !important;
-        border-left: 1px solid #1f2937;
-    }
-    
     div[data-testid="stSlider"] {
         direction: ltr !important;
     }
@@ -43,132 +31,161 @@ st.markdown("""
         direction: rtl !important;
         text-align: right !important;
     }
-    
     .bsd-text {
-        color: #64748b;
-        font-size: 0.85rem;
+        color: #94a3b8;
+        font-size: 0.95rem;
         font-weight: 700;
         letter-spacing: 1px;
         margin-bottom: 8px;
     }
-    
-    .hero-card {
-        background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+    .hero-container {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+        border: 1px solid #4338ca;
         border-radius: 20px;
-        padding: 32px 28px;
-        backdrop-filter: blur(12px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        margin-bottom: 24px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
+        margin-bottom: 30px;
     }
-    
-    .hero-card h1 {
-        font-size: 2.5rem;
+    .hero-title {
+        font-size: 3rem;
         font-weight: 900;
-        letter-spacing: -0.5px;
-        color: #ffffff;
-        margin-bottom: 8px;
+        background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
     }
-    
-    .hero-card p {
-        font-size: 1.15rem;
-        color: #94a3b8;
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: #cbd5e1;
+        max-width: 800px;
+        margin: 0 auto 20px auto;
         line-height: 1.6;
-        margin: 0;
     }
-    
-    .feature-tile {
-        background: #111827;
-        border: 1px solid #1f2937;
-        border-radius: 16px;
-        padding: 20px;
-        height: 100%;
-        transition: transform 0.15s ease, border-color 0.15s ease;
-    }
-    .feature-tile:hover {
-        transform: translateY(-2px);
-        border-color: #38bdf8;
-    }
-    
-    .feature-title {
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: #38bdf8;
-        margin-bottom: 6px;
-    }
-    
-    .feature-desc {
-        color: #94a3b8;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        margin: 0;
-    }
-    
-    .zoom-video-card {
-        background: #111827;
-        border: 1px solid #1f2937;
-        border-radius: 16px;
+    .zoom-frame {
+        background: #0b0f19;
+        border: 2px solid #38bdf8;
+        border-radius: 20px;
         padding: 16px;
         text-align: center;
+        box-shadow: 0 12px 35px -8px rgba(56, 189, 248, 0.35);
+        margin-bottom: 20px;
+        color: white;
     }
-    
-    .video-viewport {
+    .teacher-video-container {
+        position: relative;
         width: 100%;
-        height: 240px;
-        border-radius: 12px;
+        height: 250px;
+        border-radius: 14px;
         overflow: hidden;
-        background: #000;
+        border: 2px solid #1e293b;
         margin-bottom: 12px;
-        border: 1px solid #1f2937;
+        background: #000;
     }
-    
-    .video-viewport video {
+    .teacher-video {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        display: block;
     }
-    
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid rgba(16, 185, 129, 0.25);
+    .zoom-status-pill {
+        display: inline-block;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid #10b981;
         color: #34d399;
         font-size: 0.85rem;
-        font-weight: 700;
-        padding: 4px 12px;
+        font-weight: bold;
+        padding: 4px 14px;
         border-radius: 20px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
-    
-    .cheat-box {
-        background: rgba(245, 158, 11, 0.08);
-        border: 1px solid rgba(245, 158, 11, 0.25);
-        border-radius: 14px;
-        padding: 20px;
-        color: #fbbf24;
-        margin-top: 14px;
+    .zoom-controls {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
     }
-    
-    .portal-pill {
-        display: inline-block;
-        padding: 8px 16px;
-        background: #1f2937;
-        color: #e2e8f0 !important;
-        border: 1px solid #374151;
-        border-radius: 10px;
-        text-decoration: none;
+    .zoom-btn {
+        background: #1e293b;
+        border: 1px solid #475569;
+        color: #e2e8f0;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
         font-weight: 600;
+    }
+    .voice-box {
+        background: #0f172a;
+        border: 1px solid #3b82f6;
+        border-radius: 14px;
+        padding: 16px;
+        margin-top: 14px;
+        text-align: center;
+    }
+    .feature-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 14px;
+        padding: 22px;
+        height: 100%;
+        text-align: right;
+    }
+    .vs-box-bad {
+        background: #2d1517;
+        border: 1px solid #7f1d1d;
+        border-radius: 12px;
+        padding: 20px;
+        color: #fecaca;
+    }
+    .vs-box-good {
+        background: #062b1e;
+        border: 1px solid #065f46;
+        border-radius: 12px;
+        padding: 20px;
+        color: #a7f3d0;
+    }
+    .exam-card {
+        background: #1e293b;
+        border: 1px solid #475569;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+        color: white;
+    }
+    .score-card {
+        background: linear-gradient(135deg, #1e1b4b, #312e81);
+        border: 2px solid #818cf8;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .cheat-card {
+        background: #1e1b4b;
+        border: 1px solid #6366f1;
+        padding: 16px;
+        border-radius: 10px;
+        color: #e0e7ff;
+        margin-top: 10px;
+    }
+    .review-card {
+        background: #0f172a;
+        border: 1px solid #334155;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+    }
+    .portal-link {
+        display: inline-block;
+        padding: 10px 18px;
+        background-color: #2563eb;
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
         margin-left: 8px;
         margin-bottom: 8px;
-        transition: all 0.15s ease;
     }
-    .portal-pill:hover {
-        background: #374151;
-        color: #ffffff !important;
-    }
-    
     @media print {
         header, footer, nav, [data-testid="stSidebar"], .stButton {
             display: none !important;
@@ -183,8 +200,8 @@ st.markdown("""
 
 if "reviews" not in st.session_state:
     st.session_state.reviews = [
-        {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום סגר לי את החומר לפני המבחן בהיסטוריה."},
-        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "עיצוב טיל וסופר נוח לעבודה."},
+        {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום הציל אותי לפני מבחן בהיסטוריה!"},
+        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "השיעור בזום עם המורה עובד מעולה."},
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה מסביר לפי מחוון בגרות בדיוק כמו שצריך."}
     ]
 
@@ -199,7 +216,7 @@ if "last_voice_reply" not in st.session_state:
 
 api_key = st.secrets.get("GEMINI_API_KEY", "")
 if not api_key:
-    st.error("⚠️ מפתח GEMINI_API_KEY אינו מוגדר ב-Secrets של Streamlit.")
+    st.error("⚠️ מפתח GEMINI_API_KEY לא מוגדר ב-Secrets של Streamlit.")
     st.stop()
 
 client = genai.Client(api_key=api_key)
@@ -230,11 +247,11 @@ def get_tts_audio_url(text):
 
 with st.sidebar:
     st.markdown('<div class="bsd-text">בס״ד</div>', unsafe_allow_html=True)
-    st.title("The Dan Method ⚡")
-    st.caption("פלטפורמת למידה ממוקדת מחוון")
+    st.title("⚡ The Dan Method")
+    st.caption("פלטפורמת הלימוד והמאיות של ישראל")
     st.markdown("---")
     
-    st.subheader("פרופיל תלמיד")
+    st.subheader("🎓 1. פרטי לימוד ומגמה:")
     chosen_grade = st.selectbox(
         "שכבת לימוד:",
         ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב (בגרות)"],
@@ -244,13 +261,13 @@ with st.sidebar:
     if chosen_grade in ["כיתה ז'", "כיתה ח'", "כיתה ט'"]:
         math_units = st.selectbox("מתמטיקה:", ["הקבצה א' / מצוינות", "הקבצה ב'", "רמה רגילה"])
         eng_units = st.selectbox("אנגלית:", ["הקבצה א' / דוברי אנגלית", "הקבצה ב'", "רמה רגילה"])
-        chosen_major = st.selectbox("מסלול:", [
-            "ללא מגמה (מקצועות ליבה)", "מדעי המחשב / סייבר", "מדעים / ביולוגיה", "אמנות ועיצוב", "קולנוע ותקשורת"
+        chosen_major = st.selectbox("מגמה / תחום עניין:", [
+            "ללא מגמה (מקצועות ליבה)", "מדעי המחשב / סייבר", "מדעים מוגבר / ביולוגיה", "אמנות ועיצוב", "קולנוע ותקשורת"
         ])
     else:
-        math_units = st.selectbox("מתמטיקה:", ["5 יחידות", "4 יחידות", "3 יחידות"])
-        eng_units = st.selectbox("אנגלית:", ["5 יחידות / דוברי אנגלית", "4 יחידות (Module E)", "3 יחידות"])
-        chosen_major = st.selectbox("מגמה בתיכון:", [
+        math_units = st.selectbox("מתמטיקה (יחידות לימוד):", ["5 יחידות", "4 יחידות", "3 יחידות"])
+        eng_units = st.selectbox("אנגלית (יחידות לימוד):", ["5 יחידות / דוברי אנגלית", "4 יחידות (Module E)", "3 יחידות"])
+        chosen_major = st.selectbox("בחר את המגמה שלך בבית הספר:", [
             "ללא מגמה (מקצועות ליבה בלבד)",
             "מדעי המחשב / הנדסת תוכנה",
             "פיזיקה",
@@ -264,115 +281,163 @@ with st.sidebar:
         ])
     
     st.markdown("---")
-    st.subheader("ניווט")
+    st.subheader("🚪 2. מעבר חדרים:")
     room = st.radio(
-        "בחר כלי:",
+        "בחר חדר:",
         [
-            "דף הבית",
-            "שיעור וידאו פרטי (Zoom)",
-            "סורק תרגילים ודפי עבודה",
-            "מבחני דמה (Mock Exam)",
-            "ספריית שיעורים מוקלטים",
-            "חיבור ל-Classroom וספרים",
-            "דפי תרגול להדפסה",
-            "מלטשת תשובות למחוון 100",
-            "פירוק מתמטיקה ומדעים",
-            "שליף חירום למבחן",
-            "מתכנן לוח זמנים",
-            "משוב והצעות"
+            "🏠 מסך פתיחה (ברוכים הבאים)",
+            "📹 שיעור וידאו חי בזום (Live Video)",
+            "📸 סורק תמונות ושיעורי בית",
+            "📝 מחולל מבחני דמה (Mock Exam)",
+            "🎬 ספריית וידאו ושיעורים ענקית",
+            "🏫 חיבור ל-Classroom וספרי לימוד",
+            "🖨️ דפי תרגול ומבחנים להדפסה",
+            "💯 מלטשת תשובות למאיות",
+            "📐 מעבדת מתמטיקה ומדעים",
+            "🚨 שליף חירום (לפני מבחן)",
+            "📅 מתכנן לו״ז למבחן",
+            "⭐ חוות דעת והצעות"
         ]
     )
     
     st.markdown("---")
-    no_yap = st.toggle("מצב תכל'ס (מענה חד ולעניין)", value=True)
+    no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
+    st.caption("The Dan Method v10.0 Real-Teacher")
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
 
-# ----------------- 0. דף הבית -----------------
-if room == "דף הבית":
+# ----------------- חדר 0: מסך פתיחה -----------------
+if room == "🏠 מסך פתיחה (ברוכים הבאים)":
     st.markdown('<div class="bsd-text">בס״ד</div>', unsafe_allow_html=True)
     st.markdown("""
-        <div class="hero-card">
-            <h1>The Dan Method ⚡</h1>
-            <p>
-                הסוף לחפירות ולסיכומים מייגעים. 
-                פתרונות שלב אחרי שלב, התאמה מלאה לרמת הלימוד והיחידות שלך, ודיוק מושלם למחווני הבדיקה של משרד החינוך.
+        <div class="hero-container">
+            <span style="background-color: #38bdf8; color: #0284c7; padding: 4px 14px; border-radius: 20px; font-weight: 800; font-size: 0.85rem; background: rgba(56, 189, 248, 0.15);">
+                🚀 הדור הבא של הלמידה בישראל
+            </span>
+            <h1 class="hero-title">The Dan Method: Study AI</h1>
+            <p class="hero-subtitle">
+                הפלטפורמה הראשונה שנבנתה במיוחד עבור תלמידי ישראל (ז' עד י"ב ובגרות).
+                <br>שיעורי וידאו בזום מול מורה פרטית, פירוק מבחנים ושליפים של 60 שניות.
             </p>
         </div>
     """, unsafe_allow_html=True)
 
-    c1, c2, c3 = st.columns(3)
-    with c1:
+    st.subheader("🔥 למה דווקא איתנו? (The Dan Method מול בינה מלאכותית רגילה)")
+    col_comp1, col_comp2 = st.columns(2)
+    with col_comp1:
         st.markdown("""
-            <div class="feature-tile">
-                <div class="feature-title">📹 שיעור וידאו אישי</div>
-                <p class="feature-desc">שיחה חיה עם המורה מיה להסבר ממוקד של כל סעיף או תרגיל.</p>
-            </div>
-        """, unsafe_allow_html=True)
-    with c2:
-        st.markdown("""
-            <div class="feature-tile">
-                <div class="feature-title">📝 מבחני דמה מדויקים</div>
-                <p class="feature-desc">הערכה מלאה של רמת הידע עם בדיקה לפי מחוון, ניקוד ומשוב.</p>
-            </div>
-        """, unsafe_allow_html=True)
-    with c3:
-        st.markdown("""
-            <div class="feature-tile">
-                <div class="feature-title">📐 פירוק מתמטיקה</div>
-                <p class="feature-desc">הצגת כל שלבי החישוב עם נימוק מתמטי קצר ברמת היחידות שלך.</p>
+            <div class="vs-box-bad">
+                <h3 style="margin-top:0;">❌ כשמשתמשים ב-ChatGPT / AI רגיל</h3>
+                <ul>
+                    <li><b>חופר בטירוף:</b> פסקאות מבוא וסיום מיותרות כשכל מה שרצית זה תשובה קצרה למבחן.</li>
+                    <li><b>לא מבין בגרות:</b> לא מכיר מחווני בדיקה, יחידות לימוד (3, 4, 5), או שאלות בגרות בישראל.</li>
+                    <li><b>שפה מנותקת:</b> עונה כמו ויקיפדיה מתורגמת ולא כמו שתלמיד צריך לענות.</li>
+                    <li><b>אין וידאו חי:</b> רק צ'אט יבש ללא תחושת שיעור פרטי אמיתי.</li>
+                </ul>
             </div>
         """, unsafe_allow_html=True)
 
-# ----------------- 1. שיעור וידאו פרטי -----------------
-elif room == "שיעור וידאו פרטי (Zoom)":
-    st.title("שיעור וידאו פרטי")
-    st.caption(f"מותאם עבור {chosen_grade} | {math_units} | {chosen_major}")
-    
-    col_cam, col_conv = st.columns([1.15, 1.85])
-    
-    with col_cam:
+    with col_comp2:
         st.markdown("""
-            <div class="zoom-video-card">
-                <div class="status-badge">● שידור חי פעיל</div>
-                <div class="video-viewport">
-                    <video autoplay loop muted playsinline>
+            <div class="vs-box-good">
+                <h3 style="margin-top:0;">⚡ כשמשתמשים ב-The Dan Method</h3>
+                <ul>
+                    <li><b>שיעור וידאו חי בזום:</b> רואים את המורה בווידאו מדברת, מנחה ומסבירה צעד אחרי צעד.</li>
+                    <li><b>תכל'ס נטו (Anti-Yap):</b> פילטר מובנה שמנקה בולשיט ומחזיר רק את מה שמביא נקודות.</li>
+                    <li><b>מותאם אישית לכיתה ולמגמה:</b> מתאים את התשובות בדיוק לרמה שלך (ז' עד י"ב).</li>
+                    <li><b>מחוון 100 ישראלי:</b> מלטש כל תשובה בדיוק לפי מה שהבוחן או המורה מחפשים בעין.</li>
+                </ul>
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.subheader("💎 עמודי התווך של השיטה:")
+    f1, f2, f3, f4 = st.columns(4)
+    with f1:
+        st.markdown("""
+            <div class="feature-card">
+                <h4 style="color:#38bdf8;">📹 שיעור וידאו חי</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">רואים את המורה מדברת בזמן אמת כמו בשיחת זום אמיתית אחד על אחד.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with f2:
+        st.markdown("""
+            <div class="feature-card">
+                <h4 style="color:#818cf8;">📝 מבחני דמה אמיתיים</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">סימולציית בחינה עם בדיקה אוטומטית לפי מחוון וציון מתוך 100.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with f3:
+        st.markdown("""
+            <div class="feature-card">
+                <h4 style="color:#34d399;">📐 פירוק מתמטיקה</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">פתרונות צעד-אחר-צעד עם נימוק מתמטי מלא לכל שלב ברמת היחידות שלך.</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with f4:
+        st.markdown("""
+            <div class="feature-card">
+                <h4 style="color:#f472b6;">🚨 שליפי חירום 60 שנ'</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">דקה לפני המבחן? קבל את 3 משפטי הברזל, מילת החובה והטעות הנפוצה.</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+# ----------------- חדר 1: שיעור וידאו חי בזום -----------------
+elif room == "📹 שיעור וידאו חי בזום (Live Video)":
+    st.title("📹 שיעור וידאו חי בזום (Live Zoom Studio)")
+    st.write(f"שיעור פרטי 1-על-1 בווידאו מותאם לרמת **{chosen_grade}** ({math_units} / {eng_units} / {chosen_major}):")
+    
+    col_z_cam, col_z_chat = st.columns([1.15, 1.85])
+    
+    with col_z_cam:
+        # וידאו אמיתי ומקצועי של מורה אישה בשיחת וידאו
+        st.markdown("""
+            <div class="zoom-frame">
+                <div class="zoom-status-pill">● שיחת וידאו פעילה (Live Video)</div>
+                <div class="teacher-video-container">
+                    <video class="teacher-video" autoplay loop muted playsinline>
                         <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
                     </video>
                 </div>
-                <h3 style="margin: 0; color: #ffffff; font-size: 1.25rem; font-weight: 800;">המורה מיה</h3>
-                <p style="color: #64748b; font-size: 0.9rem; margin: 4px 0 0 0;">הוראה מותאמת אישית</p>
+                <h3 style="margin: 0; color: #38bdf8; font-weight: 800;">המורה מיה (Dan AI)</h3>
+                <p style="color: #cbd5e1; font-size: 0.9rem; margin: 4px 0;">מורה פרטית אישית בווידאו</p>
+                <div class="zoom-controls">
+                    <span class="zoom-btn">🎙️ שמע פעיל</span>
+                    <span class="zoom-btn">📹 מצלמה פועלת</span>
+                    <span class="zoom-btn">🖥️ שיתוף מסך</span>
+                </div>
             </div>
         """, unsafe_allow_html=True)
         
         if st.session_state.last_voice_reply:
-            st.markdown("<br><b>השמעת מענה קולי:</b>", unsafe_allow_html=True)
+            st.markdown("**🔊 קול המורה מיה (האזן להסבר):**")
             audio_url = get_tts_audio_url(st.session_state.last_voice_reply)
             st.audio(audio_url, format="audio/mp3", autoplay=True)
-            
-        st.markdown("<br>", unsafe_allow_html=True)
-        z_subject = st.selectbox("מקצוע השיעור:", [
+        
+        st.subheader("⚙️ הגדרות השיעור")
+        z_subject = st.selectbox("בחר מקצוע לשיעור:", [
             "מתמטיקה", "אנגלית", chosen_major, "היסטוריה", "אזרחות", "תנ\"ך", "לשון והבעה", "ביולוגיה", "פיזיקה", "מדעי המחשב"
         ])
-        z_goal = st.radio("מטרת המפגש:", [
-            "הסבר נושא חדש מהבסיס",
-            "פתרון שיעורי בית יחד",
-            "הכנה למבחן קרוב"
+        z_goal = st.radio("מה מטרת השיעור עכשיו?", [
+            "הסבר מאפס על נושא חדש שלא הבנתי בכיתה",
+            "לפתור ביחד תרגיל או שיעורי בית שלב אחרי שלב",
+            "הכנה דחופה לקראת מבחן או בוחן פתע"
         ])
         
-        if st.button("איפוס שיחה", use_container_width=True):
+        if st.button("🧹 התחל שיעור חדש / נקה לוח", use_container_width=True):
             st.session_state.zoom_chat_history = []
             st.session_state.last_voice_reply = None
             st.rerun()
 
-    with col_conv:
-        st.subheader(f"מהלך השיעור: {z_subject}")
+    with col_z_chat:
+        st.subheader(f"💬 שיחת הווידאו: {z_subject}")
+        st.caption("דבר עם המורה במיקרופון או כתוב לה, והיא תסביר לך ישירות בווידאו ובקול.")
         
         chat_box = st.container(height=360)
         with chat_box:
             if not st.session_state.zoom_chat_history:
-                st.write(f"👋 **המורה מיה:** היי! אני כאן בשיעור {z_subject}. תגיד לי איזה נושא או תרגיל נרצה לפרק עכשיו?")
+                st.info(f"👋 **המורה מיה:** 'היי! אני איתך כאן בווידאו בשיעור {z_subject}. דבר איתי במיקרופון או כתוב לי מה לא ישב לך טוב בחומר, ונתחיל לפתור!'")
             else:
                 for m in st.session_state.zoom_chat_history:
                     if m["role"] == "user":
@@ -382,160 +447,170 @@ elif room == "שיעור וידאו פרטי (Zoom)":
                         with st.chat_message("assistant"):
                             st.write(m["content"])
 
-        st.caption("דיבור במיקרופון:")
-        audio_prompt = st.audio_input("הקלטה קולית:")
+        st.markdown('<div class="voice-box"><b>🎙️ דבר במיקרופון למורה בווידאו:</b>', unsafe_allow_html=True)
+        audio_prompt = st.audio_input("לחץ על המיקרופון ודבר ישירות למורה:")
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if audio_prompt is not None:
-            with st.spinner("מעבד הקלטה ומכין תשובה..."):
+            with st.spinner("המורה מיה מקשיבה ומכינה תשובה..."):
                 try:
                     audio_bytes = audio_prompt.read()
                     prompt_audio = (
-                        f"את המורה מיה, מורה פרטית ישראלית מקצועית וסבלנית בשיעור עם תלמיד ב-{student_context}.\n"
+                        f"את המורה מיה, מורה פרטית ישראלית מקצועית, סבלנית וחמה בשיחת וידאו עם תלמיד ב-{student_context}.\n"
                         f"מקצוע: {z_subject}. מטרה: {z_goal}.\n"
-                        "הקשיבי להקלטה:\n"
-                        "1. עני ישירות בקצרה ובפשטות בגובה העיניים (עד 3 משפטים).\n"
-                        "2. סיימי בשאלה קצרה כדי לוודא הבנה.\n"
+                        "הקשיבי לשאלת התלמיד בהקלטה:\n"
+                        "1. עני ישירות בקצרה ובפשטות בגובה העיניים (עד 3 משפטים ממוקדים).\n"
+                        "2. סיימי בשאלה קצרה כדי לבדוק שהתלמיד הבין.\n"
                         f"{anti_yap_rule}"
                     )
                     res_voice = generate_ai([prompt_audio, {"mime_type": "audio/wav", "data": audio_bytes}])
                     reply_text = res_voice.text
                     
-                    st.session_state.zoom_chat_history.append({"role": "user", "content": "🎙️ [שאלה קולית]"})
+                    st.session_state.zoom_chat_history.append({"role": "user", "content": "🎙️ [שאלה קולית הושמעה בשיעור]"})
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": reply_text})
                     st.session_state.last_voice_reply = reply_text
                     st.rerun()
                 except Exception as e:
-                    st.error(f"שגיאה: {e}")
+                    st.error(f"שגיאה בעיבוד הקול: {e}")
 
-        text_spoken = st.chat_input("או כתיבת שאלה כאן...")
+        text_spoken = st.chat_input("או כתוב כאן למורה מיה...")
         if text_spoken:
             st.session_state.zoom_chat_history.append({"role": "user", "content": text_spoken})
+            
             history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.zoom_chat_history[-6:]])
             zoom_prompt = (
-                f"את המורה מיה בשיעור עם תלמיד.\n"
+                f"את המורה מיה, מורה פרטית ישראלית מקצועית, סבלנית וחמה בשיחת וידאו בזום עם תלמיד.\n"
                 f"פרטי התלמיד: {student_context}.\n"
-                f"מקצוע: {z_subject}. מטרה: {z_goal}.\n\n"
-                "1. דברי בלשון נקבה על עצמך, טבעי ומעודד.\n"
-                "2. עני בקצרה (2-3 משפטים) בלי לחפור.\n"
-                "3. סיימי בשאלה קצרה לבדיקת הבנה.\n"
+                f"מקצוע השיעור: {z_subject}. מטרת השיעור: {z_goal}.\n\n"
+                "הנחיות שיחה חיה:\n"
+                "1. דברי בלשון נקבה על עצמך ('אני איתך', 'בוא נראה', 'הסברתי').\n"
+                "2. דברי בגובה העיניים, מעודד וקצר (2-3 משפטים ממוקדים בכל פעם).\n"
+                "3. בסוף כל תשובה, שאלי שאלה קצרה כדי לוודא שהתלמיד עוקב אחרייך.\n"
                 f"{anti_yap_rule}\n\n"
-                f"היסטוריה:\n{history_text}\n\nשאלה: {text_spoken}"
+                f"היסטוריה:\n{history_text}\n\n"
+                f"מה שהתלמיד אמר: {text_spoken}"
             )
-            with st.spinner("מכינה מענה..."):
+            
+            with st.spinner("המורה מיה עונה ומדברת בווידאו..."):
                 try:
                     res_zoom = generate_ai(zoom_prompt)
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
                     st.session_state.last_voice_reply = res_zoom.text
                     st.rerun()
                 except Exception as e:
-                    st.error(f"שגיאה: {e}")
+                    st.error(f"שגיאה בתקשורת: {e}")
 
-# ----------------- 2. סורק תרגילים -----------------
-elif room == "סורק תרגילים ודפי עבודה":
-    st.title("סורק תרגילים ודפי עבודה")
-    st.caption("העלאת תמונה ממחברת, ספר לימוד או קישור ישיר.")
+# ----------------- חדר 2: סורק תמונות וקישורים -----------------
+elif room == "📸 סורק תמונות ושיעורי בית":
+    st.title("📸 סורק תמונות, דפי עבודה וקישורים")
+    st.write(f"העלה תמונה מהמכשיר או הדבק קישור ישיר לתמונה עבור **{chosen_grade}**:")
     
-    photo_topic = st.text_input("מה המקצוע או הנושא הנלמד?", placeholder="למשל: גיאומטריה, חוקי ניוטון, שאלות בגרות בתנ\"ך...")
-    input_method = st.radio("מקור התמונה:", ["העלאת קובץ", "קישור (URL)"], horizontal=True)
+    photo_topic = st.text_input("📚 1. מה החומר / המקצוע / המגמה?", placeholder="תרגיל בפיזיקה, מתמטיקה, קוד, צילום מספר הלימוד...")
+    input_method = st.radio("בחר כיצד להזין את התרגיל:", ["📁 העלאת קובץ מהמכשיר", "🔗 הדבקת קישור ישיר (URL) לתמונה"], horizontal=True)
     
     img_to_solve = None
-    if input_method == "העלאת קובץ":
-        file = st.file_uploader("בחר קובץ:", type=["png", "jpg", "jpeg"])
+    if input_method == "📁 העלאת קובץ מהמכשיר":
+        file = st.file_uploader("בחר קובץ תמונה (JPG/PNG):", type=["png", "jpg", "jpeg"])
         if file:
             try:
                 img_to_solve = Image.open(file)
-                st.image(img_to_solve, caption="התמונה שנבחרה", width=360)
+                st.image(img_to_solve, caption="התמונה שהועלתה מהמכשיר", width=360)
             except Exception as e:
-                st.error(f"שגיאה בפתיחת קובץ: {e}")
+                st.error(f"שגיאה בפתיחת התמונה: {e}")
     else:
-        url_input = st.text_input("כתובת הקישור:", placeholder="https://example.com/homework.jpg")
+        url_input = st.text_input("הדבק כאן את כתובת הקישור (URL) לתמונה:", placeholder="https://example.com/homework.jpg")
         if url_input.strip():
             try:
                 with st.spinner("טוען תמונה מהקישור..."):
                     response = requests.get(url_input.strip(), timeout=10)
                     response.raise_for_status()
                     img_to_solve = Image.open(BytesIO(response.content))
-                    st.image(img_to_solve, caption="תמונה מקישור", width=360)
+                    st.image(img_to_solve, caption="התמונה שנטענה מהקישור", width=360)
             except Exception as e:
-                st.error(f"לא ניתן לטעון תמונה: {e}")
+                st.error(f"לא ניתן לטעון את התמונה מהקישור: {e}")
 
-    action = st.text_input("הנחיה לביצוע:", value="פתור והסבר שלב אחרי שלב בצורה ברורה ומדויקת")
+    action = st.text_input("2. מה לבצע בתמונה?", value="פתור והסבר שלב אחרי שלב בצורה ברורה ומדויקת")
     
-    if st.button("פענח ופתור", use_container_width=True):
+    if st.button("פענח ופתור ⚡", use_container_width=True):
         if not photo_topic.strip():
-            st.warning("נא להזין מקצוע או נושא.")
+            st.warning("ציין קודם מה החומר או המקצוע בתמונה!")
         elif img_to_solve is None:
-            st.warning("נא לספק תמונה תחילה.")
+            st.warning("העלה תמונה או הדבק קישור תקין לתמונה לפני הלחיצה!")
         else:
-            with st.spinner("מנתח את התמונה ומחשב פתרון..."):
+            with st.spinner("מפענח את התמונה ופותר..."):
                 try:
                     prompt = f"התלמיד ב-{student_context}. החומר: {photo_topic}. הנחיה: {action}. {anti_yap_rule}"
                     res = generate_ai([prompt, img_to_solve])
-                    st.markdown("### פתרון:")
+                    st.success("הפתרון מוכן:")
                     st.markdown(res.text)
                 except Exception as e:
-                    st.error(f"שגיאה: {e}")
+                    st.error(f"שגיאה בפענוח: {e}")
 
-# ----------------- 3. מבחני דמה -----------------
-elif room == "מבחני דמה (Mock Exam)":
-    st.title("מבחני דמה (Mock Exam)")
-    st.caption("סימולציית בחינה אינטראקטיבית עם בדיקה אוטומטית לפי מחוון.")
+# ----------------- חדר 3: מחולל מבחני דמה -----------------
+elif room == "📝 מחולל מבחני דמה (Mock Exam)":
+    st.title("📝 מחולל מבחני דמה מלאים (Mock Exam)")
+    st.write(f"המחשב בונה לך סימולציית מבחן מותאמת אישית ל-**{chosen_grade}** ({math_units} / {chosen_major}).")
     
-    with st.expander("הגדרות מבחן", expanded=(st.session_state.mock_exam_data is None)):
+    with st.expander("⚙️ הגדרות מבחן הדמה", expanded=(st.session_state.mock_exam_data is None)):
         col_m1, col_m2 = st.columns(2)
         with col_m1:
-            exam_subject = st.selectbox("מקצוע:", [
+            exam_subject = st.selectbox("מקצוע המבחן:", [
                 "מתמטיקה", "היסטוריה", "אזרחות", "אנגלית", "תנ\"ך", "לשון והבעה", "ביולוגיה", "פיזיקה", "מדעי המחשב", chosen_major
             ])
-            exam_topic = st.text_input("הנושא הנלמד למבחן:", placeholder="למשל: סדרות חשבוניות, העלייה השנייה, חוקי הגנטיקה...")
+            exam_topic = st.text_input("📚 מה החומר / הנושא המדויק של המבחן?", placeholder="למשל: משוואות מעריכיות, העלייה השנייה, חוקי ניוטון...")
         with col_m2:
-            q_count = st.slider("כמות שאלות:", 2, 5, 3)
-            exam_level = st.select_slider("רמת קושי:", ["בסיסית", "רמת כיתה רגילה", "רמת בגרות מלאה"], value="רמת כיתה רגילה")
+            q_count = st.slider("מספר שאלות במבחן הדמה:", 2, 5, 3)
+            exam_level = st.select_slider("רמת קושי המבחן:", ["בסיסית / חזרה", "רמת מבחן כיתתי", "רמת בגרות / מחוון קשוח"], value="רמת מבחן כיתתי")
             
-        if st.button("בנה מבחן דמה", use_container_width=True):
+        if st.button("🔨 צור לי מבחן דמה עכשיו!", use_container_width=True):
             if not exam_topic.strip():
-                st.warning("נא להזין נושא למבחן.")
+                st.warning("חובה לציין את החומר הנלמד למבחן!")
             else:
                 prompt_gen = (
-                    f"אתה מורה שבונה מבחן דמה לתלמיד ב-{student_context}.\n"
-                    f"מקצוע: {exam_subject}, נושא: {exam_topic}, רמה: {exam_level}, שאלות: {q_count}.\n"
-                    "החזר אך ורק מערך JSON תקין (ללא markdown וללא הערות מסביב):\n"
+                    f"אתה מורה מקצועי שבונה מבחן דמה לתלמיד ב-{student_context}.\n"
+                    f"מקצוע: {exam_subject}, נושא: {exam_topic}, רמה: {exam_level}, מספר שאלות: {q_count}.\n"
+                    "בנה מבחן דמה והחזר אך ורק מערך JSON תקין בלי שום טקסט או הערות נוספות מסביב:\n"
                     "[\n"
                     "  {\n"
                     '    "id": 1,\n'
                     '    "type": "multiple_choice",\n'
-                    '    "question": "ניסוח שאלה אמריקאית",\n'
+                    '    "question": "ניסוח השאלה כאן",\n'
                     '    "points": 30,\n'
-                    '    "options": ["תשובה א", "תשובה ב", "תשובה ג", "תשובה ד"],\n'
-                    '    "correct_answer": "תשובה א",\n'
-                    '    "explanation": "הסבר לתשובה הנכונה"\n'
+                    '    "options": ["אפשרות א", "אפשרות ב", "אפשרות ג", "אפשרות ד"],\n'
+                    '    "correct_answer": "אפשרות א",\n'
+                    '    "explanation": "הסבר מפורט למה זו התשובה"\n'
                     "  },\n"
                     "  {\n"
                     '    "id": 2,\n'
                     '    "type": "open",\n'
                     '    "question": "ניסוח שאלה פתוחה",\n'
                     '    "points": 35,\n'
-                    '    "ideal_answer": "תשובה מלאה לפי מחוון"\n'
+                    '    "ideal_answer": "תשובה מושלמת לפי מחוון"\n'
                     "  }\n"
                     "]"
                 )
-                with st.spinner("בונה שאלות..."):
+                with st.spinner("המחשב מרכיב את מבחן הדמה שלך..."):
                     try:
                         res = generate_ai(prompt_gen)
                         st.session_state.mock_exam_data = extract_json(res.text)
                         st.session_state.exam_submitted = False
-                        st.success("המבחן מוכן לעבודה.")
+                        st.success("מבחן הדמה מוכן! פתור את השאלות למטה.")
                     except Exception as e:
-                        st.error(f"שגיאה: {e}")
+                        st.error(f"שגיאה ביצירת המבחן: {e}")
 
     if st.session_state.mock_exam_data:
         st.markdown("---")
-        st.subheader("שאלון המבחן:")
+        st.subheader("📋 טופס מבחן הדמה שלך:")
+        st.caption("ענה על השאלות, ובסיום לחץ על 'הגש לבדיקה וקבלת ציון'.")
         
         user_answers = {}
         for q in st.session_state.mock_exam_data:
-            st.markdown(f"**שאלה {q['id']} ({q.get('points', 25)} נקודות)**")
-            st.write(q['question'])
+            st.markdown(f"""
+                <div class="exam-card">
+                    <h4>שאלה {q['id']} ({q.get('points', 25)} נקודות)</h4>
+                    <p style="font-size: 1.1rem;">{q['question']}</p>
+                </div>
+            """, unsafe_allow_html=True)
             
             if q["type"] == "multiple_choice":
                 user_answers[q["id"]] = st.radio(
@@ -546,141 +621,147 @@ elif room == "מבחני דמה (Mock Exam)":
                 )
             else:
                 user_answers[q["id"]] = st.text_area(
-                    f"מענה לשאלה {q['id']}:",
+                    f"כתוב את תשובתך לשאלה {q['id']}:",
                     key=f"open_{q['id']}",
-                    height=90
+                    height=100
                 )
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.write("")
 
-        col_b1, col_b2 = st.columns([2, 1])
-        with col_b1:
-            if st.button("הגש לבדיקה וקבלת ציון", use_container_width=True):
+        col_sub1, col_sub2 = st.columns([2, 1])
+        with col_sub1:
+            if st.button("🏁 הגש את מבחן הדמה ובדוק לי ציון!", use_container_width=True):
                 st.session_state.exam_submitted = True
                 st.session_state.submitted_answers = user_answers
-        with col_b2:
-            if st.button("איפוס והתחלה מחדש", use_container_width=True):
+        with col_sub2:
+            if st.button("🔄 התחל מבחן חדש מאפס", use_container_width=True):
                 st.session_state.mock_exam_data = None
                 st.session_state.exam_submitted = False
                 st.rerun()
 
         if st.session_state.exam_submitted:
             st.markdown("---")
-            with st.spinner("מעריך את המבחן ומחשב ציון..."):
+            with st.spinner("הבוחן בודק את המבחן ומחשב ציון..."):
                 try:
                     prompt_grade = (
-                        f"אתה בוחן שמעריך מבחן דמה עבור תלמיד ב-{student_context}.\n"
-                        f"מבחן ומחוון:\n{json.dumps(st.session_state.mock_exam_data, ensure_ascii=False)}\n\n"
+                        f"אתה בוחן משרד החינוך שמעריך מבחן דמה עבור תלמיד ב-{student_context}.\n"
+                        f"טופס המבחן והמחוון:\n{json.dumps(st.session_state.mock_exam_data, ensure_ascii=False)}\n\n"
                         f"תשובות התלמיד:\n{json.dumps(st.session_state.submitted_answers, ensure_ascii=False)}\n\n"
-                        "החזר דוח ציונים מסודר בעברית:\n"
-                        "1. ציון סופי משוקלל (מתוך 100)\n"
-                        "2. פירוט עבור כל שאלה: מה היה נכון, על מה ירד ניקוד, ונוסח מלא של 100 לפי מחוון\n"
-                        "3. דגש עיקרי להצלחה במבחן"
+                        "החזר דוח ציונים מפורט בעברית הכולל:\n"
+                        "1. **ציון סופי משוקלל מתוך 100**\n"
+                        "2. פירוט עבור כל שאלה: כמה נקודות קיבל, מה היה נכון, מה היה שגוי, ואיך מנסחים תשובת 100 מושלמת לפי מחוון.\n"
+                        "3. טיפ זהב אחד להצלחה במבחן האמיתי."
                     )
                     res_feedback = generate_ai(prompt_grade)
-                    st.markdown("### דוח תוצאות וציון:")
+                    st.markdown("""
+                        <div class="score-card">
+                            <h2 style="color: #38bdf8; margin: 0;">🎉 תוצאות מבחן הדמה שלך</h2>
+                            <p style="color: #cbd5e1; margin: 4px 0;">דוח בדיקה מלא ומחוון ציונים:</p>
+                        </div>
+                    """, unsafe_allow_html=True)
                     st.markdown(res_feedback.text)
                 except Exception as e:
-                    st.error(f"שגיאה: {e}")
+                    st.error(f"שגיאה בבדיקת המבחן: {e}")
 
-# ----------------- 4. ספריית שיעורים -----------------
-elif room == "ספריית שיעורים מוקלטים":
-    st.title("ספריית שיעורים מוקלטים")
-    st.caption("סרטונים ממוקדים לפי נושאי לימוד.")
+# ----------------- חדר 4: ספריית וידאו עשירה -----------------
+elif room == "🎬 ספריית וידאו ושיעורים ענקית":
+    st.title("🎬 ספריית וידאו עשירה (ליבה + מגמות)")
+    st.write(f"שיעורים ממוקדים לצפייה ישירה עבור **{chosen_grade}**:")
     
-    category = st.selectbox("תחום לימוד:", [
+    category = st.selectbox("בחר מקצוע או מגמה:", [
         "מתמטיקה: גאומטריה ופיתגורס",
         "מתמטיקה: אלגברה וחדו\"א",
-        "אנגלית: זמנים ודקדוק",
-        "מדעי המחשב: יסודות תכנות",
-        "ביולוגיה ופיזיקה",
-        "מדעי החברה וכלכלה",
-        "קולנוע, צילום ואמנות",
-        "היסטוריה ואזרחות"
+        "אנגלית: זמנים ודקדוק (Grammar)",
+        "מגמת מדעי המחשב: יסודות תכנות ואלגוריתמיקה",
+        "מגמות מדעיות: ביולוגיה ופיזיקה",
+        "מגמות חברה ועסקים: פסיכולוגיה, סוציולוגיה, כלכלה וניהול",
+        "מגמות אמנותיות: קולנוע, צילום ואמנות",
+        "מקצועות הומניים: היסטוריה, אזרחות ולשון"
     ])
     
     video_db = {
         "מתמטיקה: גאומטריה ופיתגורס": {
-            "משפט פיתגורס - חישוב צלעות": "https://www.youtube.com/watch?v=xAgLlIAum3c",
-            "משפט תאלס": "https://www.youtube.com/watch?v=sI3q6Q_Hk84",
-            "טריגונומטריה במשולש ישר זווית": "https://www.youtube.com/watch?v=aa7bC_rFq4c"
+            "משפט פיתגורס - בסיס וחישוב צלעות": "https://www.youtube.com/watch?v=xAgLlIAum3c",
+            "משפט תאלס והרחבותיו": "https://www.youtube.com/watch?v=sI3q6Q_Hk84",
+            "טריגונומטריה במשולש ישר זווית (Sin, Cos, Tan)": "https://www.youtube.com/watch?v=aa7bC_rFq4c"
         },
         "מתמטיקה: אלגברה וחדו\"א": {
-            "משוואות ממעלה ראשונה": "https://www.youtube.com/watch?v=lj6ONyl932A",
-            "משוואה ריבועית ונוסחת שורשים": "https://www.youtube.com/watch?v=fghk_W4x_eM",
-            "חקירת פונקציות ונגזרות": "https://www.youtube.com/watch?v=5yflv3j7T30"
+            "משוואות ממעלה ראשונה עם סוגריים ושברים": "https://www.youtube.com/watch?v=lj6ONyl932A",
+            "משוואה ריבועית ונוסחת שורשים": "https://www.youtube.com/watch?fghk_W4x_eM",
+            "חקירת פונקציות ונגזרות (מבוא לחדו\"א)": "https://www.youtube.com/watch?v=5yflv3j7T30"
         },
-        "אנגלית: זמנים ודקדוק": {
-            "Present Simple vs Progressive": "https://www.youtube.com/watch?v=L9AWrJnhsRI",
-            "Past Simple & Continuous": "https://www.youtube.com/watch?v=0k53_u1N9Yk",
-            "כתיבת חיבור דעה (Opinion Essay)": "https://www.youtube.com/watch?v=7P_k3j_4X4w"
+        "אנגלית: זמנים ודקדוק (Grammar)": {
+            "זמנים בסיסיים: Present Simple vs Progressive": "https://www.youtube.com/watch?v=L9AWrJnhsRI",
+            "עבר פשוט ועבר ממושך (Past Simple & Continuous)": "https://www.youtube.com/watch?v=0k53_u1N9Yk",
+            "כתיבת חיבור דעה מושלם (Opinion Essay)": "https://www.youtube.com/watch?v=7P_k3j_4X4w"
         },
-        "מדעי המחשב: יסודות תכנות": {
-            "מבוא לתכנות ולולאות": "https://www.youtube.com/watch?v=kqtD5dpn9C8",
-            "מערכים ומחרוזות": "https://www.youtube.com/watch?v=xk4_1vDrzzo"
+        "מגמת מדעי המחשב: יסודות תכנות ואלגוריתמיקה": {
+            "מבוא לתכנות ולולאות (For / While)": "https://www.youtube.com/watch?v=kqtD5dpn9C8",
+            "מערכים ומחרוזות בקלות": "https://www.youtube.com/watch?v=xk4_1vDrzzo"
         },
-        "ביולוגיה ופיזיקה": {
-            "חוקי ניוטון": "https://www.youtube.com/watch?v=kKKM8Y-u7ds",
-            "מבנה התא ופוטוסינתזה": "https://www.youtube.com/watch?v=68_jtXv9k4c"
+        "מגמות מדעיות: ביולוגיה ופיזיקה": {
+            "שלושת חוקי ניוטון בפיזיקה": "https://www.youtube.com/watch?v=kKKM8Y-u7ds",
+            "מבנה התא, ממברנה ופוטוסינתזה (ביולוגיה)": "https://www.youtube.com/watch?v=68_jtXv9k4c"
         },
-        "מדעי החברה וכלכלה": {
-            "תיאוריית הצרכים של מאסלו": "https://www.youtube.com/watch?v=O-4ithG_07Q",
-            "ביקוש, היצע ושיווי משקל שוק": "https://www.youtube.com/watch?v=g9aDizJpd_s"
+        "מגמות חברה ועסקים: פסיכולוגיה, סוציולוגיה, כלכלה וניהול": {
+            "פסיכולוגיה: תיאוריית הצרכים של מאסלו": "https://www.youtube.com/watch?v=O-4ithG_07Q",
+            "כלכלה: ביקוש, היצע ושיווי משקל שוק": "https://www.youtube.com/watch?v=g9aDizJpd_s"
         },
-        "קולנוע, צילום ואמנות": {
-            "זוויות צילום ומשמעותן": "https://www.youtube.com/watch?v=7y90UqWIdvU",
-            "קומפוזיציה באמנות": "https://www.youtube.com/watch?v=sOvhb2k1l_8"
+        "מגמות אמנותיות: קולנוע, צילום ואמנות": {
+            "קולנוע וצילום: זוויות צילום ומשמעותן (Camera Angles)": "https://www.youtube.com/watch?v=7y90UqWIdvU",
+            "אמנות: שפת האמנות וקומפוזיציה": "https://www.youtube.com/watch?v=sOvhb2k1l_8"
         },
-        "היסטוריה ואזרחות": {
-            "הגורמים למלחמת העולם הראשונה": "https://www.youtube.com/watch?v=SLj5r2nZHB8",
-            "שלטון החוק וזכויות אדם": "https://www.youtube.com/watch?v=cMKe0k_k1Qk"
+        "מקצועות הומניים: היסטוריה, אזרחות ולשון": {
+            "היסטוריה: הגורמים למלחמת העולם הראשונה": "https://www.youtube.com/watch?v=SLj5r2nZHB8",
+            "אזרחות: שלטון החוק וזכויות אדם": "https://www.youtube.com/watch?v=cMKe0k_k1Qk"
         }
     }
     
     current_videos = video_db.get(category, {})
-    chosen_video_title = st.selectbox("בחר שיעור:", list(current_videos.keys()))
+    chosen_video_title = st.selectbox("בחר שיעור ספציפי:", list(current_videos.keys()))
     selected_url = current_videos[chosen_video_title]
     
-    col_v, col_n = st.columns([1.3, 0.7])
-    with col_v:
+    col_play, col_notes = st.columns([1.2, 0.8])
+    with col_play:
         st.video(selected_url)
-        st.markdown(f"[לצפייה ב-YouTube]({selected_url})")
-    with col_n:
-        st.subheader("סיכום הנושא")
-        if st.button("הפק סיכום מהיר", use_container_width=True):
-            prompt = f"סכם ב-4 בולטים ברורים את הנושא: {chosen_video_title} עבור תלמיד ב-{chosen_grade}. {anti_yap_rule}"
-            with st.spinner("מכין סיכום..."):
+        st.markdown(f"[🔗 לחץ כאן לצפייה ישירה ב-YouTube]({selected_url})")
+    with col_notes:
+        st.subheader("📝 סיכום מהיר של השיעור")
+        st.caption("רוצה נקודות ברזל על נושא הסרטון?")
+        if st.button("סכם לי את עיקרי הנושא בבולטים ⚡", use_container_width=True):
+            prompt = f"סכם ב-4 בולטים ברורים את הנושא: {chosen_video_title} עבור תלמיד ב-{chosen_grade} במגמת {chosen_major}. {anti_yap_rule}"
+            with st.spinner("מחלץ סיכום..."):
                 try:
                     res = generate_ai(prompt)
                     st.markdown(res.text)
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- 5. חיבור ל-Classroom -----------------
-elif room == "חיבור ל-Classroom וספרים":
-    st.title("חיבור ל-Classroom וספרי לימוד")
-    st.caption("גישה מהירה לפורטלים ופענוח מטלות.")
-    
+# ----------------- חדר 5: חיבור לבית ספר וספרים -----------------
+elif room == "🏫 חיבור ל-Classroom וספרי לימוד":
+    st.title("🏫 חיבור לבית הספר: Classroom & ספרי לימוד דיגיטליים")
+    st.write("גישה מהירה לפורטלים הלימודיים ומפענח מטלות חכם:")
     st.markdown("""
-        <div style="margin-bottom: 20px;">
-            <a class="portal-pill" href="https://classroom.google.com" target="_blank">Google Classroom</a>
-            <a class="portal-pill" href="https://www.classoos.com" target="_blank">Classoos (ספרי לימוד)</a>
-            <a class="portal-pill" href="https://my.education.gov.il" target="_blank">פורטל משרד החינוך</a>
+        <div>
+            <a class="portal-link" href="https://classroom.google.com" target="_blank">🌐 פתח Google Classroom</a>
+            <a class="portal-link" href="https://www.classoos.com" target="_blank">📖 פתח Classoos (ספרי לימוד)</a>
+            <a class="portal-link" href="https://my.education.gov.il" target="_blank">🏛️ פורטל משרד החינוך</a>
         </div>
     """, unsafe_allow_html=True)
+    st.markdown("---")
     
-    st.subheader("פירוק מטלה או שיעורי בית מהמורה")
-    teacher_post = st.text_area("הדבק כאן את נוסח ההודעה שפורסמה:", height=120)
+    st.subheader("📥 מפענח מטלות ושיעורי בית מהמורה")
+    teacher_post = st.text_area("הדבק כאן את נוסח המטלה / ההודעה מ-Classroom:", height=130)
     
-    if st.button("פרק למשימות וזמנים", use_container_width=True):
+    if st.button("פרק לי את המטלה למשימות ושלבי ביצוע 📋", use_container_width=True):
         if not teacher_post.strip():
-            st.warning("נא להדביק את הודעת המורה.")
+            st.warning("הדבק קודם את הודעת המורה!")
         else:
             prompt = (
-                f"התלמיד ב-{student_context} קיבל את המטלה הבאה:\n{teacher_post}\n\n"
-                "החזר פירוק פרקטי:\n"
-                "1. מועד הגשה מדויק (דד-ליין) ומה בדיוק צריך להגיש\n"
-                "2. אילו ספרים, עמודים ותרגילים צריך לפתוח\n"
-                "3. שלבי עבודה קצרים לביצוע מהיר\n"
+                f"התלמיד ב-{student_context} קיבל את הודעת המטלה הבאה:\n{teacher_post}\n\n"
+                "בצע פירוק חכם:\n"
+                "1. **מה נדרש להגיש ומתי (מועד הגשה מדויק)**\n"
+                "2. **אילו ספרים, עמודים או תרגילים צריך לפתור**\n"
+                "3. **תוכנית פעולה מהירה שלב אחרי שלב כדי לסיים את זה מהר**\n"
                 f"{anti_yap_rule}"
             )
             with st.spinner("מנתח מטלה..."):
@@ -688,36 +769,36 @@ elif room == "חיבור ל-Classroom וספרים":
                     res = generate_ai(prompt)
                     st.markdown(res.text)
                 except Exception as e:
-                    st.error(f"שגיאה: {e}")
+                    st.error(f"שגיאה בניתוח המטלה: {e}")
 
-# ----------------- 6. דפי תרגול להדפסה -----------------
-elif room == "דפי תרגול להדפסה":
-    st.title("דפי תרגול להדפסה")
-    st.caption("הפקת דפי עבודה נקיים שמוכנים להדפסה בבית.")
+# ----------------- חדר 6: דפי תרגול להדפסה -----------------
+elif room == "🖨️ דפי תרגול ומבחנים להדפסה":
+    st.title("🖨️ מחולל דפי עבודה, תרגול ומבחנים להדפסה")
+    st.write(f"הפק דף תרגול מושלם ומעוצב עבור **{chosen_grade}** הניתן להדפסה ישירה:")
     
     col_p1, col_p2 = st.columns(2)
     with col_p1:
-        sheet_topic = st.text_input("נושא דף התרגול:", placeholder="למשל: משוואות ריבועיות, זמנים באנגלית, תורשה...")
-        sheet_subject = st.selectbox("מקצוע:", [
+        sheet_topic = st.text_input("📚 מה נושא דף התרגול?", placeholder="למשל: תורשה וגנטיקה, פסיכולוגיה התפתחותית, לולאות בפייתון...")
+        sheet_subject = st.selectbox("מקצוע / מגמה:", [
             "מתמטיקה", "אנגלית", "מדעי המחשב", "ביולוגיה", "פיזיקה", "פסיכולוגיה", "סוציולוגיה", "כלכלה", "ניהול עסקי", "קולנוע ותקשורת", "צילום", "אמנות", "היסטוריה / אזרחות / תנ\"ך", "לשון"
         ])
     with col_p2:
-        sheet_length = st.selectbox("היקף הדף:", ["דף תרגול קצר (4-5 שאלות)", "מבחן מלא כולל ניקוד"])
-        include_answers = st.checkbox("הוספת דף תשובות בסוף", value=True)
+        sheet_length = st.selectbox("היקף הדף:", ["דף עבודה מהיר (4-5 שאלות)", "מבחן מלא (8-10 שאלות כולל ניקוד)"])
+        include_answers = st.checkbox("הוסף דף תשובות ומחוון בסוף הדף", value=True)
 
-    if st.button("ייצר דף תרגול", use_container_width=True):
+    if st.button("ייצר דף תרגול להדפסה 📄", use_container_width=True):
         if not sheet_topic.strip():
-            st.warning("נא להזין נושא.")
+            st.warning("חובה לציין את נושא דף התרגול!")
         else:
             prompt = (
-                f"צור דף תרגול ומבחן מעוצב וברור בעברית לתלמיד ב-{student_context}.\n"
-                f"מקצוע: {sheet_subject}, נושא: {sheet_topic}, היקף: {sheet_length}.\n"
+                f"צור דף תרגול ומבחן מקצועי ומעוצב בעברית לתלמיד ב-{student_context}.\n"
+                f"מקצוע/מגמה: {sheet_subject}, נושא: {sheet_topic}, היקף: {sheet_length}.\n"
                 "מבנה הדף:\n"
-                "1. כותרת עליונה עם שם הדף, כיתה ומקום לציון ולשם תלמיד.\n"
-                "2. שאלות מנוסחות ברמות קושי עולות עם מקום לתשובה.\n"
-                + ("3. בסוף הדף: מחוון תשובות מלא לבדיקה עצמית.\n" if include_answers else "")
+                "1. כותרת עליונה עם שם המבחן/הדף, כיתה, מגמה ומקום לשם תלמיד וציון.\n"
+                "2. שאלות מנוסחות ברמה גבוהה לפי מחוון משרד החינוך עם מקום מסומן לתשובה.\n"
+                + ("3. בסוף הדף: מחוון תשובות מלא ומדויק לבדיקה עצמית.\n" if include_answers else "")
             )
-            with st.spinner("מרכיב דף עבודה..."):
+            with st.spinner("מייצר דף עבודה..."):
                 try:
                     res = generate_ai(prompt)
                     st.session_state["printable_sheet"] = res.text
@@ -729,141 +810,126 @@ elif room == "דפי תרגול להדפסה":
         st.markdown(st.session_state["printable_sheet"])
         st.markdown("""
             <div style="text-align: center; margin-top: 20px;">
-                <button onclick="window.print()" style="padding: 10px 22px; font-size: 15px; background-color: #38bdf8; color: #0b0f17; border: none; border-radius: 8px; cursor: pointer; font-weight: 800;">
-                    🖨️ הדפס דף תרגול
+                <button onclick="window.print()" style="padding: 12px 24px; font-size: 16px; background-color: #16a34a; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                    🖨️ הדפס דף תרגול זה (Print)
                 </button>
             </div>
         """, unsafe_allow_html=True)
 
-# ----------------- 7. מלטשת תשובות -----------------
-elif room == "מלטשת תשובות למחוון 100":
-    st.title("מלטשת תשובות למחוון 100")
-    st.caption("בדיקת תשובה ושדרוג הניסוח למלוא הנקודות.")
+# ----------------- חדר 7: מלטשת תשובות -----------------
+elif room == "💯 מלטשת תשובות למאיות":
+    st.title("💯 מלטשת תשובות לציון 100")
+    ans_topic = st.text_input("📚 1. מה החומר והמקצוע/המגמה?", placeholder="למשל: סוציולוגיה, ביולוגיה, היסטוריה...")
+    q_text = st.text_input("❓ 2. מה השאלה שנשאלת?")
+    user_ans = st.text_area("✍️ 3. מה התשובה שכתבת:", height=130)
     
-    ans_topic = st.text_input("מקצוע ונושא השאלה:", placeholder="למשל: אזרחות - עקרון שלטון החוק...")
-    q_text = st.text_input("השאלה שנשאלה:")
-    user_ans = st.text_area("התשובה שכתבת:", height=120)
-    
-    if st.button("בדוק ושדרג תשובה", use_container_width=True):
+    if st.button("שדרג לי את התשובה ל-100 🚀", use_container_width=True):
         if not ans_topic.strip() or not user_ans.strip():
-            st.warning("נא למלא נושא ותשובה.")
+            st.warning("מלא את החומר הנלמד ואת התשובה שכתבת!")
         else:
             prompt = (
-                f"אתה בוחן שמעריך תשובה של תלמיד ב-{student_context}.\n"
-                f"נושא: {ans_topic}\nשאלה: {q_text}\nתשובת התלמיד: {user_ans}\n\n"
-                "החזר:\n"
-                "1. ציון מוערך (מתוך 100)\n"
-                "2. מה חסר לפי מחוון הבדיקה (קצר ולעניין)\n"
-                "3. נוסח תשובה מושלם שסוגר 100 נקודות\n"
+                f"אתה מעריך בחינות ובגרויות קפדן שבודק תשובה של תלמיד ב-{student_context}.\n"
+                f"החומר: {ans_topic}\nשאלה: {q_text}\nתשובה: {user_ans}\n\n"
+                "החזר:\n1. **ציון מוערך (מתוך 100)**\n2. **מה חסר לפי מחוון הבדיקה**\n3. **תשובה מושלמת סופית**: נוסח שסוגר את מלוא הנקודות.\n"
                 f"{anti_yap_rule}"
             )
-            with st.spinner("בודק לפי מחוון..."):
+            with st.spinner("מנתח לפי מחוון..."):
                 try:
                     res = generate_ai(prompt)
                     st.markdown(res.text)
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- 8. מעבדת מתמטיקה -----------------
-elif room == "פירוק מתמטיקה ומדעים":
-    st.title("פירוק מתמטיקה ומדעים")
-    st.caption(f"פתרון צעד-אחר-צעד עם נימוק מתמטי מלא עבור {chosen_grade} ({math_units}).")
+# ----------------- חדר 8: מעבדת מתמטיקה -----------------
+elif room == "📐 מעבדת מתמטיקה ומדעים":
+    st.title("📐 מעבדת פירוק מתמטיקה ומדעים")
+    math_topic = st.text_input("📚 1. מה הנושא הנלמד כרגע?", placeholder="חקירת פולינום, טריגו, תנועה בפיזיקה...")
+    math_input = st.text_area("🔢 2. הזן את התרגיל או השאלה:", height=120)
     
-    math_topic = st.text_input("הנושא הנלמד:", placeholder="למשל: חקירת פולינום, טריגונומטריה, תנועה בפיזיקה...")
-    math_input = st.text_area("התרגיל או השאלה:", height=110)
-    
-    if st.button("פרק והסבר תרגיל", use_container_width=True):
+    if st.button("פרק לי את התרגיל לפי רמת היחידות 🧠", use_container_width=True):
         if not math_topic.strip() or not math_input.strip():
-            st.warning("נא להזין נושא ותרגיל.")
+            st.warning("ציין את הנושא ואת התרגיל!")
         else:
             prompt = (
                 f"פתור את התרגיל הבא עבור תלמיד ב-{student_context}.\n"
-                f"נושא: {math_topic}\nתרגיל: {math_input}\n\n"
+                f"הנושא: {math_topic}\nתרגיל: {math_input}\n\n"
                 "פתור שלב אחרי שלב בבירור עם נימוק קצר ליד כל שלב, וסמן תוצאה סופית מודגשת.\n"
                 f"{anti_yap_rule}"
             )
-            with st.spinner("מחשב ומנמק..."):
+            with st.spinner(f"פותר לפי רמת {math_units}..."):
                 try:
                     res = generate_ai(prompt)
                     st.markdown(res.text)
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- 9. שליף חירום -----------------
-elif room == "שליף חירום למבחן":
-    st.title("שליף חירום למבחן")
-    st.caption("נקודות ברזל קריטיות שחובה לדעת ב-60 שניות לפני הכניסה לכיתה.")
+# ----------------- חדר 9: שליף חירום -----------------
+elif room == "🚨 שליף חירום (לפני מבחן)":
+    st.title("🚨 שליף חירום: 60 שניות לפני מבחן")
+    panic_topic = st.text_input("📚 מה החומר / הנושא של המבחן כרגע?", placeholder="משפט חוצה זווית, שיווי משקל שוק, גנטיקה...")
     
-    panic_topic = st.text_input("נושא המבחן:", placeholder="למשל: משפט חוצה זווית, מרד בר כוכבא, עקומת תמורה...")
-    
-    if st.button("הצג שליף ממוקד", use_container_width=True):
+    if st.button("הצל אותי עכשיו ⚡", use_container_width=True):
         if not panic_topic.strip():
-            st.warning("נא להזין נושא.")
+            st.warning("הזן קודם את החומר הנלמד!")
         else:
             prompt = (
-                f"תלמיד ב-{student_context} נכנס בעוד דקה למבחן על הנושא: {panic_topic}.\n"
-                "החזר אך ורק:\n"
-                "1. 3 משפטי זהב שחייבים לרשום במבחן כדי לקבל נקודות\n"
-                "2. הטעות הנפוצה ביותר שמכשילה תלמידים\n"
-                "3. מושג חובה אחד שהבוחן מחפש בעין\n"
+                f"התלמיד ב-{student_context} נכנס בעוד דקה למבחן על החומר: {panic_topic}.\n"
+                "החזר אך ורק:\n1. **3 משפטי זהב** שחייבים לרשום במבחן.\n2. **הטעות הנפוצה ביותר** שתלמידים נופלים בה.\n3. **מושג חובה אחד** שהבוחן מחפש בעין.\n"
                 f"{anti_yap_rule}"
             )
-            with st.spinner("מחלץ נקודות מפתח..."):
+            with st.spinner("מחלץ שליף..."):
                 try:
                     res = generate_ai(prompt)
-                    st.markdown(f'<div class="cheat-box">{res.text}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="cheat-card">{res.text}</div>', unsafe_allow_html=True)
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- 10. תכנון לו״ז -----------------
-elif room == "מתכנן לוח זמנים":
-    st.title("מתכנן לוח זמנים למבחן")
-    st.caption("חלוקת עבודה יומית כדי לא להגיע ללילה לפני המבחן בלחץ.")
-    
-    topics = st.text_area("הנושאים והפרקים שצריך להספיק:", placeholder="למשל: פרקים 1 עד 4 בספר, שאלות בגרות...")
+# ----------------- חדר 10: מתכנן לו״ז -----------------
+elif room == "📅 מתכנן לו״ז למבחן":
+    st.title("📅 מתכנן לוח זמנים אישי למבחן")
+    topics = st.text_area("📚 1. מה כל החומר והנושאים שצריך להספיק למבחן?", placeholder="למשל: פרקים 1 עד 4 בספר, שאלות בגרות...")
     c1, c2 = st.columns(2)
     with c1:
-        exam_subj = st.text_input("מקצוע:", placeholder="מתמטיקה / היסטוריה / ביולוגיה...")
-        days = st.number_input("ימים שנותרו:", min_value=1, max_value=30, value=3, step=1)
+        exam_subj = st.text_input("2. מקצוע או מגמה:", placeholder="מתמטיקה / ביולוגיה / פיזיקה...")
+        days = st.number_input("3. כמה ימים נשארו עד המבחן?", min_value=1, max_value=30, value=3, step=1)
     with c2:
         hours_selected = st.select_slider(
-            "שעות למידה פנויות ביום:",
-            options=["שעה אחת", "שעתיים", "3 שעות", "4 שעות", "5 שעות"],
-            value="שעתיים"
+            "4. כמה שעות למידה פנויות יש לך בכל יום?",
+            options=["1 שעה ביום", "2 שעות ביום", "3 שעות ביום", "4 שעות ביום", "5 שעות ביום", "6 שעות ביום"],
+            value="2 שעות ביום"
         )
         
-    if st.button("בנה תוכנית למידה", use_container_width=True):
+    if st.button("בנה לי תוכנית עבודה 🗓️", use_container_width=True):
         if not topics.strip():
-            st.warning("נא להזין חומר למבחן.")
+            st.warning("הזן קודם את החומר הנלמד!")
         else:
             prompt = (
                 f"בנה לוח זמנים פרקטי ללימוד למבחן עבור תלמיד ב-{student_context}.\n"
-                f"מקצוע: {exam_subj}, ימים: {days}, שעות ביום: {hours_selected}, חומר: {topics}.\n"
-                "חלק את המשימות לפי ימים עם זמני מנוחה ותרגול מעשי."
+                f"מקצוע: {exam_subj}, ימים שנותרו: {days}, שעות למידה פנויות: {hours_selected}, חומר: {topics}.\n"
+                "חלק את המשימות בצורה הגיונית לפי ימים, כולל זמני מנוחה ותרגול מעשי."
             )
-            with st.spinner("מתכנן לו\"ז..."):
+            with st.spinner("מתכנן לו״ז..."):
                 try:
                     res = generate_ai(prompt)
                     st.markdown(res.text)
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-# ----------------- 11. משוב -----------------
-elif room == "משוב והצעות":
-    st.title("משוב והצעות לשיפור")
-    st.caption("כתוב לנו מה כדאי להוסיף או לשפר.")
-    
+# ----------------- חדר 11: חוות דעת -----------------
+elif room == "⭐ חוות דעת והצעות":
+    st.title("⭐ חוות דעת והצעות לשיפור")
+    st.write("איך האתר עובד לך? יש פיצ'ר שתרצה שנוסיף? כתוב לנו כאן:")
     with st.form("feedback_form", clear_on_submit=True):
         fb_name = st.text_input("שם או כינוי:")
         fb_grade = st.selectbox("כיתה:", ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב"], index=2)
-        fb_major = st.text_input("מגמה:", value=chosen_major)
-        fb_rating = st.slider("דירוג (כוכבים):", min_value=1, max_value=5, value=5)
-        fb_text = st.text_area("מה דעתך על הפלטפורמה? מה לשפר?")
-        submitted = st.form_submit_button("שליחת משוב")
+        fb_major = st.text_input("מגמה (אם יש):", value=chosen_major)
+        fb_rating = st.slider("דירוג החוויה שלך (כוכבים):", min_value=1, max_value=5, value=5)
+        fb_text = st.text_area("מה דעתך על האתר? מה כדאי להוסיף או לשפר?")
+        submitted = st.form_submit_button("שלח חוות דעת 🚀")
         
         if submitted:
             if not fb_text.strip():
-                st.warning("נא לכתוב משהו לפני השליחה.")
+                st.warning("כתוב משהו לפני השליחה!")
             else:
                 grade_display = f"{fb_grade} ({fb_major})" if fb_major.strip() else fb_grade
                 st.session_state.reviews.insert(0, {
@@ -872,16 +938,16 @@ elif room == "משוב והצעות":
                     "rating": fb_rating,
                     "text": fb_text
                 })
-                st.success("תודה על המשוב!")
+                st.success("תודה על חוות הדעת! המשוב שלך נוסף בהצלחה.")
                 st.balloons()
 
     st.markdown("---")
-    st.subheader("משובים אחרונים:")
+    st.subheader("💬 מה שתלמידים אומרים על The Dan Method:")
     for r in st.session_state.reviews:
         stars = "⭐" * r["rating"]
         st.markdown(f"""
-            <div style="background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 14px; margin-bottom: 10px;">
+            <div class="review-card">
                 <b>{r['name']}</b> ({r['grade']}) — {stars}<br>
-                <span style="color: #94a3b8;">{r['text']}</span>
+                <span>{r['text']}</span>
             </div>
         """, unsafe_allow_html=True)
