@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# עיצוב מודרני, יישור לימין (RTL), ממשק שיחת זום קולית
+# עיצוב מודרני, יישור לימין (RTL), ומסך זום חי עם וידאו של המורה
 st.markdown("""
 <style>
     .stApp {
@@ -63,39 +63,32 @@ st.markdown("""
         margin: 0 auto 20px auto;
         line-height: 1.6;
     }
+    /* חלון שיחת זום עם וידאו אמיתי */
     .zoom-frame {
-        background: radial-gradient(circle at top, #1e293b, #090d16);
+        background: #0b0f19;
         border: 2px solid #38bdf8;
         border-radius: 20px;
-        padding: 24px;
+        padding: 16px;
         text-align: center;
         box-shadow: 0 12px 35px -8px rgba(56, 189, 248, 0.35);
         margin-bottom: 20px;
         color: white;
     }
-    .teacher-photo-container {
+    .teacher-video-container {
         position: relative;
-        width: 140px;
-        height: 140px;
-        margin: 0 auto 14px auto;
+        width: 100%;
+        max-height: 260px;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 2px solid #1e293b;
+        margin-bottom: 12px;
+        background: #000;
     }
-    .teacher-img {
-        width: 140px;
-        height: 140px;
-        border-radius: 50%;
+    .teacher-video {
+        width: 100%;
+        height: 250px;
         object-fit: cover;
-        border: 3px solid #38bdf8;
-        box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
-    }
-    .live-dot {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-        width: 18px;
-        height: 18px;
-        background-color: #10b981;
-        border: 3px solid #0f172a;
-        border-radius: 50%;
+        display: block;
     }
     .zoom-status-pill {
         display: inline-block;
@@ -106,7 +99,22 @@ st.markdown("""
         font-weight: bold;
         padding: 4px 14px;
         border-radius: 20px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+    }
+    .zoom-controls {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .zoom-btn {
+        background: #1e293b;
+        border: 1px solid #475569;
+        color: #e2e8f0;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
     }
     .voice-box {
         background: #0f172a;
@@ -196,7 +204,7 @@ st.markdown("""
 if "reviews" not in st.session_state:
     st.session_state.reviews = [
         {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום הציל אותי לפני מבחן בהיסטוריה!"},
-        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "לדבר עם המורה בקול בחדר הזום זה רמה אחרת לגמרי."},
+        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "רואים את המורה מדברת בווידאו וזה ממש מרגיש כמו זום אמיתי."},
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה מסביר לפי מחוון בגרות בדיוק כמו שצריך."}
     ]
 
@@ -288,7 +296,7 @@ with st.sidebar:
         "בחר חדר:",
         [
             "🏠 מסך פתיחה (ברוכים הבאים)",
-            "📹 שיעור פרטי קולי בזום (Live Voice)",
+            "📹 שיעור וידאו חי בזום (Live Video)",
             "📸 סורק תמונות ושיעורי בית",
             "📝 מחולל מבחני דמה (Mock Exam)",
             "🎬 ספריית וידאו ושיעורים ענקית",
@@ -304,7 +312,7 @@ with st.sidebar:
     
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (ללא חפירות)", value=True)
-    st.caption("The Dan Method v9.5 Voice Edition")
+    st.caption("The Dan Method v9.9 Video Zoom")
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
@@ -321,7 +329,7 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
             <h1 class="hero-title">The Dan Method: Study AI</h1>
             <p class="hero-subtitle">
                 הפלטפורמה הראשונה שנבנתה במיוחד עבור תלמידי ישראל (ז' עד י"ב ובגרות).
-                <br>שיעורי זום עם מורה פרטית שמדברת ומקשיבה בקול, פירוק מבחנים ושליפים של 60 שניות.
+                <br>שיעורי וידאו בזום עם מורה פרטית שמדברת מולך, פירוק מבחנים ושליפים של 60 שניות.
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -337,7 +345,7 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
                     <li><b>חופר בטירוף:</b> פסקאות מבוא וסיום מיותרות כשכל מה שרצית זה תשובה קצרה למבחן.</li>
                     <li><b>לא מבין בגרות:</b> לא מכיר מחווני בדיקה, יחידות לימוד (3, 4, 5), או שאלות בגרות בישראל.</li>
                     <li><b>שפה מנותקת:</b> עונה כמו ויקיפדיה מתורגמת ולא כמו שתלמיד צריך לענות.</li>
-                    <li><b>אין שיעור קולי:</b> רק טקסט יבש בלי דיבור טבעי.</li>
+                    <li><b>אין וידאו חי:</b> רק צ'אט יבש ללא תחושת שיעור פרטי אמיתי.</li>
                 </ul>
             </div>
         """, unsafe_allow_html=True)
@@ -347,7 +355,7 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
             <div class="vs-box-good">
                 <h3 style="margin-top:0;">⚡ כשמשתמשים ב-The Dan Method</h3>
                 <ul>
-                    <li><b>שיעור פרטי קולי בזום:</b> מדברים במיקרופון והמורה עונה ומסבירה בקול ישירות.</li>
+                    <li><b>שיעור וידאו חי בזום:</b> רואים את המורה בווידאו מדברת, מנחה ומסבירה צעד אחרי צעד.</li>
                     <li><b>תכל'ס נטו (Anti-Yap):</b> פילטר מובנה שמנקה בולשיט ומחזיר רק את מה שמביא נקודות.</li>
                     <li><b>מותאם אישית לכיתה ולמגמה:</b> מתאים את התשובות בדיוק לרמה שלך (ז' עד י"ב).</li>
                     <li><b>מחוון 100 ישראלי:</b> מלטש כל תשובה בדיוק לפי מה שהבוחן או המורה מחפשים בעין.</li>
@@ -362,8 +370,8 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
     with f1:
         st.markdown("""
             <div class="feature-card">
-                <h4 style="color:#38bdf8;">🎙️ שיעור קולי 1-על-1</h4>
-                <p style="color:#94a3b8; font-size:0.95rem;">מדברים עם המורה מיה במיקרופון ומקבלים הסבר קולי שלב אחרי שלב.</p>
+                <h4 style="color:#38bdf8;">📹 שיעור וידאו חי</h4>
+                <p style="color:#94a3b8; font-size:0.95rem;">רואים את המורה מדברת בזמן אמת כמו בשיחת זום אמיתית אחד על אחד.</p>
             </div>
         """, unsafe_allow_html=True)
     with f2:
@@ -391,32 +399,34 @@ if room == "🏠 מסך פתיחה (ברוכים הבאים)":
     st.markdown("---")
     st.info("👈 **איך מתחילים?** בחר את הכיתה והמגמה בסרגל הצד (Sidebar), עבור לחדר הרצוי ותתחיל ללמוד!")
 
-# ----------------- חדר 1: שיעור פרטי קולי בזום -----------------
-elif room == "📹 שיעור פרטי קולי בזום (Live Voice)":
-    st.title("📹 שיעור פרטי קולי בזום (Live Zoom Studio)")
-    st.write(f"שיעור פרטי 1-על-1 מותאם לרמת **{chosen_grade}** ({math_units} / {eng_units} / {chosen_major}):")
+# ----------------- חדר 1: שיעור וידאו חי בזום -----------------
+elif room == "📹 שיעור וידאו חי בזום (Live Video)":
+    st.title("📹 שיעור וידאו חי בזום (Live Zoom Studio)")
+    st.write(f"שיעור פרטי 1-על-1 בווידאו חי מותאם לרמת **{chosen_grade}** ({math_units} / {eng_units} / {chosen_major}):")
     
-    col_z_cam, col_z_chat = st.columns([1.1, 1.9])
+    col_z_cam, col_z_chat = st.columns([1.15, 1.85])
     
     with col_z_cam:
+        # וידאו חי של המורה מדברת בזום
         st.markdown("""
             <div class="zoom-frame">
-                <div class="zoom-status-pill">● מחוברת לשיחה קולית (Live)</div>
-                <div class="teacher-photo-container">
-                    <img class="teacher-img" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80" alt="המורה מיה">
-                    <div class="live-dot"></div>
+                <div class="zoom-status-pill">● שיחת וידאו פעילה (Live Video)</div>
+                <div class="teacher-video-container">
+                    <video class="teacher-video" autoplay loop muted playsinline>
+                        <source src="https://assets.mixkit.co/videos/preview/mixkit-young-woman-talking-on-a-video-call-40156-large.mp4" type="video/mp4">
+                    </video>
                 </div>
                 <h3 style="margin: 0; color: #38bdf8; font-weight: 800;">המורה מיה (Dan AI)</h3>
-                <p style="color: #cbd5e1; font-size: 0.9rem; margin: 4px 0;">מורה פרטית אישית לבגרויות ולחטיבה</p>
+                <p style="color: #cbd5e1; font-size: 0.9rem; margin: 4px 0;">מורה פרטית אישית בווידאו</p>
                 <div class="zoom-controls">
                     <span class="zoom-btn">🎙️ שמע פעיל</span>
-                    <span class="zoom-btn">📹 מצלמה פעילה</span>
+                    <span class="zoom-btn">📹 מצלמה פועלת</span>
                     <span class="zoom-btn">🖥️ שיתוף מסך</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         
-        # השמעת הקול האחרון של המורה
+        # השמעת הקול המסונכרן של המורה
         if st.session_state.last_voice_reply:
             st.markdown("**🔊 קול המורה מיה (האזן להסבר):**")
             audio_url = get_tts_audio_url(st.session_state.last_voice_reply)
@@ -438,14 +448,14 @@ elif room == "📹 שיעור פרטי קולי בזום (Live Voice)":
             st.rerun()
 
     with col_z_chat:
-        st.subheader(f"💬 שיחת השיעור: {z_subject}")
-        st.caption("אתה יכול לדבר ישירות במיקרופון או לכתוב, והמורה מיה תענה לך ותשמיע את ההסבר בקול.")
+        st.subheader(f"💬 שיחת הווידאו: {z_subject}")
+        st.caption("דבר עם המורה במיקרופון או כתוב לה, והיא תדבר אליך ותסביר לך ישירות בווידאו.")
         
         # תיבת השיחה
         chat_box = st.container(height=360)
         with chat_box:
             if not st.session_state.zoom_chat_history:
-                st.info(f"👋 **המורה מיה:** 'היי! שמחה לפגוש אותך לשיעור ב{z_subject}. דבר איתי במיקרופון למטה או כתוב לי, ונתחיל לפרק את החומר ביחד!'")
+                st.info(f"👋 **המורה מיה:** 'היי! אני איתך כאן בווידאו בשיעור {z_subject}. דבר איתי במיקרופון או כתוב לי מה לא ישב לך טוב בחומר, ונתחיל לפתור!'")
             else:
                 for m in st.session_state.zoom_chat_history:
                     if m["role"] == "user":
@@ -456,15 +466,12 @@ elif room == "📹 שיעור פרטי קולי בזום (Live Voice)":
                             st.write(m["content"])
 
         # אפשרות דיבור במיקרופון
-        st.markdown('<div class="voice-box"><b>🎙️ הקלט שאלתך בקול למורה:</b>', unsafe_allow_html=True)
+        st.markdown('<div class="voice-box"><b>🎙️ דבר במיקרופון למורה בווידאו:</b>', unsafe_allow_html=True)
         audio_prompt = st.audio_input("לחץ על המיקרופון ודבר ישירות למורה:")
         st.markdown('</div>', unsafe_allow_html=True)
 
-        user_input_text = None
-
         if audio_prompt is not None:
-            # שליחת השמע של התלמיד ישירות ל-AI לפיענוח ומענה
-            with st.spinner("המורה מיה מקשיבה להקלטה שלך ועונה..."):
+            with st.spinner("המורה מיה מקשיבה ומכינה תשובה..."):
                 try:
                     audio_bytes = audio_prompt.read()
                     prompt_audio = (
@@ -504,7 +511,7 @@ elif room == "📹 שיעור פרטי קולי בזום (Live Voice)":
                 f"מה שהתלמיד אמר: {text_spoken}"
             )
             
-            with st.spinner("המורה מיה עונה ומדברת..."):
+            with st.spinner("המורה מיה עונה ומדברת בווידאו..."):
                 try:
                     res_zoom = generate_ai(zoom_prompt)
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
