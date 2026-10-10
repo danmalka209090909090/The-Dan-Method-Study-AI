@@ -8,7 +8,7 @@ import re
 import time
 import urllib.parse
 
-# קוד גישה סודי לחדר מורים והנהלה (ניתן לשינוי כאן)
+# קוד גישה סודי לחדר מורים והנהלה
 TEACHER_ACCESS_CODE = "DAN100"
 
 st.set_page_config(
@@ -21,7 +21,7 @@ st.set_page_config(
 # שפת עיצוב LearnIt, פונט Assistant, תיקון כיוון סליידרים והסרת מעטפת Streamlit
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
+    @import url('[https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap](https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap)');
 
     * {
         font-family: 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif !important;
@@ -110,7 +110,7 @@ st.markdown("""
     /* Hero Banner */
     .hero-banner {
         background: linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.95)), 
-                    url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+                    url('[https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80)') center/cover no-repeat;
         border: 1px solid #e2e8f0;
         border-radius: 24px;
         padding: 40px 24px 24px 24px;
@@ -232,7 +232,7 @@ st.markdown("""
     .cat-pink   { background: #fce7f3; border-color: #fbcfe8; }
     .cat-slate  { background: #f1f5f9; border-color: #e2e8f0; }
 
-    /* כרטיסיית שקופית מעוצבת למצגות */
+    /* כרטיסיית שקופית למצגות */
     .slide-card {
         background: #ffffff;
         border: 1px solid #cbd5e1;
@@ -292,15 +292,6 @@ st.markdown("""
         color: #991b1b;
         margin-top: 14px;
         line-height: 1.7;
-    }
-    .badge-card {
-        background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-        border: 2px solid #3b82f6;
-        color: white;
-        border-radius: 20px;
-        padding: 26px;
-        text-align: center;
-        box-shadow: 0 8px 30px rgba(30, 58, 138, 0.2);
     }
     .cheat-learnit {
         background: #fffbeb;
@@ -397,21 +388,19 @@ def generate_ai(contents, use_cache=False):
     raise last_err
 
 def extract_json(text):
-    text = re.sub(r"^
-```json\s*", "", text.strip(), flags=re.MULTILINE)
-    text = re.sub(r"^
-```\s*", "", text.strip(), flags=re.MULTILINE)
+    text = re.sub(r"^```json\s*", "", text.strip(), flags=re.MULTILINE)
+    text = re.sub(r"^```\s*", "", text.strip(), flags=re.MULTILINE)
     return json.loads(text.strip("`").strip())
 
 def get_tts_audio_url(text):
     clean_text = re.sub(r"[*#_`>\[\]\(\)]", "", text)
     clean_text = clean_text[:200]
     encoded = urllib.parse.quote(clean_text)
-    return f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=iw&client=tw-ob"
+    return f"[https://translate.google.com/translate_tts?ie=UTF-8&q=](https://translate.google.com/translate_tts?ie=UTF-8&q=){encoded}&tl=iw&client=tw-ob"
 
 def get_whatsapp_share_link(text):
     encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:450]}")
-    return f"https://api.whatsapp.com/send?text={encoded}"
+    return f"[https://api.whatsapp.com/send?text=](https://api.whatsapp.com/send?text=){encoded}"
 
 # --- סרגל צד נקי (פרופיל בלבד) ---
 with st.sidebar:
@@ -614,7 +603,7 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # 1. על השיטה (הדבר הראשון שרואים)
+    # 1. על השיטה
     st.markdown("""
         <div class="story-card">
             <div class="story-title">⚡ על השיטה של The Dan Method</div>
@@ -626,7 +615,7 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # 2. טבלת ההשוואה (צמוד לעל השיטה)
+    # 2. טבלת ההשוואה
     st.markdown("""
         <div class="compare-container">
             <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.3rem; font-weight: 800;">למה The Dan Method ולא סתם בינה מלאכותית רגילה?</h3>
@@ -750,7 +739,7 @@ if st.session_state.current_room == "דף הבית":
                 st.rerun()
 
     else:
-        # מצב מורה וצוות חינוכי (נגיש רק לאחר אימות מוצלח)
+        # מצב מורה וצוות חינוכי
         st.markdown("""
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f2b5c; margin: 0;">מרכז הפדגוגיה והכלים למורים 🔒</h2>
@@ -1213,7 +1202,7 @@ elif st.session_state.current_room == "חדר זום":
                     ● מחוברת לשיחה חיה
                 </div>
                 <div class="teacher-circle-box">
-                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80" alt="המורה מיה">
+                    <img src="[https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80](https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80)" alt="המורה מיה">
                 </div>
                 <h3 style="margin: 0; color: #1e3a8a; font-weight: 800; font-size: 1.3rem;">המורה מיה</h3>
                 <p style="color: #64748b; font-size: 0.9rem; margin: 4px 0 0 0;">מורה פרטית אישית לבגרויות ולחטיבה</p>
@@ -1310,7 +1299,7 @@ elif st.session_state.current_room == "סורק תמונות":
             img_to_solve = Image.open(file)
             st.image(img_to_solve, caption="התמונה שהועלתה", width=340)
     else:
-        url_input = st.text_input("הדבק כתובת URL לתמונה:", placeholder="https://example.com/homework.jpg")
+        url_input = st.text_input("הדבק כתובת URL לתמונה:", placeholder="[https://example.com/homework.jpg](https://example.com/homework.jpg)")
         if url_input.strip():
             try:
                 response = requests.get(url_input.strip(), timeout=10)
