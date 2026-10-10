@@ -21,7 +21,7 @@ st.set_page_config(
 # שפת עיצוב LearnIt, פונט Assistant, תיקון כיוון סליידרים והסרת מעטפת Streamlit
 st.markdown("""
 <style>
-    @import url('[https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap](https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap)');
+    @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
 
     * {
         font-family: 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif !important;
@@ -110,7 +110,7 @@ st.markdown("""
     /* Hero Banner */
     .hero-banner {
         background: linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.95)), 
-                    url('[https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80](https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80)') center/cover no-repeat;
+                    url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
         border: 1px solid #e2e8f0;
         border-radius: 24px;
         padding: 40px 24px 24px 24px;
@@ -388,19 +388,28 @@ def generate_ai(contents, use_cache=False):
     raise last_err
 
 def extract_json(text):
-    text = re.sub(r"^```json\s*", "", text.strip(), flags=re.MULTILINE)
-    text = re.sub(r"^```\s*", "", text.strip(), flags=re.MULTILINE)
-    return json.loads(text.strip("`").strip())
+    text = text.strip()
+    text = re.sub(r"^```json\s*", "", text, flags=re.MULTILINE)
+    text = re.sub(r"^```\s*", "", text, flags=re.MULTILINE)
+    text = text.strip("`").strip()
+    match = re.search(r"(\[.*\]|\{.*\})", text, re.DOTALL)
+    if match:
+        text = match.group(1)
+    try:
+        return json.loads(text)
+    except Exception:
+        clean_str = re.sub(r"[\r\n\t]+", " ", text)
+        return json.loads(clean_str)
 
 def get_tts_audio_url(text):
     clean_text = re.sub(r"[*#_`>\[\]\(\)]", "", text)
     clean_text = clean_text[:200]
     encoded = urllib.parse.quote(clean_text)
-    return f"[https://translate.google.com/translate_tts?ie=UTF-8&q=](https://translate.google.com/translate_tts?ie=UTF-8&q=){encoded}&tl=iw&client=tw-ob"
+    return f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=iw&client=tw-ob"
 
 def get_whatsapp_share_link(text):
     encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:450]}")
-    return f"[https://api.whatsapp.com/send?text=](https://api.whatsapp.com/send?text=){encoded}"
+    return f"https://api.whatsapp.com/send?text={encoded}"
 
 # --- סרגל צד נקי (פרופיל בלבד) ---
 with st.sidebar:
@@ -838,14 +847,14 @@ if st.session_state.current_room == "דף הבית":
                     st.balloons()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ----------------- חדר: מחולל מצגות (פעיל גם לתלמיד וגם למורה) -----------------
+# ----------------- חדר: מחולל מצגות (מוגן משגיאות JSON) -----------------
 elif st.session_state.current_room == "מצגות":
     st.title("📊 מחולל מצגות מקצועי (Slide Deck Generator)")
     st.caption("בונה שלד שקופיות שלם: כותרות מנצחות, נקודות תכל'ס להקרנה, והערות מפורטות לדובר מה להגיד בכיתה.")
     
     col_sl1, col_sl2 = st.columns(2)
     with col_sl1:
-        slide_topic = st.text_input("נושא המצגת:", placeholder="למשל: תהליך הפוטוסינתזה, מלחמת העצמאות, המהפכה המדעית...")
+        slide_topic = st.text_input("נושא המצגת:", placeholder="למשל: תהליך הפוטוסינתזה, מלחמת העולם הראשונה, המהפכה המדעית...")
         slide_subject = st.selectbox("מקצוע:", ["היסטוריה", "ביולוגיה", "אזרחות", "ספרות", "אנגלית", "מדעים", "גיאוגרפיה", chosen_major])
     with col_sl2:
         slide_count = st.slider("מספר שקופיות:", 3, 8, 5)
@@ -861,25 +870,37 @@ elif st.session_state.current_room == "מצגות":
         else:
             prompt_slides = (
                 f"אתה מומחה להכנת מצגות לימודיות מעולות עבור מערכת החינוך בישראל ({student_context}).\n"
-                f"נושא המצגת: {slide_topic}, מקצוע: {slide_subject}, מספר שקופיות: {slide_count}, מטרה: {slide_goal}.\n"
-                "החזר אך ורק מערך JSON תקין (ללא שום טקסט או הערות מסביב):\n"
+                f"נושא המצגת: {slide_topic}, מקצוע: {slide_subject}, מספר שקופיות: {slide_count}, מטרה: {slide_goal}.\n\n"
+                "החזר אך ורק מערך JSON תקין שבו כל איבר מייצג שקופית:\n"
                 "[\n"
                 "  {\n"
                 '    "slide_num": 1,\n'
-                '    "title": "כותרת שקופית קולעת",\n'
-                '    "bullets": ["נקודה 1 קצרה להקרנה", "נקודה 2 קצרה להקרנה", "נקודה 3 קצרה להקרנה"],\n'
-                '    "visual_idea": "רעיון לתמונה או גרף שכדאי לשים בשקופית",\n'
-                '    "speaker_notes": "מה הדובר/המורה אומר בפועל בכיתה כשהשקופית הזו מוצגת (3-4 משפטים ברורים ומעניינים)"\n'
+                '    "title": "כותרת קצרה לשקופית",\n'
+                '    "bullets": ["נקודה 1", "נקודה 2", "נקודה 3"],\n'
+                '    "visual_idea": "תיאור קצר לתמונה",\n'
+                '    "speaker_notes": "הסבר בעל פה לדובר (עד 3 משפטים)"\n'
                 "  }\n"
-                "]"
+                "]\n"
+                "אל תוסיף שום טקסט מחוץ ל-JSON. שמור על תחביר JSON תקין ללא פסיקים מיותרים או שבירות מחרוזת."
             )
             with st.spinner("בונה שקופיות והערות דובר..."):
                 try:
-                    res = generate_ai(prompt_slides)
-                    st.session_state.slides_data = extract_json(res.text)
+                    res = client.models.generate_content(
+                        model="gemini-3.8-flash",
+                        contents=prompt_slides,
+                        config={"response_mime_type": "application/json"}
+                    )
+                    st.session_state.slides_data = json.loads(res.text)
                     st.success("המצגת מוכנה! השקופיות מופיעות למטה.")
-                except Exception as e:
-                    st.error(f"שגיאה בבניית המצגת: {e}")
+                    st.rerun()
+                except Exception:
+                    try:
+                        res = generate_ai(prompt_slides)
+                        st.session_state.slides_data = extract_json(res.text)
+                        st.success("המצגת מוכנה! השקופיות מופיעות למטה.")
+                        st.rerun()
+                    except Exception as err:
+                        st.error(f"שגיאה בבניית המצגת: {err}")
 
     if st.session_state.slides_data:
         st.markdown("---")
@@ -1140,7 +1161,7 @@ elif st.session_state.current_room == "כרטיסיות":
             with st.expander(f"🎴 כרטיסייה {i+1}: {card['front']}"):
                 st.markdown(f"**תשובה והסבר תכל'ס:**\n\n{card['back']}")
 
-# ----------------- חדר: מחשבון בגרות ומגן (מד מתוקן) -----------------
+# ----------------- חדר: מחשבון בגרות ומגן -----------------
 elif st.session_state.current_room == "מחשבון":
     st.title("🎯 מחשבון ציון יעד לבגרות ומגן")
     st.caption("בדוק בדיוק כמה אתה חייב להוציא בבגרות כדי לסיים עם הציון שאתה רוצה.")
@@ -1148,7 +1169,7 @@ elif st.session_state.current_room == "מחשבון":
     col_c1, col_c2 = st.columns(2)
     with col_c1:
         magen_score = st.number_input("ציון המגן השנתי שלך (הערכה בית-ספרית):", 0, 100, 85)
-        magen_weight = st.slider("אחוז משקל המגן (לרוב 30% או 50%):", min_value=10, max_value=50, value=30, step=10)
+        magen_weight = st.selectbox("אחוז משקל המגן:", [30, 50, 40, 20], index=0)
     with col_c2:
         target_final = st.number_input("מה הציון הסופי שאתה מכוון אליו?", 60, 100, 90)
     
@@ -1202,7 +1223,7 @@ elif st.session_state.current_room == "חדר זום":
                     ● מחוברת לשיחה חיה
                 </div>
                 <div class="teacher-circle-box">
-                    <img src="[https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80](https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80)" alt="המורה מיה">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80" alt="המורה מיה">
                 </div>
                 <h3 style="margin: 0; color: #1e3a8a; font-weight: 800; font-size: 1.3rem;">המורה מיה</h3>
                 <p style="color: #64748b; font-size: 0.9rem; margin: 4px 0 0 0;">מורה פרטית אישית לבגרויות ולחטיבה</p>
@@ -1299,7 +1320,7 @@ elif st.session_state.current_room == "סורק תמונות":
             img_to_solve = Image.open(file)
             st.image(img_to_solve, caption="התמונה שהועלתה", width=340)
     else:
-        url_input = st.text_input("הדבק כתובת URL לתמונה:", placeholder="[https://example.com/homework.jpg](https://example.com/homework.jpg)")
+        url_input = st.text_input("הדבק כתובת URL לתמונה:", placeholder="https://example.com/homework.jpg")
         if url_input.strip():
             try:
                 response = requests.get(url_input.strip(), timeout=10)
