@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# הסתרה הרמטית של סרגל Streamlit Cloud העליון, כפתורי הניהול והחיצים
+# עיצוב EdTech יוקרתי, התאמה למובייל והסתרת סרגלים מובנים
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
@@ -25,7 +25,7 @@ st.markdown("""
         -webkit-font-smoothing: antialiased;
     }
 
-    /* העלמת סרגל הניהול העליון של Streamlit (כולל Share, GitHub, Edit, אייקונים) */
+    /* הסתרת כל מעטפת הניהול המובנית של Streamlit */
     header, 
     [data-testid="stHeader"], 
     .stAppHeader, 
@@ -39,16 +39,13 @@ st.markdown("""
         display: none !important;
         visibility: hidden !important;
         height: 0px !important;
-        max-height: 0px !important;
         padding: 0 !important;
         margin: 0 !important;
         opacity: 0 !important;
-        pointer-events: none !important;
     }
 
-    /* איפוס הרווח הריק העליון */
     .stApp {
-        margin-top: -50px !important;
+        margin-top: -45px !important;
         padding-top: 0px !important;
         direction: rtl;
         text-align: right;
@@ -57,7 +54,9 @@ st.markdown("""
     }
 
     .main .block-container {
-        padding-top: 2rem !important;
+        padding-top: 1.5rem !important;
+        max-width: 1140px;
+        margin: 0 auto;
     }
 
     [data-testid="stSidebar"] {
@@ -65,7 +64,7 @@ st.markdown("""
         border-left: 1px solid #e2e8f0;
     }
 
-    /* Header עליון נקי בסגנון LearnIt */
+    /* סרגל עליון */
     .learnit-navbar {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
@@ -80,15 +79,15 @@ st.markdown("""
         color: #1e3a8a;
     }
 
-    /* Hero Banner בסגנון LearnIt */
+    /* Hero Banner */
     .hero-banner {
-        background: linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.94)), 
+        background: linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.95)), 
                     url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
         border: 1px solid #e2e8f0;
         border-radius: 24px;
-        padding: 44px 30px 30px 30px;
+        padding: 42px 26px 26px 26px;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
-        margin-bottom: 24px;
+        margin-bottom: 22px;
         text-align: center;
     }
     .hero-main-title {
@@ -113,7 +112,7 @@ st.markdown("""
         border: 1px solid #e2e8f0;
         border-radius: 18px;
         padding: 14px 20px;
-        margin-bottom: 30px;
+        margin-bottom: 28px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
     }
     .ribbon-item {
@@ -135,10 +134,14 @@ st.markdown("""
     /* כרטיסיות חדרים פסטליות */
     .room-tile {
         border-radius: 16px;
-        padding: 20px 16px;
+        padding: 18px 14px;
         text-align: center;
         border: 1px solid rgba(0,0,0,0.05);
-        margin-bottom: 14px;
+        margin-bottom: 12px;
+        transition: transform 0.15s ease;
+    }
+    .room-tile:hover {
+        transform: translateY(-2px);
     }
     .cat-purple { background: #f3e8ff; border-color: #e9d5ff; }
     .cat-blue   { background: #e0f2fe; border-color: #bae6fd; }
@@ -201,6 +204,30 @@ st.markdown("""
         margin-bottom: 8px;
     }
 
+    /* כפתור שיתוף לוואטסאפ */
+    .whatsapp-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #25d366;
+        color: white !important;
+        padding: 9px 18px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 0.95rem;
+        margin-top: 10px;
+        box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+    }
+    .whatsapp-btn:hover {
+        background-color: #1ebe57;
+    }
+
+    @media (max-width: 768px) {
+        .hero-main-title { font-size: 2rem; }
+        .features-ribbon { flex-direction: column; gap: 10px; }
+    }
+
     @media print {
         header, footer, nav, [data-testid="stSidebar"], .stButton {
             display: none !important;
@@ -213,7 +240,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# אתחול Session States
+# אתחול Session States וזיכרון מטמון
 if "current_room" not in st.session_state:
     st.session_state.current_room = "דף הבית"
 if "zoom_chat_history" not in st.session_state:
@@ -224,6 +251,10 @@ if "mock_exam_data" not in st.session_state:
     st.session_state.mock_exam_data = None
 if "exam_submitted" not in st.session_state:
     st.session_state.exam_submitted = False
+if "ai_cache" not in st.session_state:
+    st.session_state.ai_cache = {}
+if "last_solution" not in st.session_state:
+    st.session_state.last_solution = ""
 if "reviews" not in st.session_state:
     st.session_state.reviews = [
         {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום סגר לי את החומר לפני המבחן בהיסטוריה."},
@@ -238,13 +269,20 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-def generate_ai(contents):
+def generate_ai(contents, use_cache=False):
+    # מנגנון Caching למניעת קריאות כפולות
+    if use_cache and isinstance(contents, str) and contents in st.session_state.ai_cache:
+        return st.session_state.ai_cache[contents]
+
     models = ["gemini-3.5-flash-lite", "gemini-3.8-flash"]
     last_err = None
     for m in models:
         for _ in range(2):
             try:
-                return client.models.generate_content(model=m, contents=contents)
+                res = client.models.generate_content(model=m, contents=contents)
+                if use_cache and isinstance(contents, str):
+                    st.session_state.ai_cache[contents] = res
+                return res
             except Exception as e:
                 last_err = e
                 time.sleep(1)
@@ -261,6 +299,10 @@ def get_tts_audio_url(text):
     encoded = urllib.parse.quote(clean_text)
     return f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=iw&client=tw-ob"
 
+def get_whatsapp_share_link(text):
+    encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:400]}")
+    return f"https://api.whatsapp.com/send?text={encoded}"
+
 # --- סרגל צד נקי (פרופיל בלבד) ---
 with st.sidebar:
     st.markdown("""
@@ -272,7 +314,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     st.markdown("---")
     
-    st.subheader("👤 הפרופיל שלך")
+    st.subheader("👤 הפרופיל הלימודי שלך")
     chosen_grade = st.selectbox(
         "שכבת לימוד:",
         ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב (בגרות)"],
@@ -323,19 +365,35 @@ with col_nav_btn:
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
+# --- עוזר AI צף וקבוע (Floating Copilot Drawer) ---
+with st.expander("⚡ דן AI – שאלת הבהרה מהירה (זמין בכל מסך)", expanded=False):
+    col_f1, col_f2 = st.columns([3, 1])
+    with col_f1:
+        quick_ai_q = st.text_input("שאלה מהירה על החומר:", placeholder="למשל: מה הנוסחה לשטח משולש? למה סעיף ב' ככה?", label_visibility="collapsed")
+    with col_f2:
+        btn_quick_ask = st.button("שאל עכשיו", key="btn_quick_ai", use_container_width=True)
+    
+    if btn_quick_ask and quick_ai_q.strip():
+        with st.spinner("דן AI עונה..."):
+            try:
+                res_fast = generate_ai(f"אתה עוזר לימודי אישי חכם. תלמיד ב-{student_context}. ענה ישירות, קצר וממוקד ב-2 שורות בלבד: {quick_ai_q}. {anti_yap_rule}")
+                st.info(res_fast.text)
+            except Exception:
+                st.warning("הייתה תקלה קלה בתקשורת, נסה לשאול שוב.")
+
 # ----------------- דף הבית (המרכז הראשי) -----------------
 if st.session_state.current_room == "דף הבית":
     st.markdown("""
         <div class="hero-banner">
             <h1 class="hero-main-title">הדרך שלך להצלחה<br>מתחילה כאן.</h1>
             <p class="hero-desc">
-                לימודים קלים יותר, בכל מקום ובכל זמן.<br>
-                שאל את ה-AI שאלה, או חפש כלי ומקצוע:
+                לומדים בקלות, בכל מקום ובכל זמן.<br>
+                שאל את ה-AI שאלה, או בחר כלי ומקצוע:
             </p>
         </div>
     """, unsafe_allow_html=True)
 
-    query_search = st.text_input("🔍 מה תרצה ללמוד או לשאול היום?", placeholder="שאל שאלה לימודית, או חפש חדר (למשל: 'איך פותרים טריגו?', 'זום', 'מבחן', 'שליף')...")
+    query_search = st.text_input("🔍 מה תרצה ללמוד או לשאול היום?", placeholder="שאל שאלה לימודית, או חפש כלי (למשל: 'איך גוזרים פונקציה?', 'זום', 'מבחן', 'שליף')...")
 
     if query_search.strip():
         q_lower = query_search.lower()
@@ -362,15 +420,16 @@ if st.session_state.current_room == "דף הבית":
         else:
             with st.spinner("דן AI מנסח תשובה ממוקדת..."):
                 try:
-                    res_bot = generate_ai(f"אתה עוזר לימודי אישי חכם לתלמיד ב-{student_context}. ענה על השאלה ישירות, ברור וקצר לתכל'ס בלי חפירות: {query_search}. {anti_yap_rule}")
+                    res_bot = generate_ai(f"אתה עוזר לימודי אישי חכם לתלמיד ב-{student_context}. ענה על השאלה ישירות, ברור וקצר לתכל'ס בלי חפירות: {query_search}. {anti_yap_rule}", use_cache=True)
                     st.markdown("""
                         <div class="clean-box" style="border-right: 4px solid #3b82f6;">
                             <h4 style="margin: 0; color: #1e3a8a;">💡 מענה מהיר של דן AI:</h4>
                         </div>
                     """, unsafe_allow_html=True)
                     st.markdown(res_bot.text)
-                except Exception as e:
-                    st.error(f"שגיאה: {e}")
+                    st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_bot.text)}" target="_blank">📲 שתף פתרון בוואטסאפ</a>', unsafe_allow_html=True)
+                except Exception:
+                    st.warning("לא הצלחנו לפענח כרגע, נסה שוב בעוד מספר רגעים.")
 
     st.markdown("""
         <div class="features-ribbon">
@@ -547,8 +606,8 @@ elif st.session_state.current_room == "חדר זום":
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": reply_text})
                     st.session_state.last_voice_reply = reply_text
                     st.rerun()
-                except Exception as e:
-                    st.error(f"שגיאה: {e}")
+                except Exception:
+                    st.error("הייתה תקלה בהקלטה, נסה לדבר שוב.")
 
         text_spoken = st.chat_input("או כתוב כאן למורה מיה...")
         if text_spoken:
@@ -569,8 +628,8 @@ elif st.session_state.current_room == "חדר זום":
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
                     st.session_state.last_voice_reply = res_zoom.text
                     st.rerun()
-                except Exception as e:
-                    st.error(f"שגיאה: {e}")
+                except Exception:
+                    st.error("הייתה תקלה בתקשורת, נסה לשלוח שוב.")
 
 # ----------------- 2. סורק תמונות -----------------
 elif st.session_state.current_room == "סורק תמונות":
@@ -591,18 +650,22 @@ elif st.session_state.current_room == "סורק תמונות":
                 response = requests.get(url_input.strip(), timeout=10)
                 img_to_solve = Image.open(BytesIO(response.content))
                 st.image(img_to_solve, caption="תמונה מקישור", width=340)
-            except Exception as e:
-                st.error(f"לא ניתן לטעון תמונה: {e}")
+            except Exception:
+                st.error("לא הצלחנו לפתוח את הקישור לתמונה.")
 
     action = st.text_input("הנחיה לפיתרון:", value="פתור והסבר שלב אחרי שלב בצורה ברורה ומדויקת")
     if st.button("פענח ופתור ⚡", use_container_width=True):
         if not photo_topic.strip() or img_to_solve is None:
-            st.warning("נא לציין נושא ולהעלות תמונה.")
+            st.warning("נא לציין נושא ולהעלות תמונה ברורה.")
         else:
             with st.spinner("מפענח את התמונה ומחשב פתרון..."):
-                res = generate_ai([f"התלמיד ב-{student_context}. החומר: {photo_topic}. הנחיה: {action}. {anti_yap_rule}", img_to_solve])
-                st.markdown("""<div class="clean-box"><h3>פתרון מפורט:</h3></div>""", unsafe_allow_html=True)
-                st.markdown(res.text)
+                try:
+                    res = generate_ai([f"התלמיד ב-{student_context}. החומר: {photo_topic}. הנחיה: {action}. {anti_yap_rule}", img_to_solve])
+                    st.markdown("""<div class="clean-box"><h3>פתרון מפורט:</h3></div>""", unsafe_allow_html=True)
+                    st.markdown(res.text)
+                    st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף פתרון בוואטסאפ</a>', unsafe_allow_html=True)
+                except Exception:
+                    st.error("התמונה לא פוענחה בהצלחה. ודא שהתמונה מוארת וברורה.")
 
 # ----------------- 3. מבחני דמה -----------------
 elif st.session_state.current_room == "מבחני דמה":
@@ -648,8 +711,8 @@ elif st.session_state.current_room == "מבחני דמה":
                     st.session_state.mock_exam_data = extract_json(res.text)
                     st.session_state.exam_submitted = False
                     st.success("המבחן מוכן לעבודה למטה.")
-                except Exception as e:
-                    st.error(f"שגיאה: {e}")
+                except Exception:
+                    st.error("שגיאה בבניית השאלות, נסה שוב.")
 
     if st.session_state.mock_exam_data:
         st.markdown("---")
@@ -663,11 +726,14 @@ elif st.session_state.current_room == "מבחני דמה":
 
         if st.button("🏁 הגש לבדיקה וקבלת ציון", use_container_width=True):
             st.session_state.exam_submitted = True
-            with st.spinner("הבוחן מעריך את המבחן..."):
-                prompt_grade = f"אתה בוחן משרד החינוך. תלמיד: {student_context}.\nמבחן:\n{json.dumps(st.session_state.mock_exam_data, ensure_ascii=False)}\nתשובות:\n{json.dumps(user_answers, ensure_ascii=False)}\nהחזר ציון מתוך 100, פירוט נקודות ונוסח מלא של 100."
-                res_feedback = generate_ai(prompt_grade)
-                st.markdown("""<div class="clean-box" style="border-right: 4px solid #10b981;"><h2 style="color: #059669; margin: 0;">🎉 תוצאות מבחן הדמה:</h2></div>""", unsafe_allow_html=True)
-                st.markdown(res_feedback.text)
+            with st.spinner("הבוחן מעריך את המבחן ומחשב ציון..."):
+                try:
+                    prompt_grade = f"אתה בוחן משרד החינוך. תלמיד: {student_context}.\nמבחן:\n{json.dumps(st.session_state.mock_exam_data, ensure_ascii=False)}\nתשובות:\n{json.dumps(user_answers, ensure_ascii=False)}\nהחזר ציון מתוך 100, פירוט נקודות ונוסח מלא של 100."
+                    res_feedback = generate_ai(prompt_grade)
+                    st.markdown("""<div class="clean-box" style="border-right: 4px solid #10b981;"><h2 style="color: #059669; margin: 0;">🎉 תוצאות מבחן הדמה:</h2></div>""", unsafe_allow_html=True)
+                    st.markdown(res_feedback.text)
+                except Exception:
+                    st.error("הייתה שגיאה בבדיקת המבחן, נסה להגיש שוב.")
 
 # ----------------- 4. מעבדת מתמטיקה -----------------
 elif st.session_state.current_room == "מעבדת מתמטיקה":
@@ -676,9 +742,13 @@ elif st.session_state.current_room == "מעבדת מתמטיקה":
     m_input = st.text_area("הזן תרגיל או משוואה:", height=100)
     if st.button("פרק תרגיל שלב-אחר-שלב 🧠", use_container_width=True):
         if m_topic and m_input:
-            with st.spinner("פותר..."):
-                res = generate_ai(f"פתור עבור תלמיד ב-{student_context}.\nנושא: {m_topic}\nתרגיל: {m_input}\nפתור שלב אחרי שלב בבירור עם נימוק קצר ליד כל שלב, וסמן תוצאה סופית מודגשת. {anti_yap_rule}")
-                st.markdown(res.text)
+            with st.spinner("פותר ומפרק..."):
+                try:
+                    res = generate_ai(f"פתור עבור תלמיד ב-{student_context}.\nנושא: {m_topic}\nתרגיל: {m_input}\nפתור שלב אחרי שלב בבירור עם נימוק קצר ליד כל שלב, וסמן תוצאה סופית מודגשת. {anti_yap_rule}", use_cache=True)
+                    st.markdown(res.text)
+                    st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף פתרון בוואטסאפ</a>', unsafe_allow_html=True)
+                except Exception:
+                    st.error("שגיאה בפיתרון התרגיל, נסה שוב.")
 
 # ----------------- 5. שליף חירום -----------------
 elif st.session_state.current_room == "שליף חירום":
@@ -686,9 +756,13 @@ elif st.session_state.current_room == "שליף חירום":
     p_topic = st.text_input("נושא המבחן:", placeholder="משפט חוצה זווית, מרד בר כוכבא...")
     if st.button("הצל אותי עכשיו ⚡", use_container_width=True):
         if p_topic:
-            with st.spinner("מחלץ שליף..."):
-                res = generate_ai(f"התלמיד ב-{student_context} נכנס בעוד דקה למבחן על החומר: {p_topic}.\nהחזר אך ורק:\n1. 3 משפטי זהב שחייבים לרשום במבחן.\n2. הטעות הנפוצה ביותר.\n3. מושג חובה שהבוחן מחפש. {anti_yap_rule}")
-                st.markdown(f'<div class="cheat-learnit">{res.text}</div>', unsafe_allow_html=True)
+            with st.spinner("מחלץ שליף ממוקד..."):
+                try:
+                    res = generate_ai(f"התלמיד ב-{student_context} נכנס בעוד דקה למבחן על החומר: {p_topic}.\nהחזר אך ורק:\n1. 3 משפטי זהב שחייבים לרשום במבחן.\n2. הטעות הנפוצה ביותר.\n3. מושג חובה שהבוחן מחפש. {anti_yap_rule}", use_cache=True)
+                    st.markdown(f'<div class="cheat-learnit">{res.text}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף שליף בוואטסאפ</a>', unsafe_allow_html=True)
+                except Exception:
+                    st.error("לא הצלחנו לייצר שליף כרגע.")
 
 # ----------------- 6. מלטשת תשובות -----------------
 elif st.session_state.current_room == "מלטשת תשובות":
@@ -698,9 +772,12 @@ elif st.session_state.current_room == "מלטשת תשובות":
     a_ans = st.text_area("התשובה שכתבת:", height=100)
     if st.button("שדרג תשובה ל-100 🚀", use_container_width=True):
         if a_top and a_ans:
-            with st.spinner("מלטש תשובה..."):
-                res = generate_ai(f"מעריך בחינות קפדן לתלמיד ב-{student_context}.\nחומר: {a_top}\nשאלה: {a_q}\nתשובה: {a_ans}\nהחזר: 1. ציון מוערך 2. מה חסר 3. תשובה מושלמת סופית שסוגרת 100 נקודות. {anti_yap_rule}")
-                st.markdown(res.text)
+            with st.spinner("מלטש לפי מחוון..."):
+                try:
+                    res = generate_ai(f"מעריך בחינות קפדן לתלמיד ב-{student_context}.\nחומר: {a_top}\nשאלה: {a_q}\nתשובה: {a_ans}\nהחזר: 1. ציון מוערך 2. מה חסר 3. תשובה מושלמת סופית שסוגרת 100 נקודות. {anti_yap_rule}")
+                    st.markdown(res.text)
+                except Exception:
+                    st.error("שגיאה בליטוש התשובה.")
 
 # ----------------- 7. ספריית וידאו -----------------
 elif st.session_state.current_room == "ספריית וידאו":
@@ -721,9 +798,12 @@ elif st.session_state.current_room == "דפי הדפסה":
     pr_sub = st.selectbox("מקצוע:", ["מתמטיקה", "אנגלית", "מדעי המחשב", "ביולוגיה", "היסטוריה"])
     if st.button("ייצר דף עבודה 📄", use_container_width=True):
         if pr_top:
-            with st.spinner("מייצר דף..."):
-                res = generate_ai(f"צור דף תרגול ומבחן מעוצב בעברית לתלמיד ב-{student_context}.\nמקצוע: {pr_sub}, נושא: {pr_top}.\nכותרת עליונה, שאלות ברמת קושי עולה, ובסוף דף מחוון תשובות מלא.")
-                st.session_state["printable_sheet"] = res.text
+            with st.spinner("מייצר דף נקי להדפסה..."):
+                try:
+                    res = generate_ai(f"צור דף תרגול ומבחן מעוצב בעברית לתלמיד ב-{student_context}.\nמקצוע: {pr_sub}, נושא: {pr_top}.\nכותרת עליונה, שאלות ברמת קושי עולה, ובסוף דף מחוון תשובות מלא.")
+                    st.session_state["printable_sheet"] = res.text
+                except Exception:
+                    st.error("שגיאה בהפקת דף התרגול.")
     if "printable_sheet" in st.session_state:
         st.markdown(st.session_state["printable_sheet"])
         st.markdown("""<div style="text-align: center; margin-top: 15px;"><button onclick="window.print()" style="padding: 10px 20px; font-size: 15px; background: #1e3a8a; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🖨️ הדפס דף זה</button></div>""", unsafe_allow_html=True)
@@ -742,8 +822,11 @@ elif st.session_state.current_room == "קלאסרום":
     if st.button("פרק מטלה למשימות וזמנים 📋", use_container_width=True):
         if c_text:
             with st.spinner("מנתח מטלה..."):
-                res = generate_ai(f"פרק מטלה עבור {student_context}:\n{c_text}\nמה נדרש, דד-ליין, ושלבי ביצוע מהירים. {anti_yap_rule}")
-                st.markdown(res.text)
+                try:
+                    res = generate_ai(f"פרק מטלה עבור {student_context}:\n{c_text}\nמה נדרש, דד-ליין, ושלבי ביצוע מהירים. {anti_yap_rule}")
+                    st.markdown(res.text)
+                except Exception:
+                    st.error("שגיאה בניתוח המטלה.")
 
 # ----------------- 10. מתכנן לו״ז -----------------
 elif st.session_state.current_room == "לוז":
@@ -753,5 +836,8 @@ elif st.session_state.current_room == "לוז":
     if st.button("בנה לו״ז לימודים 🗓️", use_container_width=True):
         if l_top:
             with st.spinner("בונה לו״ז..."):
-                res = generate_ai(f"בנה לוח זמנים פרקטי ללימוד למבחן עבור {student_context}.\nימים: {l_days}, חומר: {l_top}. חלק בצורה מאוזנת לפי ימים עם זמני מנוחה.")
-                st.markdown(res.text)
+                try:
+                    res = generate_ai(f"בנה לוח זמנים פרקטי ללימוד למבחן עבור {student_context}.\nימים: {l_days}, חומר: {l_top}. חלק בצורה מאוזנת לפי ימים עם זמני מנוחה.")
+                    st.markdown(res.text)
+                except Exception:
+                    st.error("שגיאה בבניית לוח הזמנים.")
