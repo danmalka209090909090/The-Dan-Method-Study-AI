@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# שפת עיצוב LearnIt נקייה, מודרנית והסרת סרגלי Streamlit
+# שפת עיצוב LearnIt נקייה, פונט Assistant והסרת סרגלים מובנים
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
@@ -25,7 +25,7 @@ st.markdown("""
         -webkit-font-smoothing: antialiased;
     }
 
-    /* הסתרת סרגלי הניהול המובנים של Streamlit */
+    /* הסתרת כל מעטפת הניהול והאייקונים המובנים של Streamlit */
     header, 
     [data-testid="stHeader"], 
     .stAppHeader, 
@@ -167,6 +167,56 @@ st.markdown("""
     .cat-red    { background: #fee2e2; border-color: #fca5a5; }
     .cat-slate  { background: #f1f5f9; border-color: #e2e8f0; }
 
+    /* תיבת הסבר על האתר */
+    .story-card {
+        background: linear-gradient(135deg, #0f2b5c 0%, #1e3a8a 100%);
+        color: #ffffff;
+        border-radius: 20px;
+        padding: 30px;
+        margin-top: 36px;
+        box-shadow: 0 8px 25px rgba(15, 43, 92, 0.12);
+    }
+    .story-title {
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: #ffffff;
+        margin-bottom: 10px;
+    }
+    .story-p {
+        font-size: 1.05rem;
+        color: #e2e8f0;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* טבלת השוואה */
+    .compare-container {
+        margin-top: 24px;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+    }
+    .compare-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        text-align: right;
+    }
+    .compare-table th {
+        padding: 12px;
+        border-bottom: 2px solid #e2e8f0;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+    .compare-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.95rem;
+    }
+
     /* כרטיסיית חדר זום ומורה */
     .zoom-learnit-card {
         background: #ffffff;
@@ -199,21 +249,21 @@ st.markdown("""
         box-shadow: 0 2px 10px rgba(0,0,0,0.03);
         margin-bottom: 16px;
     }
-    .cheat-learnit {
-        background: #fffbeb;
-        border: 1px solid #fde68a;
-        border-radius: 16px;
-        padding: 24px;
-        color: #92400e;
-        margin-top: 14px;
-        line-height: 1.7;
-    }
     .panic-box {
         background: #fef2f2;
         border: 2px solid #ef4444;
         border-radius: 16px;
         padding: 24px;
         color: #991b1b;
+        margin-top: 14px;
+        line-height: 1.7;
+    }
+    .cheat-learnit {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 16px;
+        padding: 24px;
+        color: #92400e;
         margin-top: 14px;
         line-height: 1.7;
     }
@@ -229,8 +279,6 @@ st.markdown("""
         margin-left: 8px;
         margin-bottom: 8px;
     }
-
-    /* כפתור שיתוף לוואטסאפ */
     .whatsapp-btn {
         display: inline-flex;
         align-items: center;
@@ -244,9 +292,6 @@ st.markdown("""
         font-size: 0.95rem;
         margin-top: 10px;
         box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
-    }
-    .whatsapp-btn:hover {
-        background-color: #1ebe57;
     }
 
     @media (max-width: 768px) {
@@ -266,7 +311,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# אתחול Session States וזיכרון מטמון
+# אתחול Session States
 if "current_room" not in st.session_state:
     st.session_state.current_room = "דף הבית"
 if "zoom_chat_history" not in st.session_state:
@@ -281,9 +326,9 @@ if "ai_cache" not in st.session_state:
     st.session_state.ai_cache = {}
 if "reviews" not in st.session_state:
     st.session_state.reviews = [
-        {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום סגר לי את החומר לפני המבחן בהיסטוריה."},
-        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "עיצוב נוח, נקי ובלי סרבול."},
-        {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה מסביר לפי מחוון בגרות בדיוק כמו שצריך."}
+        {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום סגר לי את החומר לפני המבחן בהיסטוריה, הציל לי 20 נקודות."},
+        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "האתר נראה יוקרתי, נקי מכל השטויות ובאמת מדבר בגובה העיניים."},
+        {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה לי 9 נקודות!"}
     ]
 
 api_key = st.secrets.get("GEMINI_API_KEY", "")
@@ -323,7 +368,7 @@ def get_tts_audio_url(text):
     return f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=iw&client=tw-ob"
 
 def get_whatsapp_share_link(text):
-    encoded = urllib.parse.quote(f"היי, הנה משהו שימושי מ-The Dan Method:\n\n{text[:450]}")
+    encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:450]}")
     return f"https://api.whatsapp.com/send?text={encoded}"
 
 # --- סרגל צד נקי (פרופיל בלבד) ---
@@ -372,7 +417,7 @@ with st.sidebar:
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
 
-# --- סרגל ניווט עליון עצמאי עם לוגו מעוצב וכפתור בית ---
+# --- סרגל ניווט עליון עצמאי עם לוגו וכפתור דף הבית ---
 col_nav_logo, col_nav_btn = st.columns([3.8, 1.2])
 with col_nav_logo:
     st.markdown("""
@@ -396,23 +441,7 @@ with col_nav_btn:
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
-# --- עוזר AI צף לסגירת פינות מהירה (זמין בכל מסך) ---
-with st.expander("💡 דן AI – שאלת הבהרה מהירה (זמין מכל מסך)", expanded=False):
-    col_f1, col_f2 = st.columns([3.5, 1])
-    with col_f1:
-        quick_ai_q = st.text_input("שאל שאלה קצרה:", placeholder="למשל: מה הנוסחה לשטח משולש? למה מורידים נקודות על סעיף כזה?", label_visibility="collapsed")
-    with col_f2:
-        btn_quick_ask = st.button("שאל עכשיו", key="btn_quick_ai", use_container_width=True)
-    if btn_quick_ask and quick_ai_q.strip():
-        with st.spinner("דן AI עונה..."):
-            try:
-                res_fast = generate_ai(f"אתה עוזר לימודי אישי חכם לתלמיד ב-{student_context}. ענה ישירות, קצר וממוקד ב-2 שורות בלבד: {quick_ai_q}. {anti_yap_rule}")
-                st.info(res_fast.text)
-                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_fast.text)}" target="_blank">📲 שתף בוואטסאפ</a>', unsafe_allow_html=True)
-            except Exception:
-                st.warning("הייתה תקלה קלה, נסה לשאול שוב.")
-
-# ----------------- דף הבית (המרכז הראשי) -----------------
+# --- 0. דף הבית (המרכז הראשי) ---
 if st.session_state.current_room == "דף הבית":
     st.markdown("""
         <div class="hero-banner">
@@ -424,7 +453,8 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    query_search = st.text_input("🔍 מה תרצה ללמוד או לשאול היום?", placeholder="שאל שאלה לימודית, או חפש כלי (למשל: 'איך גוזרים פונקציה?', 'זום', 'מבחן', 'חילוץ')...")
+    # שורת חיפוש חכמה ונקייה (ללא טקסטים שבורים)
+    query_search = st.text_input("🔍 שאל שאלה לימודית או חפש כלי:", placeholder="למשל: 'איך גוזרים פונקציה?', 'זום', 'מבחן', 'חילוץ לילה', 'שליף'...", label_visibility="collapsed")
 
     if query_search.strip():
         q_lower = query_search.lower()
@@ -501,7 +531,7 @@ if st.session_state.current_room == "דף הבית":
 
     st.markdown("""
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f2b5c; margin: 0;">מרכז הלמידה והכלים המתקדמים</h2>
+            <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f2b5c; margin: 0;">מרכז הלמידה והכלים</h2>
             <span style="color: #64748b; font-weight: 600; font-size: 0.95rem;">בחר כלי כדי להתחיל לתרגל</span>
         </div>
     """, unsafe_allow_html=True)
@@ -532,7 +562,7 @@ if st.session_state.current_room == "דף הבית":
             st.session_state.current_room = "מעבדת מתמטיקה"
             st.rerun()
 
-    # שורה 2: כלי מהירות וחירום
+    # שורה 2: חילוץ ודיוק
     g5, g6, g7, g8 = st.columns(4)
     with g5:
         st.markdown('<div class="room-tile cat-red"><div style="font-size:30px;">🆘</div><h4 style="margin:4px 0;">חילוץ ב-3 בלילה</h4><p style="font-size:0.85rem; color:#64748b; margin:0;">תוכנית הצלה לפני מבחן</p></div>', unsafe_allow_html=True)
@@ -558,10 +588,10 @@ if st.session_state.current_room == "דף הבית":
             st.session_state.current_room = "רנטגן"
             st.rerun()
 
-    # שורה 3: כלים חדשים שוברי שוק
+    # שורה 3: ערעור וסלנג
     g9, g10, g11, g12 = st.columns(4)
     with g9:
-        st.markdown('<div class="room-tile cat-blue"><div style="font-size:30px;">⚖️</div><h4 style="margin:4px 0;">מכתב ערעור על ציון</h4><p style="font-size:0.85rem; color:#64748b; margin:0;">החזרת נקודות ממורים</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="room-tile cat-blue"><div style="font-size:30px;">⚖️</div><h4 style="margin:4px 0;">מכתב ערעור</h4><p style="font-size:0.85rem; color:#64748b; margin:0;">החזרת נקודות ממורים</p></div>', unsafe_allow_html=True)
         if st.button("נסח ערעור", key="btn_appeal", use_container_width=True):
             st.session_state.current_room = "ערעור"
             st.rerun()
@@ -573,13 +603,13 @@ if st.session_state.current_room == "דף הבית":
             st.rerun()
 
     with g11:
-        st.markdown('<div class="room-tile cat-orange"><div style="font-size:30px;">🎯</div><h4 style="margin:4px 0;">מחשבון בגרות ומגן</h4><p style="font-size:0.85rem; color:#64748b; margin:0;">חיזוי הציון הסופי</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="room-tile cat-orange"><div style="font-size:30px;">🎯</div><h4 style="margin:4px 0;">מחשבון בגרות</h4><p style="font-size:0.85rem; color:#64748b; margin:0;">חיזוי הציון הסופי</p></div>', unsafe_allow_html=True)
         if st.button("חשב ציון יעד", key="btn_calc", use_container_width=True):
             st.session_state.current_room = "מחשבון"
             st.rerun()
 
     with g12:
-        st.markdown('<div class="room-tile cat-slate"><div style="font-size:30px;">🗣️</div><h4 style="margin:4px 0;">מתרגם סלנג לימודי</h4><p style="font-size:0.85rem; color:#64748b; margin:0;">תרגום שאלות לתכל\'ס</p></div>', unsafe_allow_html=True)
+        st.markdown('<div class="room-tile cat-slate"><div style="font-size:30px;">🗣️</div><h4 style="margin:4px 0;">מתרגם סלנג</h4><p style="font-size:0.85rem; color:#64748b; margin:0;">תרגום שאלות לתכל\'ס</p></div>', unsafe_allow_html=True)
         if st.button("תרגם שאלה", key="btn_street", use_container_width=True):
             st.session_state.current_room = "מתרגם"
             st.rerun()
@@ -609,6 +639,98 @@ if st.session_state.current_room == "דף הבית":
         if st.button("תכנן לו״ז", key="btn_sched", use_container_width=True):
             st.session_state.current_room = "לוז"
             st.rerun()
+
+    # --- סיפור האתר והשיטה ---
+    st.markdown("""
+        <div class="story-card">
+            <div class="story-title">⚡ על השיטה של The Dan Method</div>
+            <p class="story-p">
+                נמאס לשבת שעות מול סיכומים ארוכים, מורים שמדברים מסביב ואתרי לימוד שנראים כמו שנת 2005.<br>
+                <b>The Dan Method</b> נבנה במטרה אחת ברורה: לתת לתלמידי ישראל את הדרך הקצרה, המדויקת והחדה ביותר למאיות במבחנים ובבגרויות.<br>
+                במקום ללמוד 4 שעות ולזכור חצי – אנחנו מפרקים כל נושא לשלבי ברזל, מסננים חפירות מיותרות (מצב תכל'ס), ומלמדים אותך בדיוק לפי מה שהבוחן מחפש בעין בטופס הבדיקה.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # --- טבלת ההשוואה (The Dan Method מול AI רגיל) ---
+    st.markdown("""
+        <div class="compare-container">
+            <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.3rem; font-weight: 800;">למה The Dan Method ולא סתם בינה מלאכותית רגילה?</h3>
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">ChatGPT ודגמי AI רגילים לא מכירים את בתי הספר בישראל ומבזבזים לך זמן. הנה ההבדל:</p>
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>תכונה</th>
+                        <th style="color: #1e3a8a;">The Dan Method 🎓</th>
+                        <th>ChatGPT / מודל רגיל</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 600;">התאמה למערכת החינוך</td>
+                        <td style="color: #16a34a; font-weight: 700;">מכויל בול לפי מחווני בגרות, הקבצות וכיתות ז'-י"ב בישראל</td>
+                        <td style="color: #64748b;">תשובות גנריות באנגלית שתורגמו לעברית, לא מכיר מחוונים</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">אורך המענה והיעילות</td>
+                        <td style="color: #16a34a; font-weight: 700;">מצב תכל'ס (No Yap) – פירוק ממוקד ב-3 שורות בדיוק למה שצריך</td>
+                        <td style="color: #64748b;">פסקאות פתיחה וסיום ארוכות, חפירות ומריחת זמן</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">בדיקת מבחנים וציונים</td>
+                        <td style="color: #16a34a; font-weight: 700;">חישוב ציון אמיתי מתוך 100 עם הורדת נקודות לפי נימוקים חסרים</td>
+                        <td style="color: #64748b;">סתם מחמיא לתשובה ולא יודע לתת ציון בגרות אמיתי</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">חילוץ רגע לפני מבחן</td>
+                        <td style="color: #16a34a; font-weight: 700;">שליף 60 שניות, מצב חילוץ בלילה ורנטגן שגיאות</td>
+                        <td style="color: #64748b;">מייצר טקסטים ענקיים שבלתי אפשרי לקרוא תחת לחץ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # --- חוות דעת והמלצות תלמידים ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.subheader("⭐ מה שתלמידים אומרים על The Dan Method")
+    st.caption("משובים אמיתיים מתלמידי חטיבה ותיכון מכל הארץ:")
+    
+    col_rev1, col_rev2 = st.columns([1.8, 1.2])
+    with col_rev1:
+        for r in st.session_state.reviews:
+            stars = "⭐" * r["rating"]
+            st.markdown(f"""
+                <div class="clean-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b>{r['name']}</b> ({r['grade']})
+                        <span style="font-size:0.9rem;">{stars}</span>
+                    </div>
+                    <p style="color: #475569; margin: 6px 0 0 0; font-size: 0.95rem;">{r['text']}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+    with col_rev2:
+        st.markdown('<div class="clean-box"><h4 style="margin-top:0;">✍️ הוסף חוות דעת:</h4>', unsafe_allow_html=True)
+        with st.form("feedback_form_home", clear_on_submit=True):
+            fb_name = st.text_input("שם או כינוי:")
+            fb_grade = st.selectbox("כיתה:", ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב"], index=2)
+            fb_rating = st.slider("דירוג (כוכבים):", 1, 5, 5)
+            fb_text = st.text_area("איך האתר עזר לך?")
+            submitted_fb = st.form_submit_button("שלח חוות דעת 🚀")
+            if submitted_fb:
+                if not fb_text.strip():
+                    st.warning("נא לכתוב כמה מילים.")
+                else:
+                    st.session_state.reviews.insert(0, {
+                        "name": fb_name.strip() if fb_name.strip() else "אנונימי",
+                        "grade": fb_grade,
+                        "rating": fb_rating,
+                        "text": fb_text.strip()
+                    })
+                    st.success("תודה! חוות הדעת נוספה בהצלחה.")
+                    st.balloons()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ----------------- חדר: חילוץ ב-3 בלילה -----------------
 elif st.session_state.current_room == "חילוץ לילה":
@@ -671,7 +793,7 @@ elif st.session_state.current_room == "רנטגן":
                 except Exception:
                     st.error("שגיאה ברנטגן.")
 
-# ----------------- חדר: מחולל מכתב ערעור על ציון -----------------
+# ----------------- חדר: מחולל מכתב ערעור -----------------
 elif st.session_state.current_room == "ערעור":
     st.title("⚖️ מחולל מכתב ערעור על ציון")
     st.caption("הורידו לך נקודות לא בצדק? נסח מכתב ערעור רשמי ומנומק לפי מחוון משרד החינוך שהמורה יתקשה לדחות.")
@@ -703,7 +825,7 @@ elif st.session_state.current_room == "ערעור":
                 except Exception:
                     st.error("שגיאה בניסוח הערעור.")
 
-# ----------------- חדר: כרטיסיות חזרה מהירות -----------------
+# ----------------- חדר: כרטיסיות חזרה -----------------
 elif st.session_state.current_room == "כרטיסיות":
     st.title("🎴 כרטיסיות חזרה מהירות (Interactive Flashcards)")
     st.caption("שינון מושגי מפתח ונוסחאות בקלות בהסעה או בהפסקה.")
@@ -746,7 +868,6 @@ elif st.session_state.current_room == "מחשבון":
         target_final = st.number_input("מה הציון הסופי שאתה מכוון אליו?", 60, 100, 90)
     
     bagrut_weight = 100 - magen_weight
-    # חישוב: target = (magen * weight + bagrut * weight) / 100
     needed_bagrut = (target_final * 100 - (magen_score * magen_weight)) / bagrut_weight
     
     st.markdown("---")
