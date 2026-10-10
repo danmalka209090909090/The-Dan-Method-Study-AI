@@ -12,10 +12,10 @@ st.set_page_config(
     page_title="The Dan Method | לומדים. מתקדמים.",
     page_icon="🎓",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# שפת עיצוב LearnIt נקייה ובהירה
+# הסתרה הרמטית של סרגל Streamlit Cloud העליון, כפתורי הניהול והחיצים
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
@@ -25,11 +25,39 @@ st.markdown("""
         -webkit-font-smoothing: antialiased;
     }
 
+    /* העלמת סרגל הניהול העליון של Streamlit (כולל Share, GitHub, Edit, אייקונים) */
+    header, 
+    [data-testid="stHeader"], 
+    .stAppHeader, 
+    div[data-testid="stToolbar"], 
+    .stAppToolbar, 
+    div[class*="stToolbar"],
+    div[class*="StatusWidget"],
+    #MainMenu, 
+    footer,
+    [data-testid="stDecoration"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        max-height: 0px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* איפוס הרווח הריק העליון */
     .stApp {
+        margin-top: -50px !important;
+        padding-top: 0px !important;
         direction: rtl;
         text-align: right;
         background-color: #f8fafc;
         color: #0f172a;
+    }
+
+    .main .block-container {
+        padding-top: 2rem !important;
     }
 
     [data-testid="stSidebar"] {
@@ -37,16 +65,13 @@ st.markdown("""
         border-left: 1px solid #e2e8f0;
     }
 
-    /* סרגל עליון */
+    /* Header עליון נקי בסגנון LearnIt */
     .learnit-navbar {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 16px;
-        padding: 14px 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
+        padding: 12px 20px;
+        margin-bottom: 20px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
     .brand-logo {
@@ -236,7 +261,7 @@ def get_tts_audio_url(text):
     encoded = urllib.parse.quote(clean_text)
     return f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=iw&client=tw-ob"
 
-# --- סרגל צד נקי (פרופיל בלבד, ללא רשימת חדרים) ---
+# --- סרגל צד נקי (פרופיל בלבד) ---
 with st.sidebar:
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -282,25 +307,24 @@ with st.sidebar:
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
 
-# כפתור חזרה לדף הבית כשנמצאים בחדר פנימי
-if st.session_state.current_room != "דף הבית":
-    if st.button("⬅️ חזרה ללוח הבקרה הראשי", use_container_width=False):
+# --- סרגל ניווט עליון עצמאי עם כפתור דף הבית ---
+col_nav_logo, col_nav_btn = st.columns([3.5, 1.2])
+with col_nav_logo:
+    st.markdown("""
+        <div class="learnit-navbar">
+            <span class="brand-logo">The Dan Method</span>
+            <span style="color: #64748b; font-size: 0.95rem; font-weight: 600; margin-right: 8px;">
+                | מחובר: <b>""" + chosen_grade + """ (""" + math_units + """)</b>
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+with col_nav_btn:
+    if st.button("🏠 עמוד הבית", key="nav_home_main", use_container_width=True):
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
 # ----------------- דף הבית (המרכז הראשי) -----------------
 if st.session_state.current_room == "דף הבית":
-    # נאובר עליון
-    st.markdown("""
-        <div class="learnit-navbar">
-            <div class="brand-logo">The Dan Method</div>
-            <div style="color: #64748b; font-size: 0.95rem; font-weight: 600;">
-                שלום, תלמיד <b>""" + chosen_grade + """ (""" + math_units + """)</b>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # Hero Banner
     st.markdown("""
         <div class="hero-banner">
             <h1 class="hero-main-title">הדרך שלך להצלחה<br>מתחילה כאן.</h1>
@@ -311,12 +335,10 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # שורת חיפוש חכמה + בוט AI משולב
     query_search = st.text_input("🔍 מה תרצה ללמוד או לשאול היום?", placeholder="שאל שאלה לימודית, או חפש חדר (למשל: 'איך פותרים טריגו?', 'זום', 'מבחן', 'שליף')...")
 
     if query_search.strip():
         q_lower = query_search.lower()
-        # זיהוי קפיצה ישירה לחדרים
         if any(w in q_lower for w in ["זום", "מורה", "שיעור פרטי"]):
             if st.button("🚀 כניסה ישירה לחדר זום עם המורה מיה", use_container_width=True):
                 st.session_state.current_room = "חדר זום"
@@ -338,7 +360,6 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "מעבדת מתמטיקה"
                 st.rerun()
         else:
-            # ה-AI בוט עונה ישירות לשאלה של התלמיד
             with st.spinner("דן AI מנסח תשובה ממוקדת..."):
                 try:
                     res_bot = generate_ai(f"אתה עוזר לימודי אישי חכם לתלמיד ב-{student_context}. ענה על השאלה ישירות, ברור וקצר לתכל'ס בלי חפירות: {query_search}. {anti_yap_rule}")
@@ -351,41 +372,39 @@ if st.session_state.current_room == "דף הבית":
                 except Exception as e:
                     st.error(f"שגיאה: {e}")
 
-    # סרט היתרונות
     st.markdown("""
         <div class="features-ribbon">
             <div class="ribbon-item">
                 <div class="ribbon-icon-circle" style="background: #f3e8ff; color: #9333ea;">📖</div>
                 <div>
-                    <div class="ribbon-title">תוכן איכותי ומדויק</div>
-                    <div class="ribbon-subtitle">הסברים ממוקדים לבגרות</div>
+                    <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">תוכן איכותי ומדויק</div>
+                    <div style="color:#64748b; font-size:0.8rem;">הסברים ממוקדים לבגרות</div>
                 </div>
             </div>
             <div class="ribbon-item">
                 <div class="ribbon-icon-circle" style="background: #e0f2fe; color: #0284c7;">⏱️</div>
                 <div>
-                    <div class="ribbon-title">לומדים בקצב שלך</div>
-                    <div class="ribbon-subtitle">גישה חופשית ומיידית 24/7</div>
+                    <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">לומדים בקצב שלך</div>
+                    <div style="color:#64748b; font-size:0.8rem;">גישה חופשית ומיידית 24/7</div>
                 </div>
             </div>
             <div class="ribbon-item">
                 <div class="ribbon-icon-circle" style="background: #dcfce7; color: #16a34a;">👥</div>
                 <div>
-                    <div class="ribbon-title">כל המגמות וההקבצות</div>
-                    <div class="ribbon-subtitle">התאמה מלאה לרמתך</div>
+                    <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">כל המגמות וההקבצות</div>
+                    <div style="color:#64748b; font-size:0.8rem;">התאמה מלאה לרמתך</div>
                 </div>
             </div>
             <div class="ribbon-item">
                 <div class="ribbon-icon-circle" style="background: #fef9c3; color: #ca8a04;">⭐</div>
                 <div>
-                    <div class="ribbon-title">מתאים לכל תלמיד</div>
-                    <div class="ribbon-subtitle">מחטיבה ועד בגרות</div>
+                    <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">מתאים לכל תלמיד</div>
+                    <div style="color:#64748b; font-size:0.8rem;">מחטיבה ועד בגרות</div>
                 </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-    # כרטיסיות החדרים והכלים (במקום רשימת רדיו מכוערת בצד)
     st.markdown("""
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f2b5c; margin: 0;">מרכז הלמידה והכלים</h2>
