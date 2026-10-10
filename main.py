@@ -308,18 +308,6 @@ st.markdown("""
         margin-top: 14px;
         line-height: 1.7;
     }
-    .portal-tag-learnit {
-        display: inline-block;
-        padding: 8px 16px;
-        background: #f8fafc;
-        color: #1e3a8a !important;
-        border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        text-decoration: none;
-        font-weight: 700;
-        margin-left: 8px;
-        margin-bottom: 8px;
-    }
     .whatsapp-btn {
         display: inline-flex;
         align-items: center;
@@ -354,7 +342,7 @@ st.markdown("""
 
 # אתחול Session States
 if "app_mode" not in st.session_state:
-    st.session_state.app_mode = "תלמיד"  # מצב ברירת מחדל: תלמיד או מורה
+    st.session_state.app_mode = "תלמיד"
 if "current_room" not in st.session_state:
     st.session_state.current_room = "דף הבית"
 if "zoom_chat_history" not in st.session_state:
@@ -513,7 +501,7 @@ if st.session_state.current_room == "דף הבית":
     """, unsafe_allow_html=True)
 
     # שורת חיפוש חכמה
-    query_search = st.text_input("🔍 שאל שאלה או חפש כלי:", placeholder="למשל: 'איך גוזרים פונקציה?', 'מצגת', 'מבחן', 'מערך שיעור'...", label_visibility="collapsed")
+    query_search = st.text_input("🔍 שאל שאלה או חפש כלי:", placeholder="למשל: 'איך גוזרים פונקציה?', 'מצגת', 'מבחן', 'חילוץ לילה'...", label_visibility="collapsed")
 
     if query_search.strip():
         q_lower = query_search.lower()
@@ -774,7 +762,7 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "מתרגם"
                 st.rerun()
 
-    # חוות דעת והמלצות תלמידים
+    # חוות דעת והמלצות
     st.markdown("<br>", unsafe_allow_html=True)
     st.subheader("⭐ מה שאומרים על The Dan Method")
     st.caption("משובים אמיתיים מתלמידים ומורים מכל הארץ:")
@@ -815,7 +803,7 @@ if st.session_state.current_room == "דף הבית":
                     st.balloons()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ----------------- חדר: מחולל מצגות (חדש!) -----------------
+# ----------------- חדר: מחולל מצגות (פעיל גם לתלמיד וגם למורה) -----------------
 elif st.session_state.current_room == "מצגות":
     st.title("📊 מחולל מצגות מקצועי (Slide Deck Generator)")
     st.caption("בונה שלד שקופיות שלם: כותרות מנצחות, נקודות תכל'ס להקרנה, והערות מפורטות לדובר מה להגיד בכיתה.")
