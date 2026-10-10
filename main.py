@@ -8,6 +8,9 @@ import re
 import time
 import urllib.parse
 
+# קוד גישה סודי לחדר מורים והנהלה (ניתן לשינוי כאן)
+TEACHER_ACCESS_CODE = "DAN100"
+
 st.set_page_config(
     page_title="The Dan Method | לומדים. מתקדמים.",
     page_icon="🎓",
@@ -343,6 +346,8 @@ st.markdown("""
 # אתחול Session States
 if "app_mode" not in st.session_state:
     st.session_state.app_mode = "תלמיד"
+if "teacher_authenticated" not in st.session_state:
+    st.session_state.teacher_authenticated = False
 if "current_room" not in st.session_state:
     st.session_state.current_room = "דף הבית"
 if "zoom_chat_history" not in st.session_state:
@@ -392,8 +397,10 @@ def generate_ai(contents, use_cache=False):
     raise last_err
 
 def extract_json(text):
-    text = re.sub(r"^```json\s*", "", text.strip(), flags=re.MULTILINE)
-    text = re.sub(r"^```\s*", "", text.strip(), flags=re.MULTILINE)
+    text = re.sub(r"^
+```json\s*", "", text.strip(), flags=re.MULTILINE)
+    text = re.sub(r"^
+```\s*", "", text.strip(), flags=re.MULTILINE)
     return json.loads(text.strip("`").strip())
 
 def get_tts_audio_url(text):
@@ -449,6 +456,14 @@ with st.sidebar:
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (מענה ממוקד ולעניין)", value=True)
 
+    if st.session_state.app_mode == "מורה" and st.session_state.teacher_authenticated:
+        st.markdown("---")
+        if st.button("🔒 נעילת מצב מורה (התנתקות)", use_container_width=True):
+            st.session_state.teacher_authenticated = False
+            st.session_state.app_mode = "תלמיד"
+            st.session_state.current_room = "דף הבית"
+            st.rerun()
+
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
 
@@ -487,6 +502,37 @@ with col_nav_btn:
     if st.button("🏠 עמוד הבית", key="nav_home_main", use_container_width=True):
         st.session_state.current_room = "דף הבית"
         st.rerun()
+
+# --- בדיקת אבטחה: אם נבחר מצב מורה והוא טרם אומת, הצג מסך נעילה ---
+if st.session_state.app_mode == "מורה" and not st.session_state.teacher_authenticated:
+    st.markdown("""
+        <div class="clean-box" style="text-align: center; max-width: 550px; margin: 40px auto; border-top: 5px solid #1e3a8a;">
+            <div style="font-size: 48px; margin-bottom: 10px;">🔒</div>
+            <h2 style="color: #0f2b5c; margin: 0 0 8px 0; font-weight: 800;">אזור מוגן לצוות הוראה והנהלה</h2>
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
+                כלי המורים כוללים מחווני בחינה, מערכי שיעור וטפסי הערכה רשמיים.<br>
+                כדי למנוע דליפת פתרונות, הגישה מותרת באמצעות קוד מורה בלבד.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col_lock1, col_lock2, col_lock3 = st.columns([1, 1.2, 1])
+    with col_lock2:
+        code_input = st.text_input("הזן קוד מורה:", type="password", placeholder="הזן קוד גישה...")
+        if st.button("🔓 כניסה לחדר מורים", use_container_width=True):
+            if code_input.strip() == TEACHER_ACCESS_CODE:
+                st.session_state.teacher_authenticated = True
+                st.success("קוד גישה אומת בהצלחה! ברוך הבא למרחב ההוראה.")
+                time.sleep(0.6)
+                st.rerun()
+            else:
+                st.error("קוד הגישה אינו תקין. הגישה מותרת לצוות מורשה בלבד.")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("⬅️ חזרה למצב תלמיד", use_container_width=True):
+            st.session_state.app_mode = "תלמיד"
+            st.rerun()
+    st.stop()
 
 # ----------------- 0. דף הבית (המרכז הראשי) -----------------
 if st.session_state.current_room == "דף הבית":
@@ -704,11 +750,11 @@ if st.session_state.current_room == "דף הבית":
                 st.rerun()
 
     else:
-        # מצב מורה וצוות חינוכי
+        # מצב מורה וצוות חינוכי (נגיש רק לאחר אימות מוצלח)
         st.markdown("""
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f2b5c; margin: 0;">מרכז הפדגוגיה והכלים למורים</h2>
-                <span style="color: #64748b; font-weight: 600; font-size: 0.95rem;">כלים מקצועיים לחיסכון בזמן ולהוראה איכותית</span>
+                <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f2b5c; margin: 0;">מרכז הפדגוגיה והכלים למורים 🔒</h2>
+                <span style="color: #16a34a; font-weight: 700; font-size: 0.95rem;">● מחובר כאנשי צוות מאומתים</span>
             </div>
         """, unsafe_allow_html=True)
 
@@ -1113,7 +1159,6 @@ elif st.session_state.current_room == "מחשבון":
     col_c1, col_c2 = st.columns(2)
     with col_c1:
         magen_score = st.number_input("ציון המגן השנתי שלך (הערכה בית-ספרית):", 0, 100, 85)
-        # המד מתוקן כעת
         magen_weight = st.slider("אחוז משקל המגן (לרוב 30% או 50%):", min_value=10, max_value=50, value=30, step=10)
     with col_c2:
         target_final = st.number_input("מה הציון הסופי שאתה מכוון אליו?", 60, 100, 90)
