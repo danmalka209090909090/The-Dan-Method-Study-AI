@@ -1,5 +1,6 @@
 import streamlit as st
 from google import genai
+from google.genai import types
 from PIL import Image
 import requests
 from io import BytesIO
@@ -1035,7 +1036,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (הקלטה קולית חיה כמו בוואטסאפ) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (הודעות קוליות כמו בוואטסאפ) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -1097,42 +1098,43 @@ elif st.session_state.current_room == "חדר זום":
         chat_box = st.container(height=280)
         with chat_box:
             if not st.session_state.zoom_chat_history:
-                st.info(f"👋 **המורה מיה:** היי! שמחה לפגוש אותך לשיעור ב{z_subject}. אתה יכול לכתוב לי או פשוט להקליט הודעה קולית למטה ולדבר איתי ישירות!")
+                st.info(f"👋 **המורה מיה:** היי! שמחה לפגוש אותך לשיעור ב{z_subject}. אתה יכול לכתוב לי או פשוט להקליט הודעה קולית למטה (כמו בוואטסאפ) ולדבר איתי ישירות!")
             else:
                 for m in st.session_state.zoom_chat_history:
                     with st.chat_message(m["role"]):
                         st.write(m["content"])
 
-        # הקלטה קולית ישירה כמו בוואטסאפ (st.audio_input)
+        # הקלטה קולית חיה כמו בוואטסאפ
         st.markdown("<div style='font-weight:700; font-size:0.9rem; color:#0f2b5c; margin-top:8px;'>🎙️ הקלט הודעה קולית למורה מיה (כמו בוואטסאפ):</div>", unsafe_allow_html=True)
         voice_rec = st.audio_input("הקלט הודעה קולית למיה", label_visibility="collapsed")
         
         if voice_rec is not None:
             audio_bytes_data = voice_rec.read()
-            with st.spinner("המורה מיה מקשיבה להקלטה שלך ומכינה תשובה..."):
+            with st.spinner("המורה מיה מקשיבה להקלטה שלך ומכינה מענה..."):
                 try:
+                    # שימוש במחלקת types.Part.from_bytes למניעת שגיאת ולידציה
+                    audio_part = types.Part.from_bytes(
+                        data=audio_bytes_data,
+                        mime_type="audio/wav"
+                    )
                     prompt_audio = [
                         (
                             f"את המורה מיה בשיעור פרטי אישי חי עם תלמיד ב-{student_context}.\n"
                             f"מקצוע השיעור: {z_subject}.\n"
-                            "התלמיד שלח לך הקלטה קולית. הקשיבי לה ועני לו ישירות בעברית.\n"
+                            "התלמיד שלח לך הקלטה קולית זו. הקשיבי לה ועני לו ישירות בעברית.\n"
                             "הנחיות: דברי בלשון נקבה על עצמך, עני בגובה העיניים, מעודד וממוקד (עד 3 משפטים).\n"
                             "אם הוא פתר תרגיל, בדקי אותו ותני ציון. בסוף שאלי שאלה קצרה."
                         ),
-                        {
-                            "mime_type": "audio/wav",
-                            "data": audio_bytes_data
-                        }
+                        audio_part
                     ]
                     res_zoom = generate_ai(prompt_audio)
-                    st.session_state.zoom_chat_history.append({"role": "user", "content": "🎙️ [שלח הקלטה קולית]"})
+                    st.session_state.zoom_chat_history.append({"role": "user", "content": "🎙️ [שלח הודעה קולית]"})
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
                     st.session_state.last_voice_audio_bytes = create_audio_bytes(res_zoom.text)
                     st.rerun()
                 except Exception as err:
                     st.error(f"שגיאה בעיבוד ההקלטה: {err}")
 
-        # אפשרות חלופית להקלדת טקסט
         text_spoken = st.chat_input("או הקלד כאן הודעה בטקסט...")
         if text_spoken:
             st.session_state.zoom_chat_history.append({"role": "user", "content": text_spoken})
@@ -1258,7 +1260,7 @@ elif st.session_state.current_room == "רנטגן":
                 prompt = f"חשוף מלכודות בוחנים בנושא: {xray_topic} עבור {student_context}."
                 res = generate_ai(prompt)
                 st.markdown(f'<div class="room-content-card">{res.text}</div>', unsafe_allow_html=True)
-                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף מוקשים בוואטסאפ</a>', unsafe_aim_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף מוקשים בוואטסאפ</a>', unsafe_allow_html=True)
 
 elif st.session_state.current_room == "ערעור":
     st.markdown('<span class="room-badge-pill" style="background:#e0f2fe; color:#0369a1;">⚖️ Appeal Generator</span>', unsafe_allow_html=True)
