@@ -21,7 +21,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# שפת עיצוב LearnIt נקייה, בהירה ומודרנית
+# שפת עיצוב LearnIt וטיפוגרפיה
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
@@ -64,7 +64,6 @@ st.markdown("""
         margin: 0 auto;
     }
 
-    /* סרגל צד מעוצב ומרווח */
     [data-testid="stSidebar"] {
         background-color: #ffffff !important;
         border-left: 1px solid #f1f5f9;
@@ -301,6 +300,7 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
+    /* חלון שיחת זום אינטראקטיבי */
     .zoom-video-container {
         background: #0f172a;
         border-radius: 24px;
@@ -417,8 +417,8 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-# מודלים פעילים ויציבים ללא שגיאות 404
-AVAILABLE_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+# שימוש במודלים זמינים תמיד ב-v1beta ללא שגיאת 404
+AVAILABLE_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
 
 def generate_ai(contents, use_cache=False):
     if use_cache and isinstance(contents, str) and contents in st.session_state.ai_cache:
@@ -451,11 +451,24 @@ def extract_json(text):
         clean_str = re.sub(r"[\r\n\t]+", " ", text)
         return json.loads(clean_str)
 
-def get_tts_audio_url(text):
-    clean_text = re.sub(r"[*#_`>\[\]\(\)]", "", text)
-    clean_text = clean_text[:200]
-    encoded = urllib.parse.quote(clean_text)
-    return f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=iw&client=tw-ob"
+# דיבור חי בדפדפן בחינם דרך Web Speech API
+def speak_in_browser(text):
+    clean = re.sub(r"[*#_`>\[\]\(\)\n]", " ", text)
+    clean = clean.replace('"', '\\"').strip()
+    js_code = f"""
+    <script>
+        (function() {{
+            if ('speechSynthesis' in window) {{
+                window.speechSynthesis.cancel();
+                var msg = new SpeechSynthesisUtterance("{clean}");
+                msg.lang = 'he-IL';
+                msg.rate = 1.0;
+                window.speechSynthesis.speak(msg);
+            }}
+        }})();
+    </script>
+    """
+    st.components.v1.html(js_code, height=0, width=0)
 
 def get_whatsapp_share_link(text):
     encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:450]}")
@@ -499,7 +512,7 @@ def create_pptx_file(slides_info, topic_name):
     bio.seek(0)
     return bio
 
-# --- סרגל צד עם רשימת המגמות וההקבצות המלאה ---
+# --- סרגל צד עם רשימת המגמות המלאה ---
 with st.sidebar:
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -631,7 +644,7 @@ if st.session_state.app_mode == "מורה" and not st.session_state.teacher_auth
             <div style="font-size: 44px; margin-bottom: 8px;">🔒</div>
             <h2 style="color: #0f2b5c; margin: 0 0 8px 0; font-weight: 800;">אזור מוגן לצוות הוראה והנהלה</h2>
             <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
-                כלי המורים כוללים מחווני בחינה, מערכי שיעור וטפסי הערכה רשמיים.<br>
+                כלי המורים כוללים מחווני בחינה ומערכי שיעור.<br>
                 כדי למנוע דליפת פתרונות, הגישה מותרת באמצעות קוד מורה בלבד.
             </p>
         </div>
@@ -655,7 +668,7 @@ if st.session_state.app_mode == "מורה" and not st.session_state.teacher_auth
             st.rerun()
     st.stop()
 
-# ----------------- דף הבית (LearnIt Experience) -----------------
+# ----------------- דף הבית -----------------
 if st.session_state.current_room == "דף הבית":
     mode_title = "הדרך שלך להצלחה מתחילה כאן." if st.session_state.app_mode == "תלמיד" else "מרחב הפדגוגיה וההוראה החכמה."
     mode_sub = "לימודים קלים יותר, בכל מקום ובכל זמן. כל מה שצריך כדי להצליח – במקום אחד." if st.session_state.app_mode == "תלמיד" else "הכנת מערכי שיעור, בחני פתע ומחוונים רשמיים בתוך שניות."
@@ -1028,14 +1041,15 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (חינם לגמרי עם Web Speech API) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
-    st.caption("שיחת וידאו חיה, הסבר קולי ותרגול שיעורי בית מותאם אישית!")
+    st.caption("שיחת וידאו חיה, מענה קולי אוטומטי בדפדפן ותרגול שיעורי בית מותאם אישית!")
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
+        # וידאו חי של מורה
         st.markdown("""
             <div class="zoom-video-container">
                 <div class="zoom-live-pill">● שידור חי פועל</div>
@@ -1046,10 +1060,10 @@ elif st.session_state.current_room == "חדר זום":
             </div>
         """, unsafe_allow_html=True)
         
+        # הפעלת קול הדפדפן (Web Speech API) ללא עלות
         if st.session_state.last_voice_reply:
-            st.markdown("<br><b>🔊 השמעת תשובת המורה מיה:</b>", unsafe_allow_html=True)
-            audio_url = get_tts_audio_url(st.session_state.last_voice_reply)
-            st.audio(audio_url, format="audio/mp3", autoplay=True)
+            speak_in_browser(st.session_state.last_voice_reply)
+            st.markdown("<div style='margin-top:10px; color:#16a34a; font-weight:700;'>🔊 המורה מיה מדברת אליך בקול...</div>", unsafe_allow_html=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
         z_subject = st.selectbox("מקצוע השיעור:", ["מתמטיקה", "אנגלית", "היסטוריה", "לשון והבעה", "ביולוגיה", "אזרחות"])
@@ -1066,7 +1080,7 @@ elif st.session_state.current_room == "חדר זום":
                     )
                     res_hw = generate_ai(hw_prompt)
                     st.session_state.zoom_homework = res_hw.text
-                    st.session_state.last_voice_reply = "הכנתי לך שתי שאלות תרגול מעולות שסוגרות את הפינה. תפתור אותן ותכתוב לי כאן את התשובות ואבדוק לך מיד!"
+                    st.session_state.last_voice_reply = "הכנתי לך שתי שאלות תרגול מעולות. תפתור אותן ותכתוב לי כאן את התשובות ואבדוק לך מיד!"
                     st.rerun()
                 except Exception as err:
                     st.error(f"שגיאה בהכנת המשימה: {err}")
