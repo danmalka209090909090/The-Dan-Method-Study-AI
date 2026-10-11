@@ -11,7 +11,6 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 
-# קוד גישה סודי לחדר מורים והנהלה
 TEACHER_ACCESS_CODE = "DAN100"
 
 st.set_page_config(
@@ -21,7 +20,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# שפת עיצוב LearnIt
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
@@ -31,16 +29,10 @@ st.markdown("""
         -webkit-font-smoothing: antialiased;
     }
 
-    header, 
-    [data-testid="stHeader"], 
-    .stAppHeader, 
-    div[data-testid="stToolbar"], 
-    .stAppToolbar, 
-    div[class*="stToolbar"],
-    div[class*="StatusWidget"],
-    #MainMenu, 
-    footer,
-    [data-testid="stDecoration"] {
+    header, [data-testid="stHeader"], .stAppHeader, 
+    div[data-testid="stToolbar"], .stAppToolbar, 
+    div[class*="stToolbar"], div[class*="StatusWidget"],
+    #MainMenu, footer, [data-testid="stDecoration"] {
         display: none !important;
         visibility: hidden !important;
         height: 0px !important;
@@ -300,15 +292,15 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
-    /* נגן וידאו אמיתי שעובד תמיד ללא שגיאות */
+    /* מסגרת וידאו חיה בתנועה מלאה ללא חיתוך פנים */
     .zoom-video-container {
-        background: #0f172a;
+        background: #000000;
         border-radius: 24px;
         overflow: hidden;
         border: 3px solid #1e3a8a;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
         position: relative;
-        height: 310px;
+        height: 300px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -382,7 +374,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# אתחול Session States
 if "app_mode" not in st.session_state:
     st.session_state.app_mode = "תלמיד"
 if "teacher_authenticated" not in st.session_state:
@@ -416,8 +407,6 @@ if not api_key:
     st.stop()
 
 client = genai.Client(api_key=api_key)
-
-# שימוש במודלים הנתמכים והיציבים
 AVAILABLE_MODELS = ["gemini-3.5-flash-lite", "gemini-3.8-flash"]
 
 def generate_ai(contents, use_cache=False):
@@ -451,23 +440,11 @@ def extract_json(text):
         clean_str = re.sub(r"[\r\n\t]+", " ", text)
         return json.loads(clean_str)
 
-def speak_in_browser(text):
+def get_tts_audio_url(text):
     clean = re.sub(r"[*#_`>\[\]\(\)\n]", " ", text)
-    clean = clean.replace('"', '\\"').strip()
-    js_code = f"""
-    <script>
-        (function() {{
-            if ('speechSynthesis' in window) {{
-                window.speechSynthesis.cancel();
-                var msg = new SpeechSynthesisUtterance("{clean}");
-                msg.lang = 'he-IL';
-                msg.rate = 1.0;
-                window.speechSynthesis.speak(msg);
-            }}
-        }})();
-    </script>
-    """
-    st.components.v1.html(js_code, height=0, width=0)
+    clean = clean[:220].strip()
+    encoded = urllib.parse.quote(clean)
+    return f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=iw&client=tw-ob"
 
 def get_whatsapp_share_link(text):
     encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:450]}")
@@ -511,7 +488,6 @@ def create_pptx_file(slides_info, topic_name):
     bio.seek(0)
     return bio
 
-# --- סרגל צד עם רשימת המגמות המלאה ---
 with st.sidebar:
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -600,7 +576,6 @@ with st.sidebar:
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה/מסלול: {chosen_major}."
 
-# --- סרגל ניווט עליון בסגנון LearnIt ---
 col_nav_logo, col_nav_mode, col_nav_btn = st.columns([2.5, 1.5, 1])
 with col_nav_logo:
     st.markdown("""
@@ -636,7 +611,6 @@ with col_nav_btn:
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
-# --- בדיקת אבטחה למצב מורה ---
 if st.session_state.app_mode == "מורה" and not st.session_state.teacher_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 40px auto; border-top: 5px solid #0f2b5c;">
@@ -1040,29 +1014,31 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (וידאו חי מלא שזז תמיד) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
-    st.caption("שיחת וידאו חיה, מענה קולי אוטומטי בדפדפן ותרגול שיעורי בית מותאם אישית!")
+    st.caption("שיחת וידאו חיה בתנועה, מענה קולי ישיר ותרגול מותאם אישית!")
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
-        # וידאו חי רציף עם גיבוי מושלם שעובד תמיד
+        # וידאו חי מלא עם פנים בתנועה רציפה, ללא תמונות חתוכות
         st.markdown("""
             <div class="zoom-video-container">
                 <div class="zoom-live-pill">● שידור חי פועל</div>
-                <video autoplay loop muted playsinline poster="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=700&q=80">
-                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
-                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=700&q=80" style="width:100%; height:100%; object-fit:cover;">
+                <video autoplay loop muted playsinline>
+                    <source src="https://static.videezy.com/system/resources/previews/000/041/970/original/young-woman-talking-on-video-call-with-laptop.mp4" type="video/mp4">
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4" type="video/mp4">
                 </video>
-                <div class="zoom-teacher-tag">המורה מיה (מחוברת)</div>
+                <div class="zoom-teacher-tag">המורה מיה (בשיחה חיה)</div>
             </div>
         """, unsafe_allow_html=True)
         
+        # נגן שמע ברור
         if st.session_state.last_voice_reply:
-            speak_in_browser(st.session_state.last_voice_reply)
-            st.markdown("<div style='margin-top:10px; color:#16a34a; font-weight:700;'>🔊 המורה מיה מדברת אליך בקול...</div>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-top: 14px; margin-bottom: 4px; font-weight: 700; color: #0f2b5c;'>🔊 השמעת קול המורה מיה:</div>", unsafe_allow_html=True)
+            audio_url = get_tts_audio_url(st.session_state.last_voice_reply)
+            st.audio(audio_url, format="audio/mp3", autoplay=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
         z_subject = st.selectbox("מקצוע השיעור:", ["מתמטיקה", "אנגלית", "היסטוריה", "לשון והבעה", "ביולוגיה", "אזרחות"])
