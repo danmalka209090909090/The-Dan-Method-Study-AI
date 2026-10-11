@@ -18,7 +18,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# עיצוב מותאם לכל המכשירים + ביטול סיידבר מוחלט למניעת מריחות
+# עיצוב מותאם לכל המכשירים + ביטול סיידבר מוחלט + כפתורים קריאים וברורים
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&display=swap');
@@ -29,7 +29,7 @@ st.markdown("""
         text-align: right;
     }
 
-    /* חיסול מוחלט של הסיידבר כדי שלא יצוף מאחורי הכרטיסים בספארי ומק */
+    /* ביטול סיידבר סורר */
     [data-testid="stSidebar"], 
     section[data-testid="stSidebar"],
     [data-testid="stSidebarCollapsedControl"] {
@@ -50,7 +50,7 @@ st.markdown("""
     }
 
     .stApp {
-        padding-top: 15px !important;
+        padding-top: 10px !important;
         direction: rtl;
         text-align: right;
         background-color: #f8fafc;
@@ -58,23 +58,23 @@ st.markdown("""
     }
 
     .main .block-container {
-        padding: 1.5rem 1rem 3rem 1rem !important;
-        max-width: 1140px;
+        padding: 1rem 1.5rem 3rem 1.5rem !important;
+        max-width: 1100px;
         margin: 0 auto;
     }
 
-    /* כותרת מרכז הלמידה - מיושרת, ברורה ולא נחתכת */
+    /* כותרת מרכז הלמידה */
     .dashboard-header-container {
         width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin: 35px 0 15px 0;
-        padding-bottom: 10px;
+        margin: 25px 0 15px 0;
+        padding-bottom: 8px;
         border-bottom: 2px solid #e2e8f0;
     }
     .dashboard-header-title {
-        font-size: 1.7rem;
+        font-size: 1.6rem;
         font-weight: 900;
         color: #0f2b5c;
         margin: 0;
@@ -122,67 +122,79 @@ st.markdown("""
                     url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
         border: 1px solid #e2e8f0;
         border-radius: 20px;
-        padding: 30px 20px 20px 20px;
+        padding: 26px 20px 18px 20px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
         margin-bottom: 20px;
         text-align: center;
     }
     .hero-main-title {
-        font-size: 2.3rem;
+        font-size: 2.2rem;
         font-weight: 900;
         color: #0f2b5c;
         line-height: 1.25;
         margin-bottom: 6px;
     }
     .hero-desc {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         color: #475569;
         margin-bottom: 12px;
         font-weight: 500;
     }
 
-    /* כרטיסיות חדרים - יציבות ללא עיוות */
+    /* כרטיסיות חדרים - קופסאות יפות ומיושרות */
     .room-tile {
-        border-radius: 14px;
-        padding: 14px 10px;
+        border-radius: 14px 14px 0 0;
+        padding: 16px 10px;
         text-align: center;
-        border: 1px solid rgba(0,0,0,0.06);
-        margin-bottom: 6px;
-        height: 110px;
+        border: 1px solid rgba(0,0,0,0.08);
+        border-bottom: none;
+        height: 115px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background-color: #ffffff;
     }
     .room-tile h4 {
-        margin: 4px 0 2px 0;
-        font-size: 1.05rem;
+        margin: 6px 0 2px 0;
+        font-size: 1.1rem;
         font-weight: 800;
         color: #0f2b5c;
     }
     .room-tile p {
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         color: #64748b;
         margin: 0;
     }
 
-    .cat-purple { background: #f5edff; border-color: #e9d5ff; }
-    .cat-blue   { background: #e8f5fe; border-color: #bae6fd; }
-    .cat-green  { background: #eafaf1; border-color: #bbf7d0; }
-    .cat-orange { background: #fff3e6; border-color: #fed7aa; }
-    .cat-yellow { background: #fefce8; border-color: #fef08a; }
-    .cat-red    { background: #feebeb; border-color: #fca5a5; }
-    .cat-teal   { background: #e6faf7; border-color: #99f6e4; }
-    .cat-indigo { background: #eef2ff; border-color: #c7d2fe; }
-    .cat-pink   { background: #fdf2f8; border-color: #fbcfe8; }
-    .cat-slate  { background: #f8fafc; border-color: #e2e8f0; }
+    .cat-purple { background: #f5edff; }
+    .cat-blue   { background: #e8f5fe; }
+    .cat-green  { background: #eafaf1; }
+    .cat-orange { background: #fff3e6; }
+    .cat-yellow { background: #fefce8; }
+    .cat-red    { background: #feebeb; }
+    .cat-teal   { background: #e6faf7; }
+    .cat-indigo { background: #eef2ff; }
+    .cat-pink   { background: #fdf2f8; }
+    .cat-slate  { background: #f8fafc; }
 
-    /* כפתורי מערכת Streamlit אחידים */
+    /* תיקון הכפתורים השחורים - כפתור כחול/נייבי ברור, קריא ומחובר לכרטיסייה */
     .stButton button {
-        border-radius: 10px !important;
+        background-color: #0f2b5c !important;
+        color: #ffffff !important;
         font-weight: 700 !important;
-        margin-bottom: 12px !important;
+        font-size: 0.95rem !important;
+        border-radius: 0 0 14px 14px !important;
+        border: 1px solid #0f2b5c !important;
+        border-top: none !important;
+        padding: 8px 12px !important;
+        margin-top: 0px !important;
+        margin-bottom: 18px !important;
+        box-shadow: 0 2px 6px rgba(15, 43, 92, 0.15) !important;
+        transition: all 0.2s ease !important;
+    }
+    .stButton button:hover {
+        background-color: #1e40af !important;
+        color: #ffffff !important;
     }
 
     .clean-box {
@@ -217,9 +229,8 @@ st.markdown("""
     }
 
     @media (max-width: 768px) {
-        .hero-main-title { font-size: 1.8rem !important; }
+        .hero-main-title { font-size: 1.75rem !important; }
         .dashboard-header-container { flex-direction: column; align-items: flex-start; gap: 4px; }
-        .dashboard-header-title { font-size: 1.4rem !important; }
         .room-tile { height: 100px; }
     }
 </style>
@@ -236,26 +247,12 @@ if "zoom_chat_history" not in st.session_state:
     st.session_state.zoom_chat_history = []
 if "last_voice_reply" not in st.session_state:
     st.session_state.last_voice_reply = None
-if "mock_exam_data" not in st.session_state:
-    st.session_state.mock_exam_data = None
-if "slides_data" not in st.session_state:
-    st.session_state.slides_data = None
 if "chosen_grade" not in st.session_state:
     st.session_state.chosen_grade = "כיתה ט'"
-if "chosen_major" not in st.session_state:
-    st.session_state.chosen_major = "ללא מגמה (מקצועות ליבה)"
 if "math_units" not in st.session_state:
     st.session_state.math_units = "הקבצה א' / מצוינות"
-if "eng_units" not in st.session_state:
-    st.session_state.eng_units = "הקבצה א' / דוברי אנגלית"
 if "no_yap" not in st.session_state:
     st.session_state.no_yap = True
-if "reviews" not in st.session_state:
-    st.session_state.reviews = [
-        {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום סגר לי את החומר לפני המבחן בהיסטוריה, הציל לי 20 נקודות."},
-        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "האתר נראה יוקרתי, נקי מכל השטויות ובאמת מדבר בגובה העיניים."},
-        {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה לי 9 נקודות!"}
-    ]
 
 api_key = st.secrets.get("GEMINI_API_KEY", "")
 if not api_key:
@@ -276,19 +273,8 @@ def generate_ai(contents):
                 time.sleep(1)
     raise last_err
 
-def extract_json(text):
-    text = text.strip()
-    text = re.sub(r"^```json\s*", "", text, flags=re.MULTILINE)
-    text = re.sub(r"^```\s*", "", text, flags=re.MULTILINE)
-    text = text.strip("`").strip()
-    match = re.search(r"(\[.*\]|\{.*\})", text, re.DOTALL)
-    if match:
-        text = match.group(1)
-    return json.loads(text)
-
-def get_whatsapp_share_link(text):
-    encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:450]}")
-    return f"https://api.whatsapp.com/send?text={encoded}"
+anti_yap_rule = "השב ישירות לתכל'ס, ללא חפירות." if st.session_state.no_yap else ""
+student_context = f"שכבת לימוד: {st.session_state.chosen_grade}, מתמטיקה: {st.session_state.math_units}."
 
 # --- סרגל ניווט עליון יציב ---
 col_nav_logo, col_nav_mode, col_nav_btn = st.columns([2.4, 1.4, 1.2])
@@ -326,8 +312,8 @@ with col_nav_btn:
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
-# --- הגדרת פרופיל (ישירות בדף, ללא Sidebar שובר) ---
-with st.expander(f"👤 הפרופיל שלך: {st.session_state.chosen_grade} | {st.session_state.math_units} (לחץ לעריכה)"):
+# --- הגדרת פרופיל נקייה ---
+with st.expander(f"👤 הפרופיל שלך: {st.session_state.chosen_grade} | {st.session_state.math_units} (לחץ לשינוי)"):
     cp1, cp2, cp3 = st.columns(3)
     with cp1:
         st.session_state.chosen_grade = st.selectbox(
@@ -339,9 +325,6 @@ with st.expander(f"👤 הפרופיל שלך: {st.session_state.chosen_grade} |
         st.session_state.math_units = st.selectbox("מתמטיקה:", ["הקבצה א' / 5 יח'", "הקבצה ב' / 4 יח'", "רמה רגילה / 3 יח'"])
     with cp3:
         st.session_state.no_yap = st.toggle("מצב תכל'ס (קצר וממוקד)", value=st.session_state.no_yap)
-
-anti_yap_rule = "השב ישירות לתכל'ס, ללא חפירות." if st.session_state.no_yap else ""
-student_context = f"שכבת לימוד: {st.session_state.chosen_grade}, מתמטיקה: {st.session_state.math_units}."
 
 # בדיקת אבטחה למצב מורה
 if st.session_state.app_mode == "מורה" and not st.session_state.teacher_authenticated:
@@ -387,7 +370,7 @@ if st.session_state.current_room == "דף הבית":
                 </div>
             """, unsafe_allow_html=True)
 
-    # כותרת מרכז הלמידה - נקייה ובטוחה
+    # כותרת מרכז הלמידה - ברורה, עליונה ומיושרת
     header_text = "מרכז הלמידה של התלמיד" if st.session_state.app_mode == "תלמיד" else "מרכז הכלים למורים וצוות"
     st.markdown(f"""
         <div class="dashboard-header-container">
@@ -396,107 +379,79 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
+    # פריסה של 3 עמודות רחבות - לא נחתכות בשום מסך (3x3 במקום 4 שנמחץ)
     if st.session_state.app_mode == "תלמיד":
-        col_t1, col_t2, col_t3, col_t4 = st.columns(4)
-        with col_t1:
-            st.markdown('<div class="room-tile cat-pink"><div style="font-size:26px;">📊</div><h4>מחולל מצגות</h4><p>שקופיות והערות להצגה</p></div>', unsafe_allow_html=True)
-            if st.button("בנה מצגת", key="btn_slides_t", use_container_width=True):
+        # שורה 1
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.markdown('<div class="room-tile cat-pink"><div style="font-size:28px;">📊</div><h4>מחולל מצגות</h4><p>שקופיות והערות להצגה</p></div>', unsafe_allow_html=True)
+            if st.button("כניסה למחולל מצגות", key="btn_slides_t", use_container_width=True):
                 st.session_state.current_room = "מצגות"
                 st.rerun()
-
-        with col_t2:
-            st.markdown('<div class="room-tile cat-blue"><div style="font-size:26px;">📹</div><h4>חדר זום חי</h4><p>שיעור קולי 1-על-1</p></div>', unsafe_allow_html=True)
-            if st.button("היכנס לזום", key="btn_zoom_t", use_container_width=True):
+        with c2:
+            st.markdown('<div class="room-tile cat-blue"><div style="font-size:28px;">📹</div><h4>חדר זום חי</h4><p>שיעור קולי 1-על-1</p></div>', unsafe_allow_html=True)
+            if st.button("כניסה לחדר זום", key="btn_zoom_t", use_container_width=True):
                 st.session_state.current_room = "חדר זום"
                 st.rerun()
-
-        with col_t3:
-            st.markdown('<div class="room-tile cat-purple"><div style="font-size:26px;">📸</div><h4>סורק תרגילים</h4><p>פיענוח מתמונה ודף</p></div>', unsafe_allow_html=True)
-            if st.button("פתח סורק", key="btn_scanner_t", use_container_width=True):
+        with c3:
+            st.markdown('<div class="room-tile cat-purple"><div style="font-size:28px;">📸</div><h4>סורק תרגילים</h4><p>פיענוח מתמונה ודף</p></div>', unsafe_allow_html=True)
+            if st.button("פתיחת סורק תרגילים", key="btn_scanner_t", use_container_width=True):
                 st.session_state.current_room = "סורק תמונות"
                 st.rerun()
 
-        with col_t4:
-            st.markdown('<div class="room-tile cat-green"><div style="font-size:26px;">📝</div><h4>מבחני דמה</h4><p>סימולציה עם מחוון</p></div>', unsafe_allow_html=True)
-            if st.button("בנה מבחן", key="btn_exam_t", use_container_width=True):
+        # שורה 2
+        c4, c5, c6 = st.columns(3)
+        with c4:
+            st.markdown('<div class="room-tile cat-green"><div style="font-size:28px;">📝</div><h4>מבחני דמה</h4><p>סימולציה עם מחוון מלא</p></div>', unsafe_allow_html=True)
+            if st.button("בניית מבחן דמה", key="btn_exam_t", use_container_width=True):
                 st.session_state.current_room = "מבחני דמה"
                 st.rerun()
-
-        col_t5, col_t6, col_t7, col_t8 = st.columns(4)
-        with col_t5:
-            st.markdown('<div class="room-tile cat-red"><div style="font-size:26px;">🆘</div><h4>חילוץ ב-3 בלילה</h4><p>תוכנית הצלה לפני מבחן</p></div>', unsafe_allow_html=True)
-            if st.button("חילוץ לילה", key="btn_panic_t", use_container_width=True):
+        with c5:
+            st.markdown('<div class="room-tile cat-red"><div style="font-size:28px;">🆘</div><h4>חילוץ ב-3 בלילה</h4><p>תוכנית הצלה דחופה לפני מבחן</p></div>', unsafe_allow_html=True)
+            if st.button("הפעלת חילוץ לילה", key="btn_panic_t", use_container_width=True):
                 st.session_state.current_room = "חילוץ לילה"
                 st.rerun()
-
-        with col_t6:
-            st.markdown('<div class="room-tile cat-yellow"><div style="font-size:26px;">🚨</div><h4>שליף חירום</h4><p>60 שניות לפני מבחן</p></div>', unsafe_allow_html=True)
-            if st.button("הצג שליף", key="btn_cheat_t", use_container_width=True):
+        with c6:
+            st.markdown('<div class="room-tile cat-yellow"><div style="font-size:28px;">🚨</div><h4>שליף חירום</h4><p>60 שניות לפני הכניסה לכיתה</p></div>', unsafe_allow_html=True)
+            if st.button("הצגת שליף חירום", key="btn_cheat_t", use_container_width=True):
                 st.session_state.current_room = "שליף חירום"
                 st.rerun()
 
-        with col_t7:
-            st.markdown('<div class="room-tile cat-purple"><div style="font-size:26px;">🩻</div><h4>רנטגן שגיאות</h4><p>מלכודות הבוחנים</p></div>', unsafe_allow_html=True)
-            if st.button("גלה מוקשים", key="btn_xray_t", use_container_width=True):
+        # שורה 3
+        c7, c8, c9 = st.columns(3)
+        with c7:
+            st.markdown('<div class="room-tile cat-purple"><div style="font-size:28px;">🩻</div><h4>רנטגן שגיאות</h4><p>חשיפת מלכודות הבוחנים</p></div>', unsafe_allow_html=True)
+            if st.button("גילוי מלכודות", key="btn_xray_t", use_container_width=True):
                 st.session_state.current_room = "רנטגן"
                 st.rerun()
-
-        with col_t8:
-            st.markdown('<div class="room-tile cat-blue"><div style="font-size:26px;">⚖️</div><h4>מכתב ערעור</h4><p>החזרת נקודות ממורים</p></div>', unsafe_allow_html=True)
-            if st.button("נסח ערעור", key="btn_appeal_t", use_container_width=True):
+        with c8:
+            st.markdown('<div class="room-tile cat-blue"><div style="font-size:28px;">⚖️</div><h4>מכתב ערעור</h4><p>החזרת נקודות בצדק ממורים</p></div>', unsafe_allow_html=True)
+            if st.button("ניסוח מכתב ערעור", key="btn_appeal_t", use_container_width=True):
                 st.session_state.current_room = "ערעור"
                 st.rerun()
-
-        col_t9, col_t10, col_t11, col_t12 = st.columns(4)
-        with col_t9:
-            st.markdown('<div class="room-tile cat-orange"><div style="font-size:26px;">📐</div><h4>מעבדת מתמטיקה</h4><p>פירוק שלב-אחר-שלב</p></div>', unsafe_allow_html=True)
-            if st.button("פרק תרגיל", key="btn_math_t", use_container_width=True):
+        with c9:
+            st.markdown('<div class="room-tile cat-orange"><div style="font-size:28px;">📐</div><h4>מעבדת מתמטיקה</h4><p>פירוק שלב-אחר-שלב של תרגילים</p></div>', unsafe_allow_html=True)
+            if st.button("פירוק תרגיל מתמטי", key="btn_math_t", use_container_width=True):
                 st.session_state.current_room = "מעבדת מתמטיקה"
                 st.rerun()
 
-        with col_t10:
-            st.markdown('<div class="room-tile cat-green"><div style="font-size:26px;">🎴</div><h4>כרטיסיות חזרה</h4><p>שינון מושגים מהיר</p></div>', unsafe_allow_html=True)
-            if st.button("פתח כרטיסיות", key="btn_flash_t", use_container_width=True):
-                st.session_state.current_room = "כרטיסיות"
-                st.rerun()
-
-        with col_t11:
-            st.markdown('<div class="room-tile cat-teal"><div style="font-size:26px;">🧘</div><h4>רווחה ופוקוס</h4><p>נשימות ורגיעה</p></div>', unsafe_allow_html=True)
-            if st.button("מרחב רווחה", key="btn_well_t", use_container_width=True):
-                st.session_state.current_room = "רווחה"
-                st.rerun()
-
-        with col_t12:
-            st.markdown('<div class="room-tile cat-orange"><div style="font-size:26px;">🎯</div><h4>מחשבון בגרות</h4><p>חיזוי הציון הסופי</p></div>', unsafe_allow_html=True)
-            if st.button("חשב יעד", key="btn_calc_t", use_container_width=True):
-                st.session_state.current_room = "מחשבון"
-                st.rerun()
-
     else:
-        # מצב מורה
-        col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-        with col_m1:
-            st.markdown('<div class="room-tile cat-pink"><div style="font-size:26px;">📊</div><h4>מחולל מצגות לשיעור</h4><p>שקופיות והערות מורה</p></div>', unsafe_allow_html=True)
-            if st.button("בנה מצגת", key="btn_slides_m", use_container_width=True):
+        # מצב מורה ב-3 עמודות
+        m1, m2, m3 = st.columns(3)
+        with m1:
+            st.markdown('<div class="room-tile cat-pink"><div style="font-size:28px;">📊</div><h4>מחולל מצגות</h4><p>שקופיות והערות מורה</p></div>', unsafe_allow_html=True)
+            if st.button("בניית מצגת לשיעור", key="btn_slides_m", use_container_width=True):
                 st.session_state.current_room = "מצגות"
                 st.rerun()
-
-        with col_m2:
-            st.markdown('<div class="room-tile cat-indigo"><div style="font-size:26px;">⏱️</div><h4>מערך שיעור (45 דק\')</h4><p>פתיחה, גוף ותרגול</p></div>', unsafe_allow_html=True)
-            if st.button("בנה מערך", key="btn_lesson_m", use_container_width=True):
+        with m2:
+            st.markdown('<div class="room-tile cat-indigo"><div style="font-size:28px;">⏱️</div><h4>מערך שיעור</h4><p>45 דקות מובנות ומדורגות</p></div>', unsafe_allow_html=True)
+            if st.button("בניית מערך שיעור", key="btn_lesson_m", use_container_width=True):
                 st.session_state.current_room = "מערכי שיעור"
                 st.rerun()
-
-        with col_m3:
-            st.markdown('<div class="room-tile cat-green"><div style="font-size:26px;">📝</div><h4>בוחן פתע + מחוון</h4><p>שאלות ומחוון בדיקה</p></div>', unsafe_allow_html=True)
-            if st.button("ייצר בוחן", key="btn_quiz_m", use_container_width=True):
+        with m3:
+            st.markdown('<div class="room-tile cat-green"><div style="font-size:28px;">📝</div><h4>בוחן פתע + מחוון</h4><p>שאלות ומחוון בדיקה כיתתי</p></div>', unsafe_allow_html=True)
+            if st.button("יצירת בוחן ומחוון", key="btn_quiz_m", use_container_width=True):
                 st.session_state.current_room = "בחנים ומחוונים"
-                st.rerun()
-
-        with col_m4:
-            st.markdown('<div class="room-tile cat-blue"><div style="font-size:26px;">🏛️</div><h4>מכתב רשמי להנהלה</h4><p>הצגת פיילוט ליועצת</p></div>', unsafe_allow_html=True)
-            if st.button("הצג מכתב", key="btn_letter_m", use_container_width=True):
-                st.session_state.current_room = "הנהלה"
                 st.rerun()
 
 # ----------------- החדרים הנוספים -----------------
@@ -582,31 +537,6 @@ elif st.session_state.current_room == "מעבדת מתמטיקה":
             res = generate_ai(f"פתור צעד אחרי צעד: {q}")
             st.markdown(f'<div class="clean-box">{res.text}</div>', unsafe_allow_html=True)
 
-elif st.session_state.current_room == "כרטיסיות":
-    st.title("🎴 כרטיסיות חזרה")
-    top = st.text_input("נושא:")
-    if top and st.button("ייצר כרטיסיות", use_container_width=True):
-        with st.spinner("מייצר..."):
-            res = generate_ai(f"4 כרטיסיות שינון קצרות בנושא: {top}")
-            st.markdown(f'<div class="clean-box">{res.text}</div>', unsafe_allow_html=True)
-
-elif st.session_state.current_room == "רווחה":
-    st.title("🧘 מרחב רווחה ופוקוס")
-    st.write("תרגיל נשימה 4-4-4 להורדת מתח לפני למידה.")
-    if st.button("הפעל טיימר 30 שניות"):
-        prog = st.progress(0)
-        for i in range(30):
-            time.sleep(1)
-            prog.progress((i+1)/30)
-        st.success("מעולה! הגוף רגוע וכעת הלמידה תהיה אפקטיבית.")
-
-elif st.session_state.current_room == "מחשבון":
-    st.title("🎯 מחשבון ציון יעד לבגרות")
-    magen = st.number_input("ציון מגן:", 0, 100, 85)
-    target = st.number_input("יעד סופי:", 60, 100, 90)
-    needed = (target * 100 - (magen * 30)) / 70
-    st.info(f"ציון דרוש בבגרות: {round(needed)}")
-
 elif st.session_state.current_room == "מערכי שיעור":
     st.title("⏱️ מחולל מערך שיעור (45 דק')")
     top = st.text_input("נושא:")
@@ -622,12 +552,3 @@ elif st.session_state.current_room == "בחנים ומחוונים":
         with st.spinner("מכין..."):
             res = generate_ai(f"בוחן 15 דק' ומחוון בנושא {top}")
             st.markdown(f'<div class="clean-box">{res.text}</div>', unsafe_allow_html=True)
-
-elif st.session_state.current_room == "הנהלה":
-    st.title("🏛️ מכתב רשמי להנהלה")
-    st.markdown("""
-        <div class="clean-box">
-            <h3>לכבוד הנהלת בית הספר</h3>
-            <p>הנדון: שילוב פלטפורמת 'The Dan Method' לשיפור הישגים ולמידה עצמאית.</p>
-        </div>
-    """, unsafe_allow_html=True)
