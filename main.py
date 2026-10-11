@@ -18,7 +18,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# שפת עיצוב LearnIt מקורית: פסטלים, טיפוגרפיה נקייה ומרחב פתוח
+# שפת עיצוב LearnIt: נקייה, בהירה, פסטלית ולא רובוטית
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
@@ -76,7 +76,6 @@ st.markdown("""
         white-space: normal !important;
     }
 
-    /* תיקון סליידרים שלא יתהפכו ב-RTL */
     div[data-testid="stSlider"] > div {
         direction: ltr !important;
     }
@@ -116,7 +115,7 @@ st.markdown("""
         letter-spacing: 1.2px;
     }
 
-    /* Hero Banner בסגנון LearnIt עם שולחן עבודה בהיר */
+    /* Hero Banner בסגנון LearnIt */
     .hero-banner {
         background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.92)), 
                     url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
@@ -149,7 +148,7 @@ st.markdown("""
         border: 1px solid #f1f5f9;
         border-radius: 20px;
         padding: 16px 20px;
-        margin-bottom: 26px;
+        margin-bottom: 24px;
         box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
     }
     .ribbon-item {
@@ -168,7 +167,59 @@ st.markdown("""
         font-size: 20px;
     }
 
-    /* קוביות קטגוריות פסטליות בדיוק כמו ב-LearnIt */
+    /* תיבת "על השיטה" - עיצוב מודרני מרווח */
+    .method-card-learnit {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-right: 5px solid #2563eb;
+        border-radius: 22px;
+        padding: 26px 30px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+    }
+    .method-title-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+    }
+
+    /* כרטיסיית השוואה נקייה בסגנון LearnIt */
+    .compare-card-learnit {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        padding: 26px 30px;
+        margin-bottom: 28px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+    }
+    .compare-table-learnit {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 14px;
+        text-align: right;
+    }
+    .compare-table-learnit th {
+        padding: 14px;
+        border-bottom: 2px solid #f1f5f9;
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: #475569;
+    }
+    .compare-table-learnit td {
+        padding: 16px 14px;
+        border-bottom: 1px solid #f8fafc;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    /* קוביות קטגוריות פסטליות של LearnIt */
     .cat-grid-title {
         font-size: 1.55rem;
         font-weight: 800;
@@ -208,7 +259,7 @@ st.markdown("""
         opacity: 0.8;
     }
 
-    /* צבעי הפסטל המקוריים של LearnIt */
+    /* צבעי הפסטל המקוריים */
     .tile-purple { background-color: #f3e8ff; border-color: #e9d5ff; color: #6b21a8; }
     .tile-blue   { background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
     .tile-mint   { background-color: #dcfce7; border-color: #bbf7d0; color: #15803d; }
@@ -218,7 +269,7 @@ st.markdown("""
     .tile-pink   { background-color: #fce7f3; border-color: #fbcfe8; color: #be185d; }
     .tile-indigo { background-color: #e0e7ff; border-color: #c7d2fe; color: #4338ca; }
 
-    /* תיבות תוכן נקיות לתוך החדרים (נשארות בשפת LearnIt) */
+    /* תיבות תוכן נקיות לתוך החדרים */
     .room-content-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
@@ -281,7 +332,6 @@ st.markdown("""
         object-fit: cover;
     }
 
-    /* כפתור וואטסאפ מודרני */
     .whatsapp-btn {
         display: inline-flex;
         align-items: center;
@@ -297,7 +347,6 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
     }
 
-    /* כפתורי הפעולה של Streamlit */
     div.stButton > button {
         background-color: #0f2b5c !important;
         color: #ffffff !important;
@@ -593,6 +642,57 @@ if st.session_state.current_room == "דף הבית":
                     <div style="color:#64748b; font-size:0.8rem;">מהיסודי ועד הבגרות</div>
                 </div>
             </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # 1. על השיטה של The Dan Method
+    st.markdown("""
+        <div class="method-card-learnit">
+            <div class="method-title-badge">⚡ על השיטה של The Dan Method</div>
+            <p style="font-size: 1.05rem; color: #334155; line-height: 1.75; margin: 0;">
+                נמאס לשבת שעות מול סיכומים ארוכים, מורים שמדברים מסביב ואתרי לימוד שנראים כמו שנת 2005.<br>
+                <b>The Dan Method</b> נבנה במטרה אחת ברורה: לתת לתלמידי ומורי ישראל את הדרך הקצרה, המדויקת והחדה ביותר להצלחה במבחנים ובבגרויות.<br>
+                במקום ללמוד 4 שעות ולזכור חצי – אנחנו מפרקים כל נושא לשלבי ברזל, מסננים חפירות מיותרות (מצב תכל'ס), ומלמדים אותך בדיוק לפי מה שהבוחן מחפש בעין בטופס הבדיקה.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # 2. כרטיסיית ההשוואה
+    st.markdown("""
+        <div class="compare-card-learnit">
+            <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.35rem; font-weight: 800;">למה The Dan Method ולא סתם בינה מלאכותית רגילה?</h3>
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 12px;">ChatGPT ודגמי AI רגילים לא מכירים את בתי הספר בישראל ומבזבזים לך זמן. הנה ההבדל:</p>
+            <table class="compare-table-learnit">
+                <thead>
+                    <tr>
+                        <th style="width: 28%;">תכונה</th>
+                        <th style="width: 36%; color: #2563eb;">🎓 The Dan Method</th>
+                        <th style="width: 36%; color: #64748b;">🤖 ChatGPT / מודל רגיל</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 700; color: #0f172a;">התאמה למערכת החינוך</td>
+                        <td style="color: #16a34a; font-weight: 700;">✔️ מכויל בול לפי מחווני בגרות, הקבצות וכיתות ז'-י"ב בישראל</td>
+                        <td style="color: #64748b;">❌ תשובות גנריות באנגלית שתורגמו, לא מכיר מחווני בדיקה</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #0f172a;">אורך המענה והיעילות</td>
+                        <td style="color: #16a34a; font-weight: 700;">✔️ מצב תכל'ס (No Yap) – פירוק ממוקד ב-3 שורות בדיוק למה שצריך</td>
+                        <td style="color: #64748b;">❌ פסקאות פתיחה וסיום ארוכות, חפירות ומריחת זמן מיותרת</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #0f172a;">בדיקת מבחנים וציונים</td>
+                        <td style="color: #16a34a; font-weight: 700;">✔️ חישוב ציון אמיתי מתוך 100 עם הורדת נקודות לפי נימוקים חסרים</td>
+                        <td style="color: #64748b;">❌ סתם מחמיא לתשובה ולא יודע לתת ציון בגרות אמיתי ומדויק</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #0f172a;">חילוץ רגע לפני מבחן</td>
+                        <td style="color: #16a34a; font-weight: 700;">✔️ שליף 60 שניות, מצב חילוץ בלילה ורנטגן שגיאות בוחנים</td>
+                        <td style="color: #64748b;">❌ מייצר טקסטים ענקיים שבלתי אפשרי לקרוא תחת לחץ זמן</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     """, unsafe_allow_html=True)
 
