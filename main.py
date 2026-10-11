@@ -293,42 +293,21 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
-    /* עיצוב חדר Voice Mode */
-    .voice-stage-card {
-        background: radial-gradient(circle at 50% 30%, #1e293b, #0f172a);
-        border-radius: 26px;
-        border: 3px solid #1e3a8a;
-        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.35);
+    .zoom-video-stage {
         position: relative;
-        height: 310px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        border-radius: 24px;
         overflow: hidden;
+        border: 3px solid #1e3a8a;
+        background: #0f172a;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.3);
+        height: 310px;
     }
-    .voice-avatar-ring {
-        width: 145px;
-        height: 145px;
-        border-radius: 50%;
-        padding: 5px;
-        background: linear-gradient(135deg, #2563eb, #38bdf8, #22c55e);
-        box-shadow: 0 0 25px rgba(37, 99, 235, 0.45);
-        animation: pulseRing 3s infinite ease-in-out;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .voice-avatar-img {
+    .zoom-video-img {
         width: 100%;
         height: 100%;
-        border-radius: 50%;
         object-fit: cover;
-        border: 3px solid #0f172a;
-    }
-    @keyframes pulseRing {
-        0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(37, 99, 235, 0.4); }
-        50% { transform: scale(1.04); box-shadow: 0 0 32px rgba(56, 189, 248, 0.7); }
+        object-position: center top;
+        filter: brightness(0.98);
     }
     .zoom-live-pill {
         position: absolute;
@@ -366,7 +345,7 @@ st.markdown("""
         font-size: 0.9rem;
         backdrop-filter: blur(6px);
     }
-    .zoom-status-tag {
+    .zoom-audio-indicator {
         position: absolute;
         bottom: 14px;
         left: 14px;
@@ -1056,7 +1035,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (דיבור קולי + זיהוי דיבור בחינם) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (דיבור קולי + זיהוי דיבור) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -1064,17 +1043,15 @@ elif st.session_state.current_room == "חדר זום":
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
-        voice_stage_html = """
-        <div class="voice-stage-card">
-            <div class="zoom-live-pill"><span class="live-dot"></span> חיבור פעיל</div>
-            <div class="voice-avatar-ring">
-                <img class="voice-avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80" alt="המורה מיה">
-            </div>
-            <div class="zoom-status-tag">🎙️ שיחה קולית רציפה</div>
-            <div class="zoom-teacher-tag">המורה מיה</div>
+        zoom_ui_html = """
+        <div class="zoom-video-stage">
+            <div class="zoom-live-pill"><span class="live-dot"></span> שידור חי פועל</div>
+            <img class="zoom-video-img" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80" alt="המורה מיה">
+            <div class="zoom-audio-indicator">🎤 מחוברת</div>
+            <div class="zoom-teacher-tag">המורה מיה (בשיחה חיה)</div>
         </div>
         """
-        st.markdown(voice_stage_html, unsafe_allow_html=True)
+        st.markdown(zoom_ui_html, unsafe_allow_html=True)
         
         if st.session_state.last_voice_audio_bytes:
             st.markdown("<div style='margin-top: 12px; margin-bottom: 4px; font-weight: 700; color: #0f2b5c;'>🔊 השמעת תשובת המורה מיה:</div>", unsafe_allow_html=True)
@@ -1126,7 +1103,6 @@ elif st.session_state.current_room == "חדר זום":
                     with st.chat_message(m["role"]):
                         st.write(m["content"])
 
-        # רכיב מיקרופון להקלטה קולית חיה ישירות בדפדפן
         mic_html = """
         <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
             <button id="micBtn" onclick="toggleRecording()" style="padding: 6px 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: Assistant, sans-serif;">
