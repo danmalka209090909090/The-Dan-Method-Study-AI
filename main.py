@@ -64,11 +64,12 @@ st.markdown("""
         margin: 0 auto;
     }
 
+    /* סרגל צד מעוצב ומרווח */
     [data-testid="stSidebar"] {
         background-color: #ffffff !important;
         border-left: 1px solid #f1f5f9;
-        min-width: 280px !important;
-        max-width: 320px !important;
+        min-width: 290px !important;
+        max-width: 330px !important;
         white-space: normal !important;
     }
 
@@ -300,7 +301,6 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
-    /* חלון שיחת וידאו חיה ומלאה של המורה */
     .zoom-video-container {
         background: #0f172a;
         border-radius: 24px;
@@ -417,22 +417,24 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
+# מודלים פעילים ויציבים ללא שגיאות 404
+AVAILABLE_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+
 def generate_ai(contents, use_cache=False):
     if use_cache and isinstance(contents, str) and contents in st.session_state.ai_cache:
         return st.session_state.ai_cache[contents]
 
-    models = ["gemini-2.5-flash", "gemini-2.5-pro"]
     last_err = None
-    for m in models:
-        for _ in range(2):
-            try:
-                res = client.models.generate_content(model=m, contents=contents)
-                if use_cache and isinstance(contents, str):
-                    st.session_state.ai_cache[contents] = res
-                return res
-            except Exception as e:
-                last_err = e
-                time.sleep(1)
+    for m in AVAILABLE_MODELS:
+        try:
+            res = client.models.generate_content(model=m, contents=contents)
+            if use_cache and isinstance(contents, str):
+                st.session_state.ai_cache[contents] = res
+            return res
+        except Exception as e:
+            last_err = e
+            time.sleep(0.5)
+            continue
     raise last_err
 
 def extract_json(text):
@@ -497,7 +499,7 @@ def create_pptx_file(slides_info, topic_name):
     bio.seek(0)
     return bio
 
-# --- סרגל צד נקי ---
+# --- סרגל צד עם רשימת המגמות וההקבצות המלאה ---
 with st.sidebar:
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -516,25 +518,60 @@ with st.sidebar:
     )
     
     if chosen_grade in ["כיתה ז'", "כיתה ח'", "כיתה ט'"]:
-        math_units = st.selectbox("מתמטיקה:", ["הקבצה א' / מצוינות", "הקבצה ב'", "רמה רגילה"])
-        eng_units = st.selectbox("אנגלית:", ["הקבצה א' / דוברי אנגלית", "הקבצה ב'", "רמה רגילה"])
-        chosen_major = st.selectbox("מסלול:", [
-            "ללא מגמה (מקצועות ליבה)", "מדעי המחשב / סייבר", "מדעים / ביולוגיה", "אמנות ועיצוב", "קולנוע ותקשורת"
+        math_units = st.selectbox("מתמטיקה:", [
+            "הקבצה א' / מופת ומצוינות", 
+            "הקבצה א' רגילה", 
+            "הקבצה ב'", 
+            "רמה רגילה / תמיכה לימודית"
+        ])
+        eng_units = st.selectbox("אנגלית:", [
+            "דוברי אנגלית (Native Speakers)", 
+            "הקבצה א' / מואצת", 
+            "הקבצה ב'", 
+            "רמה רגילה"
+        ])
+        chosen_major = st.selectbox("מסלול / עתודה בחטיבה:", [
+            "ללא מסלול (מקצועות ליבה בלבד)",
+            "עתודה מדעית טכנולוגית (עמ\"ט)",
+            "מדעי המחשב / סייבר ורובוטיקה",
+            "מדעים, רפואה וביולוגיה",
+            "תקשורת, עיתונות ורדיו",
+            "אמנות חזותית ועיצוב גרפי",
+            "קולנוע ומולטימדיה",
+            "מוזיקה וסאונד",
+            "תיאטרון ומשחק",
+            "מנהיגות, יזמות ומשפטים"
         ])
     else:
-        math_units = st.selectbox("מתמטיקה:", ["5 יחידות", "4 יחידות", "3 יחידות"])
-        eng_units = st.selectbox("אנגלית:", ["5 יחידות / דוברי אנגלית", "4 יחידות (Module E)", "3 יחידות"])
-        chosen_major = st.selectbox("מגמה בתיכון:", [
+        math_units = st.selectbox("מתמטיקה לבגרות:", [
+            "5 יחידות לימוד (רמת מדעים והנדסה)", 
+            "4 יחידות לימוד", 
+            "3 יחידות לימוד"
+        ])
+        eng_units = st.selectbox("אנגלית לבגרות:", [
+            "5 יחידות לימוד / דוברי אנגלית", 
+            "4 יחידות לימוד (Modules C, D, E)", 
+            "3 יחידות לימוד (Modules A, B, C)"
+        ])
+        chosen_major = st.selectbox("מגמה בתיכון (מקצוע בחירה מוגבר):", [
             "ללא מגמה (מקצועות ליבה בלבד)",
-            "מדעי המחשב / הנדסת תוכנה",
-            "פיזיקה",
-            "ביולוגיה",
-            "ניהול עסקי / יזמות",
+            "מדעי המחשב / הנדסת תוכנה (10 יח')",
+            "סייבר והגנת מרחב הסייבר",
+            "פיזיקה (5 יח')",
+            "ביולוגיה / ביוטכנולוגיה",
+            "כימיה (5 יח')",
+            "מערכות רפואיות / מדעי הבריאות",
+            "ניהול עסקי / יזמות וכלכלה",
             "מדעי החברה: פסיכולוגיה וסוציולוגיה",
-            "כלכלה וניהול",
-            "קולנוע ותקשורת",
-            "צילום ומדיה דיגיטלית",
-            "אמנות חזותית ועיצוב"
+            "משפטים ומדע המדינה",
+            "קולנוע, טלוויזיה והפקה",
+            "תקשורת ומדיה דיגיטלית",
+            "אמנות פלסטית ועיצוב",
+            "ערבית ואסלאם מוגבר",
+            "גיאוגרפיה ופיתוח סביבתי",
+            "היסטוריה מוגברת (5 יח')",
+            "ספרות מוגברת (5 יח')",
+            "תנ\"ך מוגבר (5 יח')"
         ])
     
     st.markdown("---")
@@ -549,7 +586,7 @@ with st.sidebar:
             st.rerun()
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
-student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
+student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה/מסלול: {chosen_major}."
 
 # --- סרגל ניווט עליון בסגנון LearnIt ---
 col_nav_logo, col_nav_mode, col_nav_btn = st.columns([2.5, 1.5, 1])
@@ -948,12 +985,8 @@ elif st.session_state.current_room == "מצגות":
             )
             with st.spinner("בונה שקופיות ומייצר קובץ מצגת להורדה..."):
                 try:
-                    res = client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=prompt_slides,
-                        config={"response_mime_type": "application/json"}
-                    )
-                    st.session_state.slides_data = json.loads(res.text)
+                    res = generate_ai(prompt_slides)
+                    st.session_state.slides_data = extract_json(res.text)
                     st.session_state.pptx_bytes = create_pptx_file(st.session_state.slides_data, slide_topic)
                     st.success("המצגת נוצרה בהצלחה! ניתן להוריד את הקובץ ישירות.")
                     st.rerun()
@@ -995,7 +1028,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (וידאו זז, קול ותרגול אישי!) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -1003,7 +1036,6 @@ elif st.session_state.current_room == "חדר זום":
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
-        # וידאו זז אמיתי של מורה מדברת ומביטה למצלמה (במקום תמונה חתוכה)
         st.markdown("""
             <div class="zoom-video-container">
                 <div class="zoom-live-pill">● שידור חי פועל</div>
@@ -1014,7 +1046,6 @@ elif st.session_state.current_room == "חדר זום":
             </div>
         """, unsafe_allow_html=True)
         
-        # השמעת קול המורה מיה
         if st.session_state.last_voice_reply:
             st.markdown("<br><b>🔊 השמעת תשובת המורה מיה:</b>", unsafe_allow_html=True)
             audio_url = get_tts_audio_url(st.session_state.last_voice_reply)
@@ -1023,7 +1054,6 @@ elif st.session_state.current_room == "חדר זום":
         st.markdown("<br>", unsafe_allow_html=True)
         z_subject = st.selectbox("מקצוע השיעור:", ["מתמטיקה", "אנגלית", "היסטוריה", "לשון והבעה", "ביולוגיה", "אזרחות"])
         
-        # כפתור משימת תרגול ושיעורי בית מהמורה מיה
         if st.button("📚 תני לי משימת תרגול / שיעורי בית לשיעור", use_container_width=True):
             with st.spinner("המורה מיה מכינה תרגילי אתגר לשיעור..."):
                 try:
@@ -1034,10 +1064,7 @@ elif st.session_state.current_room == "חדר זום":
                         "2. תרגיל/שאלה 2 ברמת בגרות/מבחן כיתתי.\n"
                         "3. הנחיה מה לכתוב לך בחזרה בצ'אט כדי שתבדקי ותתני ציון."
                     )
-                    res_hw = client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=hw_prompt
-                    )
+                    res_hw = generate_ai(hw_prompt)
                     st.session_state.zoom_homework = res_hw.text
                     st.session_state.last_voice_reply = "הכנתי לך שתי שאלות תרגול מעולות שסוגרות את הפינה. תפתור אותן ותכתוב לי כאן את התשובות ואבדוק לך מיד!"
                     st.rerun()
@@ -1051,7 +1078,6 @@ elif st.session_state.current_room == "חדר זום":
             st.rerun()
 
     with col_z2:
-        # אם יש משימת שיעורי בית פעילה
         if st.session_state.zoom_homework:
             st.markdown(f"""
                 <div class="room-content-card" style="border-right: 4px solid #16a34a; background:#f0fdf4;">
@@ -1086,10 +1112,7 @@ elif st.session_state.current_room == "חדר זום":
             )
             with st.spinner("המורה מיה מקשיבה ומכינה מענה..."):
                 try:
-                    res_zoom = client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=zoom_prompt
-                    )
+                    res_zoom = generate_ai(zoom_prompt)
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
                     st.session_state.last_voice_reply = res_zoom.text
                     st.rerun()
