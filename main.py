@@ -293,22 +293,42 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
-    /* מסגרת וידאו חיה ומודרנית בסגנון Zoom / Teams */
-    .zoom-video-stage {
-        position: relative;
-        border-radius: 24px;
-        overflow: hidden;
+    /* עיצוב חדר שיחת וידאו וקול חי */
+    .voice-stage-card {
+        background: radial-gradient(circle at 50% 30%, #1e293b, #0f172a);
+        border-radius: 26px;
         border: 3px solid #1e3a8a;
-        background: #0f172a;
-        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.3);
-        height: 300px;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.35);
+        position: relative;
+        height: 310px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
     }
-    .zoom-video-img {
+    .voice-avatar-ring {
+        width: 145px;
+        height: 145px;
+        border-radius: 50%;
+        padding: 5px;
+        background: linear-gradient(135deg, #2563eb, #38bdf8, #22c55e);
+        box-shadow: 0 0 25px rgba(37, 99, 235, 0.45);
+        animation: pulseRing 3s infinite ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .voice-avatar-img {
         width: 100%;
         height: 100%;
+        border-radius: 50%;
         object-fit: cover;
-        object-position: center 20%;
-        filter: brightness(0.97);
+        border: 3px solid #0f172a;
+    }
+    @keyframes pulseRing {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(37, 99, 235, 0.4); }
+        50% { transform: scale(1.04); box-shadow: 0 0 32px rgba(56, 189, 248, 0.7); }
     }
     .zoom-live-pill {
         position: absolute;
@@ -346,7 +366,7 @@ st.markdown("""
         font-size: 0.9rem;
         backdrop-filter: blur(6px);
     }
-    .zoom-audio-indicator {
+    .zoom-status-tag {
         position: absolute;
         bottom: 14px;
         left: 14px;
@@ -356,9 +376,6 @@ st.markdown("""
         border-radius: 10px;
         font-size: 0.85rem;
         backdrop-filter: blur(6px);
-        display: flex;
-        align-items: center;
-        gap: 6px;
     }
 
     .whatsapp-btn {
@@ -1039,28 +1056,30 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (ממשק איכותי ויציב ללא שגיאות) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (Voice Mode פעיל ויציב) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
-    st.caption("שיחת וידאו חיה, מענה קולי אוטומטי ותרגול שיעורי בית מותאם אישית!")
+    st.caption("שיחת קול חיה, מענה מותאם אישית ותרגול שיעורי בית לבגרות ולמבחנים!")
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
-        # ממשק וידאו ריאליסטי ואיכותי של מורה צעירה ללא תלות בשרתי סטרימינג חיצוניים
-        zoom_ui_html = """
-        <div class="zoom-video-stage">
-            <div class="zoom-live-pill"><span class="live-dot"></span> שידור חי פועל</div>
-            <img class="zoom-video-img" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80" alt="המורה מיה">
-            <div class="zoom-audio-indicator">🎤 מחוברת</div>
-            <div class="zoom-teacher-tag">המורה מיה (בשיחה חיה)</div>
+        # ממשק Voice Mode ריאליסטי עם טבעת פולס פעילה
+        voice_stage_html = """
+        <div class="voice-stage-card">
+            <div class="zoom-live-pill"><span class="live-dot"></span> חיבור פעיל</div>
+            <div class="voice-avatar-ring">
+                <img class="voice-avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80" alt="המורה מיה">
+            </div>
+            <div class="zoom-status-tag">🎙️ שיחה קולית רציפה</div>
+            <div class="zoom-teacher-tag">המורה מיה</div>
         </div>
         """
-        st.markdown(zoom_ui_html, unsafe_allow_html=True)
+        st.markdown(voice_stage_html, unsafe_allow_html=True)
         
         # השמעת שמע שנוצר ישירות בשרת
         if st.session_state.last_voice_audio_bytes:
-            st.markdown("<div style='margin-top: 12px; margin-bottom: 4px; font-weight: 700; color: #0f2b5c;'>🔊 השמעת קול המורה מיה:</div>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-top: 12px; margin-bottom: 4px; font-weight: 700; color: #0f2b5c;'>🔊 השמעת תשובת המורה מיה:</div>", unsafe_allow_html=True)
             st.audio(st.session_state.last_voice_audio_bytes, format="audio/mp3", autoplay=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
@@ -1237,7 +1256,7 @@ elif st.session_state.current_room == "רנטגן":
                 st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף מוקשים בוואטסאפ</a>', unsafe_allow_html=True)
 
 elif st.session_state.current_room == "ערעור":
-    st.markdown('<span class="room-badge-pill" style="background:#e0e7ff; color:#0369a1;">⚖️ Appeal Generator</span>', unsafe_allow_html=True)
+    st.markdown('<span class="room-badge-pill" style="background:#e0f2fe; color:#0369a1;">⚖️ Appeal Generator</span>', unsafe_allow_html=True)
     st.title("מחולל מכתב ערעור על ציון")
     c_sub = st.text_input("מקצוע המבחן:")
     c_q = st.text_area("השאלה:")
