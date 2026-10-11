@@ -252,12 +252,12 @@ st.markdown("""
     }
     .room-tile h4 {
         margin: 6px 0 2px 0;
-        font-size: 1.05rem;
+        font-size: 1.02rem;
         font-weight: 800;
         color: #0f2b5c;
     }
     .room-tile p {
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         color: #64748b;
         margin: 0;
     }
@@ -633,7 +633,7 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # 14 החדרים של התלמיד
+    # 17 החדרים של התלמיד
     if st.session_state.app_mode == "תלמיד":
         # שורה 1
         c1, c2, c3 = st.columns(3)
@@ -707,7 +707,7 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "מחשבון"
                 st.rerun()
 
-        # שורה 5: הפיצ'רים החדשים
+        # שורה 5
         c13, c14, c15 = st.columns(3)
         with c13:
             st.markdown('<div class="room-tile cat-indigo"><div style="font-size:28px;">📅</div><h4>מתכנן לו״ז שבועי</h4><p>בניית תוכנית למידה חכמה</p></div>', unsafe_allow_html=True)
@@ -723,6 +723,24 @@ if st.session_state.current_room == "דף הבית":
             st.markdown('<div class="room-tile cat-blue"><div style="font-size:28px;">📈</div><h4>מגמת הציונים שלי</h4><p>דשבורד התקדמות ושיפור</p></div>', unsafe_allow_html=True)
             if st.button("צפה בגרף ציונים", key="btn_prog_t", use_container_width=True):
                 st.session_state.current_room = "דשבורד ציונים"
+                st.rerun()
+
+        # שורה 6: הפיצ'רים החדשים
+        c16, c17, c18 = st.columns(3)
+        with c16:
+            st.markdown('<div class="room-tile cat-pink"><div style="font-size:28px;">📑</div><h4>מסכם קובצי PDF</h4><p>חילוץ נקודות ברזל ומבחן</p></div>', unsafe_allow_html=True)
+            if st.button("סכם קובץ PDF", key="btn_pdf_t", use_container_width=True):
+                st.session_state.current_room = "מסכם קבצים"
+                st.rerun()
+        with c17:
+            st.markdown('<div class="room-tile cat-teal"><div style="font-size:28px;">🛡️</div><h4>מנסח אנושי לעבודות</h4><p>עיבוד שפה טבעית ואותנטית</p></div>', unsafe_allow_html=True)
+            if st.button("נphrase טקסט אנושי", key="btn_human_t", use_container_width=True):
+                st.session_state.current_room = "מנסח אנושי"
+                st.rerun()
+        with c18:
+            st.markdown('<div class="room-tile cat-yellow"><div style="font-size:28px;">🇬🇧</div><h4>בגרות באנגלית Essay</h4><p>בדיקה לפי מחוון משרד החינוך</p></div>', unsafe_allow_html=True)
+            if st.button("בדוק חיבור באנגלית", key="btn_eng_t", use_container_width=True):
+                st.session_state.current_room = "בודק אנגלית"
                 st.rerun()
 
     # 8 החדרים של המורה
@@ -817,92 +835,90 @@ if st.session_state.current_room == "דף הבית":
                     st.balloons()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ----------------- חדר חדש: מתכנן לו"ז שבועי חכם -----------------
-elif st.session_state.current_room == "מתכנן לוז":
-    st.title("📅 מתכנן לו״ז שבועי חכם למבחנים")
-    st.caption("בניית תוכנית למידה מדויקת לפי ימים, בלוקים של ריכוז והפסקות מובנות.")
+# ----------------- פיצ'ר חדש: מסכם קובצי PDF -----------------
+elif st.session_state.current_room == "מסכם קבצים":
+    st.title("📑 מסכם קובצי PDF, סיכומים וספרי לימוד")
+    st.caption("העלה דף עבודה, סיכום של המורה או פרק, וקבל פירוק תכל'ס של נקודות ברזל ושאלות מבחן.")
     
-    col_p1, col_p2 = st.columns(2)
-    with col_p1:
-        exam_name = st.text_input("מקצוע ונושא המבחן:", placeholder="למשל: בגרות בהיסטוריה, מבחן במתמטיקה פרקים 1-4")
-        exam_date = st.date_input("תאריך המבחן:", min_value=datetime.date.today() + datetime.timedelta(days=1))
-    with col_p2:
-        daily_hours = st.slider("כמה שעות אתה יכול ללמוד בכל יום?", 1, 6, 2)
-        prep_level = st.select_slider("איך אתה שולט בחומר כרגע?", ["אפס ידע (מתחיל מאפס)", "שליטה בסיסית", "רק צריך חזרות ותרגול"])
+    uploaded_pdf = st.file_uploader("בחר קובץ PDF או תמונה של הדף:", type=["pdf", "png", "jpg", "jpeg"])
+    pdf_focus = st.text_input("האם יש נושא ספציפי שחשוב לך להתמקד בו?", placeholder="למשל: הגורמים לפרוץ המלחמה, נוסחאות חובה...")
+    
+    if uploaded_pdf and st.button("סכם לי את הקובץ לתכל'ס ⚡", use_container_width=True):
+        with st.spinner("מנתח את המסמך ומחלץ נקודות חובה..."):
+            try:
+                pdf_bytes = uploaded_pdf.read()
+                mime = "application/pdf" if uploaded_pdf.name.endswith(".pdf") else "image/jpeg"
+                prompt_pdf = (
+                    f"אתה מנטור לימודי מוביל עבור תלמיד ב-{student_context}.\n"
+                    f"נתח את המסמך המצורף (מיקוד נוסף: {pdf_focus if pdf_focus else 'כללי'}).\n"
+                    "החזר:\n"
+                    "1. **5 נקודות ברזל (תכל'ס בלבד)** שמסכמות את כל מה שחשוב לדעת מהמסמך הזה.\n"
+                    "2. **3 מושגי מפתח חובה** שיופיעו במבחן וההגדרה שלהם.\n"
+                    "3. **שאלת בחינה אמיתית** מתוך המסמך הזה עם תשובה לדוגמה שמקבלת 100.\n"
+                    f"{anti_yap_rule}"
+                )
+                res_pdf = generate_ai([prompt_pdf, {"mime_type": mime, "data": pdf_bytes}])
+                st.markdown(f'<div class="clean-box">{res_pdf}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_pdf)}" target="_blank">📲 שתף סיכום בוואטסאפ</a>', unsafe_allow_html=True)
+                if st.button("💾 שמור סיכום זה לכספת"):
+                    st.session_state.saved_vault.append({"title": f"סיכום קובץ: {uploaded_pdf.name}", "content": res_pdf})
+                    st.success("נשמר בכספת בהצלחה!")
+            except Exception as e:
+                st.error(f"שגיאה בפענוח הקובץ: {e}")
 
-    if st.button("בנה לי תוכנית למידה שבועית מנצחת 🚀", use_container_width=True) and exam_name:
-        with st.spinner("מחשב חלוקת עומסים ובונה לו״ז..."):
-            days_left = (exam_date - datetime.date.today()).days
-            plan_prompt = (
-                f"אתה מנטור לימודי מוביל. בנה תוכנית למידה שבועית מדויקת לתלמיד ב-{student_context}.\n"
-                f"מקצוע: {exam_name}, ימים שנותרו: {days_left}, שעות למידה ביום: {daily_hours}, רמת ידע: {prep_level}.\n"
-                "חלק את הלמידה לפי ימים ברורים:\n"
-                "- יום 1 עד יום לפני המבחן (איזה חומר ללמוד, כמה זמן ובאילו בלוקים של 45 דק' עם הפסקות).\n"
-                "- היום האחרון לפני המבחן (חזרה קלה בלבד ושמירה על שינה).\n"
-                "- בוקר המבחן (חימום מוחי של 10 דקות).\n"
-                f"{anti_yap_rule}"
+# ----------------- פיצ'ר חדש: מנסח אנושי לעבודות -----------------
+elif st.session_state.current_room == "מנסח אנושי":
+    st.title("🛡️ מנסח אנושי ומאזרח עבודות (Humanizer)")
+    st.caption("עיבוד תשובות, עבודות חקר ומטלות לשפה טבעית, זורמת ואותנטית שנשמעת כמו תלמיד אמיתי ולא כמו רובוט.")
+    
+    text_to_humanize = st.text_area("הדבק כאן את הטקסט או התשובה:", height=150, placeholder="הדבק פסקה או תשובה מנוסחת...")
+    style_choice = st.select_slider("סגנון הכתיבה הרצוי:", ["תשובת מבחן ממוקדת", "עבודת חקר אקדמית קלה", "מטלת כיתה קלילה וזורמת"])
+    
+    if st.button("הפוך לניסוח אנושי ואותנטי ✍️", use_container_width=True) and text_to_humanize.strip():
+        with st.spinner("מעבד מחדש בסגנון אנושי..."):
+            prompt_human = (
+                f"שכתב את הטקסט הבא כך שיישמע אותנטי, טבעי, קולח ונכתב על ידי תלמיד ישראלי ב-{student_context}.\n"
+                f"סגנון: {style_choice}.\n"
+                "הנחיות קריטיות:\n"
+                "- הסר לחלוטין שפה מליצית של AI, תרגומים עילגים או ביטויים תבניתיים ('לסיכום', 'ראוי לציין כי').\n"
+                "- שמור על כל העובדות והתוכן המדויק, אך נסח מחדש במבנה משפטים מגוון, ברור ומשכנע.\n\n"
+                f"טקסט מקורי:\n{text_to_humanize}"
             )
-            res_plan = generate_ai(plan_prompt)
-            st.markdown(f'<div class="clean-box">{res_plan}</div>', unsafe_allow_html=True)
-            st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_plan)}" target="_blank">📲 שתף את הלו״ז בוואטסאפ</a>', unsafe_allow_html=True)
-            if st.button("💾 שמור לו״ז זה לכספת"):
-                st.session_state.saved_vault.append({"title": f"לו״ז למבחן: {exam_name}", "content": res_plan})
+            res_human = generate_ai(prompt_human)
+            st.markdown(f'<div class="clean-box"><h4 style="margin-top:0; color:#0f2b5c;">נוסח אנושי מוכן להגשה:</h4>{res_human}</div>', unsafe_allow_html=True)
+            st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_human)}" target="_blank">📲 שתף נוסח בוואטסאפ</a>', unsafe_allow_html=True)
+
+# ----------------- פיצ'ר חדש: בודק חיבורים באנגלית -----------------
+elif st.session_state.current_room == "בודק אנגלית":
+    st.title("🇬🇧 בודק חיבורים באנגלית לבגרות (Bagrut Essay Checker)")
+    st.caption("בדיקה לפי 4 הקריטריונים הרשמיים של משרד החינוך (Content, Vocabulary, Language/Grammar, Mechanics) עם ציון מתוך 40.")
+    
+    col_eng1, col_eng2 = st.columns(2)
+    with col_eng1:
+        essay_module = st.selectbox("רמת שאלון / מודול:", ["Module C (Basic)", "Module E (4-5 points)", "Module G (Writing Task - 5 points)"])
+        essay_topic = st.text_input("נושא החיבור (Prompt):", placeholder="e.g. Do you agree that teenagers should work during vacations?")
+    with col_eng2:
+        word_count_target = "100-120 words" if "G" in essay_module else "70-90 words"
+        st.info(f"📏 אורך מומלץ למודול זה: {word_count_target}")
+    
+    essay_text = st.text_area("הדבק כאן את החיבור שלך באנגלית:", height=180, placeholder="Write your essay here in English...")
+    
+    if st.button("בדוק חיבור ותן ציון בגרות 📝", use_container_width=True) and essay_text.strip():
+        with st.spinner("מעריך חיבור לפי מחוון משרד החינוך..."):
+            prompt_essay = (
+                f"You are a strict and helpful Israeli Bagrut English examiner checking an essay for {essay_module}.\n"
+                f"Topic: {essay_topic}\n"
+                f"Student Essay:\n{essay_text}\n\n"
+                "Evaluate and return:\n"
+                "1. **Total Score (out of 40)** with breakdown: Content (8), Vocabulary (8), Grammar/Language (16), Mechanics (8).\n"
+                "2. **Specific Grammar/Vocabulary Errors** found in the text and how to fix them.\n"
+                "3. **Improved Version**: An upgraded version of the student's essay maintaining their original ideas but using richer vocabulary and correct structures."
+            )
+            res_essay = generate_ai(prompt_essay)
+            st.markdown(f'<div class="clean-box">{res_essay}</div>', unsafe_allow_html=True)
+            if st.button("💾 שמור משוב זה לכספת"):
+                st.session_state.saved_vault.append({"title": f"חיבור באנגלית: {essay_topic}", "content": res_essay})
                 st.success("נשמר בכספת בהצלחה!")
-
-# ----------------- חדר חדש: סיכום הקלטת שיעור ושמע -----------------
-elif st.session_state.current_room == "סיכום שמע":
-    st.title("🎙️ מסכם שיעורים והקלטות כיתה")
-    st.caption("הקלטת את המורה או הסבר בכיתה? נעבד את השמע ונהפוך אותו לסיכום תכל'ס עם מושגי מפתח ושאלות מבחן.")
-    
-    audio_upload = st.file_uploader("העלה קובץ הקלטה (MP3 / WAV / M4A):", type=["mp3", "wav", "m4a"])
-    audio_mic = st.audio_input("או הקלט הסבר ישירות מהמיקרופון:")
-    
-    target_audio = audio_upload if audio_upload else audio_mic
-    if target_audio:
-        st.audio(target_audio)
-        if st.button("סכם לי את השיעור לתכל'ס ⚡", use_container_width=True):
-            with st.spinner("מעבד את השמע ומחלץ את נקודות המפתח..."):
-                try:
-                    audio_bytes = target_audio.read()
-                    prompt_audio_sum = (
-                        f"אתה מומחה לסיכום שיעורים עבור תלמיד ב-{student_context}.\n"
-                        "האזן להקלטת השיעור הבאה וחלץ:\n"
-                        "1. **3 עד 5 רעיונות ברזל** שהמורה חזר עליהם או הדגיש.\n"
-                        "2. **מושגי מפתח והגדרות קצרות** שנאמרו בהקלטה.\n"
-                        "3. **שאלת מבחן צפויה** מתוך הדברים שנאמרו והתשובה המדויקת לה.\n"
-                        f"{anti_yap_rule}"
-                    )
-                    res_audio = generate_ai([prompt_audio_sum, {"mime_type": "audio/wav", "data": audio_bytes}])
-                    st.markdown(f'<div class="clean-box">{res_audio}</div>', unsafe_allow_html=True)
-                    st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_audio)}" target="_blank">📲 שתף סיכום בוואטסאפ</a>', unsafe_allow_html=True)
-                    if st.button("💾 שמור סיכום זה לכספת"):
-                        st.session_state.saved_vault.append({"title": "סיכום הקלטת שיעור", "content": res_audio})
-                        st.success("נשמר בכספת!")
-                except Exception as e:
-                    st.error(f"שגיאה בעיבוד ההקלטה: {e}")
-
-# ----------------- חדר חדש: דשבורד ציונים והתקדמות -----------------
-elif st.session_state.current_room == "דשבורד ציונים":
-    st.title("📈 דשבורד ציונים והתקדמות אישית")
-    st.caption("מעקב גרפי אחרי תוצאות מבחני הדמה וההערכות שלך.")
-    
-    col_g1, col_g2 = st.columns([2, 1])
-    with col_g1:
-        st.subheader("גרף מגמת הציונים שלך")
-        scores = st.session_state.exam_scores_history
-        st.line_chart(scores)
-        avg_score = sum(scores) / len(scores) if scores else 0
-        st.metric(label="ציון ממוצע עד כה", value=f"{avg_score:.1f}", delta=f"{scores[-1] - scores[0]} נקודות מההתחלה")
-
-    with col_g2:
-        st.markdown('<div class="clean-box">', unsafe_allow_html=True)
-        st.markdown("<h4>הוסף ציון מבחן ידנית</h4>", unsafe_allow_html=True)
-        new_sc = st.number_input("ציון (0-100):", min_value=0, max_value=100, value=85)
-        if st.button("עדכן היסטוריית ציונים", use_container_width=True):
-            st.session_state.exam_scores_history.append(new_sc)
-            st.success("הציון התווסף לגרף!")
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
 # ----------------- 1. מחולל מצגות -----------------
 elif st.session_state.current_room == "מצגות":
@@ -1014,7 +1030,6 @@ elif st.session_state.current_room == "מבחני דמה":
                 grade_prompt = f"הערך מבחן זה עבור {student_context}. שאלות: {json.dumps(st.session_state.mock_exam_data, ensure_ascii=False)}. תשובות תלמיד: {json.dumps(user_answers, ensure_ascii=False)}. החזר ציון מספרי מ-0 עד 100, פירוט ניקוד ואיפה ירדו נקודות."
                 feedback = generate_ai(grade_prompt)
                 
-                # חילוץ ציון מספרי כדי לעדכן את הדשבורד
                 match_sc = re.search(r"(\d{2,3})", feedback)
                 if match_sc:
                     sc_val = int(match_sc.group(1))
@@ -1120,6 +1135,50 @@ elif st.session_state.current_room == "מחשבון":
         st.error(f"⚠️ עם מגן של {magen}, תצטרך מעל 100 בבגרות ({needed:.1f}) כדי להגיע ל-{target}.")
     else:
         st.success(f"🎯 עליך להוציא לפחות {round(needed)} בבחינת הבגרות.")
+
+# ----------------- 13. מתכנן לו"ז שבועי -----------------
+elif st.session_state.current_room == "מתכנן לוז":
+    st.title("📅 מתכנן לו״ז שבועי חכם למבחנים")
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        exam_name = st.text_input("מקצוע ונושא המבחן:", placeholder="למשל: בגרות בהיסטוריה, מבחן במתמטיקה")
+        exam_date = st.date_input("תאריך המבחן:", min_value=datetime.date.today() + datetime.timedelta(days=1))
+    with col_p2:
+        daily_hours = st.slider("שעות למידה ביום:", 1, 6, 2)
+        prep_level = st.select_slider("רמת מוכנות:", ["מתחיל מאפס", "שליטה בינונית", "רק תרגול וחזרות"])
+
+    if st.button("בנה לו״ז למידה 🚀", use_container_width=True) and exam_name:
+        with st.spinner("בונה תוכנית..."):
+            days_left = (exam_date - datetime.date.today()).days
+            plan_prompt = (
+                f"בנה תוכנית למידה שבועית לתלמיד ב-{student_context}.\n"
+                f"מקצוע: {exam_name}, ימים שנותרו: {days_left}, שעות ביום: {daily_hours}, רמה: {prep_level}.\n"
+                "חלק לפי ימים עם בלוקים של 45 דקות והפסקות, היום האחרון לפני המבחן ובוקר המבחן."
+            )
+            res_plan = generate_ai(plan_prompt)
+            st.markdown(f'<div class="clean-box">{res_plan}</div>', unsafe_allow_html=True)
+
+# ----------------- 14. סיכום שמע -----------------
+elif st.session_state.current_room == "סיכום שמע":
+    st.title("🎙️ מסכם שיעורים והקלטות כיתה")
+    audio_upload = st.file_uploader("העלה קובץ שמע:", type=["mp3", "wav", "m4a"])
+    audio_mic = st.audio_input("או הקלט ישירות:")
+    target_audio = audio_upload if audio_upload else audio_mic
+    if target_audio and st.button("סכם הקלטה ⚡", use_container_width=True):
+        with st.spinner("מעבד שמע..."):
+            try:
+                res_audio = generate_ai([f"סכם לתכל'ס 3-5 רעיונות ברזל, מושגים ושאלת מבחן עבור {student_context}", {"mime_type": "audio/wav", "data": target_audio.read()}])
+                st.markdown(f'<div class="clean-box">{res_audio}</div>', unsafe_allow_html=True)
+            except Exception as e:
+                st.error(f"שגיאה בעיבוד השמע: {e}")
+
+# ----------------- 15. דשבורד ציונים -----------------
+elif st.session_state.current_room == "דשבורד ציונים":
+    st.title("📈 דשבורד ציונים והתקדמות אישית")
+    scores = st.session_state.exam_scores_history
+    st.line_chart(scores)
+    avg_score = sum(scores) / len(scores) if scores else 0
+    st.metric(label="ציון ממוצע", value=f"{avg_score:.1f}")
 
 # ----------------- חדרי מורה -----------------
 elif st.session_state.current_room == "מערכי שיעור":
