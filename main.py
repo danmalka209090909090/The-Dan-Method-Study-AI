@@ -10,6 +10,7 @@ import urllib.parse
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
+from gtts import gTTS
 
 TEACHER_ACCESS_CODE = "DAN100"
 
@@ -292,28 +293,27 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
-    /* מסגרת וידאו חיה בתנועה מלאה ללא חיתוך פנים */
-    .zoom-video-container {
-        background: #000000;
+    /* מסגרת שידור חי של מיה */
+    .zoom-stage-box {
+        background: #0f172a;
         border-radius: 24px;
         overflow: hidden;
         border: 3px solid #1e3a8a;
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
         position: relative;
-        height: 300px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        padding: 10px;
+        text-align: center;
     }
-    .zoom-video-container video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+    .zoom-stage-box video {
+        border-radius: 18px;
+        width: 100% !important;
+        max-height: 280px !important;
+        object-fit: cover !important;
     }
     .zoom-live-pill {
         position: absolute;
-        top: 14px;
-        right: 14px;
+        top: 20px;
+        right: 20px;
         background: rgba(15, 23, 42, 0.85);
         color: #22c55e;
         border: 1px solid #22c55e;
@@ -326,8 +326,8 @@ st.markdown("""
     }
     .zoom-teacher-tag {
         position: absolute;
-        bottom: 14px;
-        right: 14px;
+        bottom: 20px;
+        right: 20px;
         background: rgba(15, 23, 42, 0.85);
         color: #ffffff;
         padding: 6px 16px;
@@ -382,8 +382,8 @@ if "current_room" not in st.session_state:
     st.session_state.current_room = "דף הבית"
 if "zoom_chat_history" not in st.session_state:
     st.session_state.zoom_chat_history = []
-if "last_voice_reply" not in st.session_state:
-    st.session_state.last_voice_reply = None
+if "last_voice_audio_bytes" not in st.session_state:
+    st.session_state.last_voice_audio_bytes = None
 if "zoom_homework" not in st.session_state:
     st.session_state.zoom_homework = None
 if "mock_exam_data" not in st.session_state:
@@ -440,11 +440,15 @@ def extract_json(text):
         clean_str = re.sub(r"[\r\n\t]+", " ", text)
         return json.loads(clean_str)
 
-def get_tts_audio_url(text):
+# יצירת קובץ שמע אמיתי בעברית דרך השרת (ללא חסימות דפדפן)
+def create_audio_bytes(text):
     clean = re.sub(r"[*#_`>\[\]\(\)\n]", " ", text)
-    clean = clean[:220].strip()
-    encoded = urllib.parse.quote(clean)
-    return f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl=iw&client=tw-ob"
+    clean = clean[:250].strip()
+    tts = gTTS(text=clean, lang='iw')
+    fp = BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+    return fp.read()
 
 def get_whatsapp_share_link(text):
     encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:450]}")
@@ -1014,7 +1018,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (וידאו חי מלא שזז תמיד) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (וידאו חי פנימי + שמע אמיתי מובנה) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -1022,23 +1026,15 @@ elif st.session_state.current_room == "חדר זום":
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
-        # וידאו חי מלא עם פנים בתנועה רציפה, ללא תמונות חתוכות
-        st.markdown("""
-            <div class="zoom-video-container">
-                <div class="zoom-live-pill">● שידור חי פועל</div>
-                <video autoplay loop muted playsinline>
-                    <source src="https://static.videezy.com/system/resources/previews/000/041/970/original/young-woman-talking-on-video-call-with-laptop.mp4" type="video/mp4">
-                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4" type="video/mp4">
-                </video>
-                <div class="zoom-teacher-tag">המורה מיה (בשיחה חיה)</div>
-            </div>
-        """, unsafe_allow_html=True)
+        # שימוש בווידאו נתמך ישירות דרך st.video של Streamlit ללא תלות בדפדפן
+        st.markdown('<div class="zoom-stage-box"><div class="zoom-live-pill">● שידור חי פועל</div>', unsafe_allow_html=True)
+        st.video("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", loop=True, autoplay=True, muted=True)
+        st.markdown('<div class="zoom-teacher-tag">המורה מיה (בשיחה חיה)</div></div>', unsafe_allow_html=True)
         
-        # נגן שמע ברור
-        if st.session_state.last_voice_reply:
+        # נגן שמע שמקבל קובץ MP3 שנוצר בשרת
+        if st.session_state.last_voice_audio_bytes:
             st.markdown("<div style='margin-top: 14px; margin-bottom: 4px; font-weight: 700; color: #0f2b5c;'>🔊 השמעת קול המורה מיה:</div>", unsafe_allow_html=True)
-            audio_url = get_tts_audio_url(st.session_state.last_voice_reply)
-            st.audio(audio_url, format="audio/mp3", autoplay=True)
+            st.audio(st.session_state.last_voice_audio_bytes, format="audio/mp3", autoplay=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
         z_subject = st.selectbox("מקצוע השיעור:", ["מתמטיקה", "אנגלית", "היסטוריה", "לשון והבעה", "ביולוגיה", "אזרחות"])
@@ -1054,15 +1050,16 @@ elif st.session_state.current_room == "חדר זום":
                         "3. הנחיה מה לכתוב לך בחזרה בצ'אט כדי שתבדקי ותתני ציון."
                     )
                     res_hw = generate_ai(hw_prompt)
+                    reply_text = "הכנתי לך שתי שאלות תרגול מעולות. תפתור אותן ותכתוב לי כאן את התשובות ואבדוק לך מיד!"
                     st.session_state.zoom_homework = res_hw.text
-                    st.session_state.last_voice_reply = "הכנתי לך שתי שאלות תרגול מעולות. תפתור אותן ותכתוב לי כאן את התשובות ואבדוק לך מיד!"
+                    st.session_state.last_voice_audio_bytes = create_audio_bytes(reply_text)
                     st.rerun()
                 except Exception as err:
                     st.error(f"שגיאה בהכנת המשימה: {err}")
 
         if st.button("🧹 איפוס שיחה", use_container_width=True):
             st.session_state.zoom_chat_history = []
-            st.session_state.last_voice_reply = None
+            st.session_state.last_voice_audio_bytes = None
             st.session_state.zoom_homework = None
             st.rerun()
 
@@ -1103,7 +1100,8 @@ elif st.session_state.current_room == "חדר זום":
                 try:
                     res_zoom = generate_ai(zoom_prompt)
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
-                    st.session_state.last_voice_reply = res_zoom.text
+                    # יצירת קובץ MP3 חי לקול המורה
+                    st.session_state.last_voice_audio_bytes = create_audio_bytes(res_zoom.text)
                     st.rerun()
                 except Exception as err:
                     st.error(f"שגיאה בתקשורת עם המורה: {err}")
