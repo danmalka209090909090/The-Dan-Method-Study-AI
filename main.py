@@ -1039,7 +1039,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (הודעות קוליות ללא לולאות כפולות) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (עם כפתורי דמו מהירים) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -1099,28 +1099,40 @@ elif st.session_state.current_room == "חדר זום":
             """, unsafe_allow_html=True)
 
         st.markdown("<b>💬 שיחה חיה עם המורה מיה:</b>", unsafe_allow_html=True)
-        chat_box = st.container(height=280)
+        chat_box = st.container(height=260)
         with chat_box:
             if not st.session_state.zoom_chat_history:
-                st.info(f"👋 **המורה מיה:** היי! שמחה לפגוש אותך לשיעור ב{z_subject}. אתה יכול לכתוב לי או פשוט להקליט הודעה קולית למטה (כמו בוואטסאפ) ולדבר איתי ישירות!")
+                st.info(f"👋 **המורה מיה:** היי! שמחה לפגוש אותך לשיעור ב{z_subject}. אתה יכול לכתוב לי, להשתמש בשאלות ההדגמה למטה, או פשוט להקליט לי הודעה קולית ישירות!")
             else:
                 for m in st.session_state.zoom_chat_history:
                     with st.chat_message(m["role"]):
                         st.write(m["content"])
 
-        # הקלטה קולית חיה עם בדיקת מניעת כפילויות
+        # כפתורי דמו מהירים להדגמה קלה בלחיצה אחת
+        st.markdown("<div style='font-size: 0.85rem; font-weight: 700; color: #64748b; margin-top: 6px;'>⚡ שאלות מהירות לדמו (לחיצה אחת):</div>", unsafe_allow_html=True)
+        col_demo1, col_demo2, col_demo3 = st.columns(3)
+        trigger_demo_text = None
+        with col_demo1:
+            if st.button("🧮 תרגיל במתמטיקה", use_container_width=True):
+                trigger_demo_text = "איך פותרים משוואה ריבועית בעזרת נוסחת השורשים? תני לי דוגמה פשוטה."
+        with col_demo2:
+            if st.button("📖 הסבר מהיר לבגרות", use_container_width=True):
+                trigger_demo_text = f"תסבירי לי ב-3 שורות בדיוק מושג מרכזי ב{z_subject} שאסור לי לפספס במבחן."
+        with col_demo3:
+            if st.button("🎯 טיפ למאיות", use_container_width=True):
+                trigger_demo_text = "איזה טיפ זהב יבטיח לי 100 במבחן הקרוב?"
+
+        # הקלטה קולית חיה
         st.markdown("<div style='font-weight:700; font-size:0.9rem; color:#0f2b5c; margin-top:8px;'>🎙️ הקלט הודעה קולית למורה מיה:</div>", unsafe_allow_html=True)
         voice_rec = st.audio_input("הקלט הודעה קולית למיה", label_visibility="collapsed")
         
         if voice_rec is not None:
             audio_bytes_data = voice_rec.read()
-            # יצירת מזהה ייחודי לקובץ
             current_hash = hashlib.md5(audio_bytes_data).hexdigest()
             
-            # מעבדים אך ורק אם מדובר בהקלטה שטרם עובדה
             if current_hash != st.session_state.last_processed_audio_hash:
                 st.session_state.last_processed_audio_hash = current_hash
-                with st.spinner("המורה מיה מקשיבה להקלטה שלך ומכינה מענה..."):
+                with st.spinner("המורה מיה מקשיבה להקלטה ומכינה מענה..."):
                     try:
                         audio_part = types.Part.from_bytes(
                             data=audio_bytes_data,
@@ -1145,8 +1157,10 @@ elif st.session_state.current_room == "חדר זום":
                         st.error(f"שגיאה בעיבוד ההקלטה: {err}")
 
         text_spoken = st.chat_input("או הקלד כאן הודעה בטקסט...")
-        if text_spoken:
-            st.session_state.zoom_chat_history.append({"role": "user", "content": text_spoken})
+        final_input_to_send = trigger_demo_text if trigger_demo_text else text_spoken
+
+        if final_input_to_send:
+            st.session_state.zoom_chat_history.append({"role": "user", "content": final_input_to_send})
             history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.zoom_chat_history[-6:]])
             zoom_prompt = (
                 f"את המורה מיה בשיעור פרטי אישי חי עם תלמיד ב-{student_context}.\n"
@@ -1156,7 +1170,7 @@ elif st.session_state.current_room == "חדר זום":
                 "2. עני בגובה העיניים, מעודד וממוקד מאוד (עד 3 משפטים).\n"
                 "3. אם התלמיד פותר תרגיל או שיעורי בית – בדקי אותו, תני לו משוב וציון!\n"
                 "4. בסוף התשובה שאלי שאלה קצרה כדי לוודא שהוא הבין.\n\n"
-                f"היסטוריה:\n{history_text}\n\nהודעת התלמיד: {text_spoken}"
+                f"היסטוריה:\n{history_text}\n\nהודעת התלמיד: {final_input_to_send}"
             )
             with st.spinner("המורה מיה מקשיבה ומכינה מענה..."):
                 try:
