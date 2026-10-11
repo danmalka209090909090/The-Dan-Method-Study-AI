@@ -27,7 +27,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# עיצוב מותאם לכל המכשירים ללא סיידבר
+# שפת עיצוב עמידה ללא סיידבר
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&display=swap');
@@ -130,6 +130,27 @@ st.markdown("""
         color: #475569;
         margin-bottom: 12px;
         font-weight: 500;
+    }
+
+    /* כרטיסיית חדר מורים ייעודי */
+    .teacher-profile-card {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        margin-bottom: 14px;
+    }
+    .teacher-avatar-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        margin: 0 auto 10px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
     }
 
     /* שורת יתרונות */
@@ -340,6 +361,8 @@ if "current_room" not in st.session_state:
     st.session_state.current_room = "דף הבית"
 if "zoom_chat_history" not in st.session_state:
     st.session_state.zoom_chat_history = []
+if "subject_teacher_chat" not in st.session_state:
+    st.session_state.subject_teacher_chat = []
 if "mock_exam_data" not in st.session_state:
     st.session_state.mock_exam_data = None
 if "slides_data" not in st.session_state:
@@ -633,7 +656,6 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # 17 החדרים של התלמיד
     if st.session_state.app_mode == "תלמיד":
         # שורה 1
         c1, c2, c3 = st.columns(3)
@@ -725,7 +747,7 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "דשבורד ציונים"
                 st.rerun()
 
-        # שורה 6: הפיצ'רים החדשים
+        # שורה 6: כלי תוכן מתקדמים
         c16, c17, c18 = st.columns(3)
         with c16:
             st.markdown('<div class="room-tile cat-pink"><div style="font-size:28px;">📑</div><h4>מסכם קובצי PDF</h4><p>חילוץ נקודות ברזל ומבחן</p></div>', unsafe_allow_html=True)
@@ -741,6 +763,29 @@ if st.session_state.current_room == "דף הבית":
             st.markdown('<div class="room-tile cat-yellow"><div style="font-size:28px;">🇬🇧</div><h4>בגרות באנגלית Essay</h4><p>בדיקה לפי מחוון משרד החינוך</p></div>', unsafe_allow_html=True)
             if st.button("בדוק חיבור באנגלית", key="btn_eng_t", use_container_width=True):
                 st.session_state.current_room = "בודק אנגלית"
+                st.rerun()
+
+        # שורה 7: חדר מורים מומחים לכל מקצוע
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader("🧑‍🏫 נבחרת המורים המומחים לכל תחום (חדר מורים פרטי)")
+        c19, c20, c21 = st.columns(3)
+        with c19:
+            st.markdown('<div class="room-tile cat-indigo"><div style="font-size:28px;">📐</div><h4>ד"ר דוד - מתמטיקה ופיזיקה</h4><p>מומחה 4/5 יחידות ובגרות</p></div>', unsafe_allow_html=True)
+            if st.button("פתח שיעור עם ד\"ר דוד", key="btn_teach_math", use_container_width=True):
+                st.session_state["active_subject_teacher"] = "מתמטיקה ופיזיקה"
+                st.session_state.current_room = "חדר מורה נושאי"
+                st.rerun()
+        with c20:
+            st.markdown('<div class="room-tile cat-green"><div style="font-size:28px;">📖</div><h4>המורה שרה - לשון והבעה</h4><p>תחביר, פסקאות טיעון ומערכת הפועל</p></div>', unsafe_allow_html=True)
+            if st.button("פתח שיעור עם המורה שרה", key="btn_teach_lang", use_container_width=True):
+                st.session_state["active_subject_teacher"] = "לשון והבעה"
+                st.session_state.current_room = "חדר מורה נושאי"
+                st.rerun()
+        with c21:
+            st.markdown('<div class="room-tile cat-blue"><div style="font-size:28px;">🏛️</div><h4>ד"ר אלון - היסטוריה ואזרחות</h4><p>שאלות עמדה, ניתוח אירועים ומחוונים</p></div>', unsafe_allow_html=True)
+            if st.button("פתח שיעור עם ד\"ר אלון", key="btn_teach_hist", use_container_width=True):
+                st.session_state["active_subject_teacher"] = "היסטוריה ואזרחות"
+                st.session_state.current_room = "חדר מורה נושאי"
                 st.rerun()
 
     # 8 החדרים של המורה
@@ -835,7 +880,72 @@ if st.session_state.current_room == "דף הבית":
                     st.balloons()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ----------------- פיצ'ר חדש: מסכם קובצי PDF -----------------
+# ----------------- פיצ'ר חדש: חדר מורה ייעודי לכל נושא -----------------
+elif st.session_state.current_room == "חדר מורה נושאי":
+    subj = st.session_state.get("active_subject_teacher", "מתמטיקה ופיזיקה")
+    teacher_configs = {
+        "מתמטיקה ופיזיקה": {
+            "name": "ד\"ר דוד",
+            "emoji": "📐",
+            "desc": "מומחה משרד החינוך לבגרות 4 ו-5 יחידות, אלגברה, חדו\"א, גיאומטריה ומכניקה.",
+            "color": "#e0e7ff"
+        },
+        "לשון והבעה": {
+            "name": "המורה שרה",
+            "emoji": "📖",
+            "desc": "רכזת לשון והבעה עברית: פירוק פסקאות טיעון, גזרות, בניינים, תחביר ומערכת הפועל.",
+            "color": "#dcfce7"
+        },
+        "היסטוריה ואזרחות": {
+            "name": "ד\"ר אלון",
+            "emoji": "🏛️",
+            "desc": "מומחה למדעי החברה: שאלות עמדה, ניתוח קטעי מקור, הגדרות אזרחות ומחווני בגרות.",
+            "color": "#e0f2fe"
+        }
+    }
+    cfg = teacher_configs.get(subj, teacher_configs["מתמטיקה ופיזיקה"])
+    
+    st.title(f"{cfg['emoji']} שיעור פרטי עם {cfg['name']}")
+    st.caption(f"תחום התמחות: {subj} | {student_context}")
+
+    st.markdown(f"""
+        <div class="teacher-profile-card">
+            <div class="teacher-avatar-circle" style="background:{cfg['color']};">
+                {cfg['emoji']}
+            </div>
+            <h3 style="margin:0; color:#0f2b5c;">{cfg['name']}</h3>
+            <p style="color:#64748b; font-size:0.95rem; margin:6px 0 0 0;">{cfg['desc']}</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    chat_box = st.container(height=340)
+    with chat_box:
+        if not st.session_state.subject_teacher_chat:
+            st.info(f"שלום! אני {cfg['name']}, המורה שלך ל{subj}. איזה נושא או שאלה נפרק היום? שאל ישירות ונתקדם צעד אחר צעד.")
+        else:
+            for m in st.session_state.subject_teacher_chat:
+                with st.chat_message(m["role"]):
+                    st.write(m["content"])
+
+    t_query = st.chat_input(f"שאל את {cfg['name']} שאלה...")
+    if t_query:
+        st.session_state.subject_teacher_chat.append({"role": "user", "content": t_query})
+        prompt_teacher = (
+            f"אתה {cfg['name']}, מורה בכיר וסבלני ל{subj} עבור תלמיד ב-{student_context}.\n"
+            f"הסבר את הנושא או פתור את השאלה באופן בהיר, מדויק ומותאם למחוון משרד החינוך.\n"
+            "בסוף התשובה הוסף שאלת בדיקה קצרה כדי לוודא שהתלמיד הבין.\n"
+            f"{anti_yap_rule}\n\nשאלה: {t_query}"
+        )
+        with st.spinner(f"{cfg['name']} מכין מענה פדגוגי..."):
+            ans = generate_ai(prompt_teacher)
+            st.session_state.subject_teacher_chat.append({"role": "assistant", "content": ans})
+            st.rerun()
+
+    if st.button("🧹 התחל שיחה חדשה עם המורה", use_container_width=True):
+        st.session_state.subject_teacher_chat = []
+        st.rerun()
+
+# ----------------- פיצ'ר: מסכם קובצי PDF -----------------
 elif st.session_state.current_room == "מסכם קבצים":
     st.title("📑 מסכם קובצי PDF, סיכומים וספרי לימוד")
     st.caption("העלה דף עבודה, סיכום של המורה או פרק, וקבל פירוק תכל'ס של נקודות ברזל ושאלות מבחן.")
@@ -866,7 +976,7 @@ elif st.session_state.current_room == "מסכם קבצים":
             except Exception as e:
                 st.error(f"שגיאה בפענוח הקובץ: {e}")
 
-# ----------------- פיצ'ר חדש: מנסח אנושי לעבודות -----------------
+# ----------------- פיצ'ר: מנסח אנושי לעבודות -----------------
 elif st.session_state.current_room == "מנסח אנושי":
     st.title("🛡️ מנסח אנושי ומאזרח עבודות (Humanizer)")
     st.caption("עיבוד תשובות, עבודות חקר ומטלות לשפה טבעית, זורמת ואותנטית שנשמעת כמו תלמיד אמיתי ולא כמו רובוט.")
@@ -888,7 +998,7 @@ elif st.session_state.current_room == "מנסח אנושי":
             st.markdown(f'<div class="clean-box"><h4 style="margin-top:0; color:#0f2b5c;">נוסח אנושי מוכן להגשה:</h4>{res_human}</div>', unsafe_allow_html=True)
             st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_human)}" target="_blank">📲 שתף נוסח בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- פיצ'ר חדש: בודק חיבורים באנגלית -----------------
+# ----------------- פיצ'ר: בודק חיבורים באנגלית -----------------
 elif st.session_state.current_room == "בודק אנגלית":
     st.title("🇬🇧 בודק חיבורים באנגלית לבגרות (Bagrut Essay Checker)")
     st.caption("בדיקה לפי 4 הקריטריונים הרשמיים של משרד החינוך (Content, Vocabulary, Language/Grammar, Mechanics) עם ציון מתוך 40.")
