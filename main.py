@@ -878,7 +878,6 @@ if st.session_state.current_room == "דף הבית":
                 st.rerun()
 
     else:
-        # שורת כלים 1 למורים
         col_m1, col_m2, col_m3, col_m4, col_m5 = st.columns(5)
         with col_m1:
             st.markdown('<div class="pastel-tile tile-blue"><div class="pastel-tile-icon">📊</div><div class="pastel-tile-title">מצגת לשיעור</div><div class="pastel-tile-count">הורדת מצגת PPTX</div></div>', unsafe_allow_html=True)
@@ -910,7 +909,6 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "דפי הדפסה"
                 st.rerun()
 
-        # שורת כלים 2 למורים (הכלים החדשים שהוספנו)
         col_m6, col_m7, col_m8, col_m9, col_m10 = st.columns(5)
         with col_m6:
             st.markdown('<div class="pastel-tile tile-yellow"><div class="pastel-tile-icon">✍️</div><div class="pastel-tile-title">בנק הערכות</div><div class="pastel-tile-count">משובים לתעודות</div></div>', unsafe_allow_html=True)
@@ -1207,7 +1205,7 @@ elif st.session_state.current_room == "חדר זום":
                 except Exception as err:
                     st.error(f"שגיאה בתקשורת עם המורה: {err}")
 
-# ----------------- חדר: בנק הערכות ומשובים לתעודות (חדש למורים) -----------------
+# ----------------- חדר: בנק הערכות ומשובים לתעודות (כולל כפתור אורך) -----------------
 elif st.session_state.current_room == "בנק הערכות":
     st.markdown('<span class="room-badge-pill" style="background:#fef9c3; color:#a16207;">✍️ Report Cards & Evaluations</span>', unsafe_allow_html=True)
     st.title("מחולל הערכות ומשובים לתעודות ולימי הורים")
@@ -1221,6 +1219,11 @@ elif st.session_state.current_room == "בנק הערכות":
     with col_fb2:
         st_level = st.selectbox("הישגים לימודיים:", ["מצטיין / גבוה מאוד (90-100)", "טוב מאוד / שולט בחומר (80-89)", "הישגים בינוניים / דרוש תרגול (65-79)", "מתקשה / פערים לימודיים (מתחת ל-65)"])
         st_effort = st.selectbox("השקעה והתנהגות:", ["השקעה גבוהה, פעיל ותורם לשיעור", "משקיע ומכין מטלות אך שקט", "פוטנציאל גבוה שאינו ממומש", "קושי בהתמדה ואיחורים/חיסורים"])
+        fb_length = st.radio("📏 אורך המשוב המבוקש:", [
+            "קצר וממוקד (משפט-שניים למשו״ב)",
+            "בינוני ומאוזן (פסקה סטנדרטית)",
+            "מפורט ומעמיק (ליום הורים / סיכום שנה)"
+        ], index=1, horizontal=True)
 
     if st.button("✨ נסח משוב אישי ומעצים", use_container_width=True):
         if st_name and st_sub:
@@ -1231,10 +1234,11 @@ elif st.session_state.current_room == "בנק הערכות":
                     f"נסח משוב לתעודה/יום הורים עבור התלמיד/ה {st_name} (מגדר: {p_gender}) במקצוע {st_sub}.\n"
                     f"שכבת גיל: {chosen_grade}.\n"
                     f"הישגים: {st_level}, השקעה: {st_effort}.\n"
+                    f"הנחיית אורך קריטית: {fb_length}.\n"
                     "דרישות:\n"
                     "1. משוב מעצים ומכבד שמתמקד בחוזקות לצד יעד ברור לשיפור.\n"
-                    "2. אורך: 3-4 שורות ממוקדות שמתאימות לשדה הערכה במשו\"ב.\n"
-                    "3. ניסוח רשמי אך חם."
+                    "2. הקפד בדיוק על האורך שנבחר (קצר: 1-2 משפטים חדים, בינוני: 3-4 שורות, ארוך: 2 פסקאות מנומקות ומפורטות).\n"
+                    "3. ניסוח רשמי, חם ומותאם לשדות הערכה בית-ספריים."
                 )
                 res_eval = generate_ai(fb_prompt)
                 st.markdown(f'<div class="room-content-card" style="border-right: 4px solid #f59e0b;">{res_eval.text}</div>', unsafe_allow_html=True)
@@ -1242,7 +1246,7 @@ elif st.session_state.current_room == "בנק הערכות":
         else:
             st.warning("נא להזין שם תלמיד ומקצוע לימוד.")
 
-# ----------------- חדר: הודעות וואטסאפ להורים (חדש למורים) -----------------
+# ----------------- חדר: הודעות וואטסאפ להורים (כולל כפתור אורך) -----------------
 elif st.session_state.current_room == "הודעות הורים":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📱 Classroom WhatsApp Broadcast</span>', unsafe_allow_html=True)
     st.title("מחולל הודעות וואטסאפ רשמיות להורים")
@@ -1258,6 +1262,11 @@ elif st.session_state.current_room == "הודעות הורים":
             "הודעה על התנהגות או פערים לימודיים הדורשים שיתוף פעולה"
         ])
         pmsg_subject = st.text_input("מקצוע או נושא:", placeholder="מתמטיקה, היסטוריה, אנגלית...")
+        pmsg_length = st.radio("📏 אורך ההודעה:", [
+            "קצר ולעניין (מבזק וואטסאפ של 2-3 שורות)",
+            "בינוני (נוסח סטנדרטי עם נקודות)",
+            "מפורט (הסבר מלא עם רקע, הנחיות וטיפים)"
+        ], index=1, horizontal=True)
     with col_pmsg2:
         pmsg_details = st.text_area("פרטים נוספים שכדאי להכניס להודעה:", placeholder="למשל: המבחן יתקיים ביום רביעי, החומר כולל עמודים 30-50, חשוב להביא סרגל ומחשבון...")
 
@@ -1266,11 +1275,12 @@ elif st.session_state.current_room == "הודעות הורים":
             with st.spinner("מנסח הודעה ייצוגית..."):
                 prompt_parent = (
                     f"אתה מורה/מחנך בישראל עבור כיתה {chosen_grade}.\n"
-                    f"נסח הודעת וואטסאפ רשמית, חמה ומסודרת.\n"
+                    f"נסח הודעת וואטסאפ רשמית, חמה ומסודרת להורים.\n"
                     f"סוג ההודעה: {pmsg_type}, נושא: {pmsg_subject}, פרטים נוספים: {pmsg_details}.\n"
+                    f"הנחיית אורך קריטית: {pmsg_length}.\n"
                     "דרישות:\n"
                     "1. ניסוח נעים ומכבד בגובה העיניים עם אימוג'ים מתאימים.\n"
-                    "2. חלוקה לנקודות ברורות שקל לקרוא בטלפון.\n"
+                    "2. אם נבחר קצר: 2-3 משפטים חדים ומדויקים בלבד. אם בינוני/ארוך: חלוקה לנקודות מסודרות.\n"
                     "3. סיום בהזמנה ליצירת קשר וברכת שבוע טוב / בהצלחה."
                 )
                 res_pmsg = generate_ai(prompt_parent)
@@ -1279,7 +1289,7 @@ elif st.session_state.current_room == "הודעות הורים":
         else:
             st.warning("נא להזין מקצוע או נושא.")
 
-# ----------------- חדר: מבדק דיפרנציאלי (חדש למורים) -----------------
+# ----------------- חדר: מבדק דיפרנציאלי -----------------
 elif st.session_state.current_room == "מבדק דיפרנציאלי":
     st.markdown('<span class="room-badge-pill" style="background:#f3e8ff; color:#6b21a8;">🪜 Differentiated Assessment</span>', unsafe_allow_html=True)
     st.title("מחולל מבדק דיפרנציאלי ב-3 רמות")
@@ -1314,7 +1324,7 @@ elif st.session_state.current_room == "מבדק דיפרנציאלי":
         else:
             st.warning("נא להזין מקצוע ונושא.")
 
-# ----------------- חדר: פתיחת שיעור מסקרנת (חדש למורים) -----------------
+# ----------------- חדר: פתיחת שיעור מסקרנת -----------------
 elif st.session_state.current_room == "פתיחת שיעור":
     st.markdown('<span class="room-badge-pill" style="background:#ccfbf1; color:#0f766e;">💡 5-Minute Class Hook</span>', unsafe_allow_html=True)
     st.title("מחולל פתיחת שיעור מסקרנת (Hook)")
@@ -1350,6 +1360,53 @@ elif st.session_state.current_room == "פתיחת שיעור":
         else:
             st.warning("נא להזין מקצוע ונושא.")
 
+# ----------------- חדר: מכתב להנהלה (כולל כפתור אורך) -----------------
+elif st.session_state.current_room == "הנהלה":
+    st.markdown('<span class="room-badge-pill" style="background:#f1f5f9; color:#334155;">🏛️ Leadership Proposal</span>', unsafe_allow_html=True)
+    st.title("מכתב רשמי להנהלת בית הספר ולצוות הייעוץ")
+    
+    col_lead1, col_lead2 = st.columns(2)
+    with col_lead1:
+        lead_focus = st.selectbox("מוקד המכתב:", [
+            "הצעה לפיילוט כיתתי ללמידה עצמאית והפחתת עומס ממורים",
+            "תוכנית תמיכה לתלמידים מתקשים והפחתת חרדת בחינות",
+            "שילוב כלי בינה מלאכותית מבוקרים בהוראה השוטפת"
+        ])
+    with col_lead2:
+        lead_length = st.radio("📏 אורך המכתב:", [
+            "תקציר מנהלים ממוקד (עמוד קצר / 2 פסקאות)",
+            "מכתב רשמי סטנדרטי (מבנה פדגוגי מלא)",
+            "הצעת פרויקט מפורטת (כולל יעדים ושלבי פיילוט)"
+        ], index=1, horizontal=True)
+
+    if st.button("📄 נסח מכתב מותאם להנהלה", use_container_width=True):
+        with st.spinner("מנסח מכתב רשמי..."):
+            prompt_lead = (
+                f"נסח מכתב פנייה רשמי ומקצועי למנהלת בית הספר ויועצת השכבה עבור שכבת {chosen_grade}.\n"
+                f"נושא הפנייה: פלטפורמת 'The Dan Method'.\n"
+                f"מוקד: {lead_focus}.\n"
+                f"אורך מבוקש: {lead_length}.\n"
+                "הדגש את היתרונות של התאמה למשרד החינוך, הפחתת חרדת בחינות, חיסכון בזמן למורים, והצעת פיילוט התנסותי מדוד."
+            )
+            res_lead = generate_ai(prompt_lead)
+            st.session_state["custom_lead_letter"] = res_lead.text
+
+    letter_display = st.session_state.get("custom_lead_letter", """לכבוד: מנהלת בית הספר והיועצת החינוכית
+הנדון: שילוב פלטפורמת 'The Dan Method' ככלי פדגוגי מסייע ללמידה עצמאית והפחתת חרדת בחינות
+
+מערכת The Dan Method פותחה מתוך הבנת האתגרים הייחודיים של תלמידי חטיבת הביניים והחטיבה העליונה בישראל, ומכוילת על פי תוכניות הלימודים ומחווני הבגרות של משרד החינוך.
+
+המערכת מעודדת למידה עצמאית, סוגרת פערים לימודיים, מסייעת בהפחתת חרדת בחינות באמצעות מרחב רווחה ותרגול מודרך, וחוסכת שעות יקרות של הכנת חומרים לצוות ההוראה.
+
+הצעה לפיילוט: קיום התנסות מבוקרת בכיתה אחת לקראת מבחן קרוב למדידת שביעות הרצון וההישגים.""")
+
+    st.markdown(f"""
+        <div class="room-content-card">
+            <div style="font-size:1.05rem; line-height:1.75; white-space: pre-wrap;">{letter_display}</div>
+        </div>
+    """, unsafe_allow_html=True)
+    st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(letter_display)}" target="_blank">📲 שתף מכתב להנהלה בוואטסאפ</a>', unsafe_allow_html=True)
+
 # ----------------- שאר החדרים -----------------
 elif st.session_state.current_room == "מערכי שיעור":
     st.markdown('<span class="room-badge-pill" style="background:#e0e7ff; color:#4338ca;">⏱️ 45 Min Lesson Plan</span>', unsafe_allow_html=True)
@@ -1376,24 +1433,6 @@ elif st.session_state.current_room == "בחנים ומחוונים":
                 res_quiz = generate_ai(prompt_quiz)
                 st.markdown(f'<div class="room-content-card">{res_quiz.text}</div>', unsafe_allow_html=True)
                 st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_quiz.text)}" target="_blank">📲 שתף בוחן ומחוון בוואטסאפ</a>', unsafe_allow_html=True)
-
-elif st.session_state.current_room == "הנהלה":
-    st.markdown('<span class="room-badge-pill" style="background:#f1f5f9; color:#334155;">🏛️ Leadership Proposal</span>', unsafe_allow_html=True)
-    st.title("מכתב רשמי להנהלת בית הספר ולצוות הייעוץ")
-    st.markdown("""
-        <div class="room-content-card">
-            <h3 style="margin-top:0; color:#0f2b5c;">לכבוד: מנהלת בית הספר והיועצת החינוכית</h3>
-            <b>הנדון: שילוב פלטפורמת 'The Dan Method' ככלי פדגוגי מסייע ללמידה עצמאית והפחתת חרדת בחינות</b>
-            <p style="margin-top: 10px; line-height: 1.7; color: #334155;">
-                מערכת <b>The Dan Method</b> פותחה מתוך הבנת האתגרים הייחודיים של תלמידי חטיבת הביניים והחטיבה העליונה בישראל, ומכוילת על פי תוכניות הלימודים ומחווני הבגרות של משרד החינוך.<br><br>
-                המערכת מעודדת למידה עצמאית, סוגרת פערים לימודיים, מסייעת בהפחתת חרדת בחינות באמצעות מרחב רווחה ותרגול מודרך, וחוסכת שעות יקרות של הכנת חומרים לצוות ההוראה.
-            </p>
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin-top:14px;">
-                <b>הצעה לפיילוט:</b> קיום התנסות מבוקרת בכיתה אחת לקראת מבחן קרוב למדידת שביעות הרצון וההישגים.
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-    st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link("מכתב רשמי על The Dan Method להנהלה ולייעוץ החינוכי.")}" target="_blank">📲 שתף מכתב להנהלה בוואטסאפ</a>', unsafe_allow_html=True)
 
 elif st.session_state.current_room == "רווחה":
     st.markdown('<span class="room-badge-pill" style="background:#ffedd5; color:#c2410c;">🧘 Wellbeing & Calm</span>', unsafe_allow_html=True)
