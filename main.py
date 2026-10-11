@@ -293,27 +293,19 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
-    /* מסגרת שידור חי של מיה */
-    .zoom-stage-box {
-        background: #0f172a;
+    /* וידאו זום רספונסיבי וחלק */
+    .video-zoom-wrapper {
+        position: relative;
         border-radius: 24px;
         overflow: hidden;
         border: 3px solid #1e3a8a;
+        background: #000;
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
-        position: relative;
-        padding: 10px;
-        text-align: center;
-    }
-    .zoom-stage-box video {
-        border-radius: 18px;
-        width: 100% !important;
-        max-height: 280px !important;
-        object-fit: cover !important;
     }
     .zoom-live-pill {
         position: absolute;
-        top: 20px;
-        right: 20px;
+        top: 14px;
+        right: 14px;
         background: rgba(15, 23, 42, 0.85);
         color: #22c55e;
         border: 1px solid #22c55e;
@@ -326,8 +318,8 @@ st.markdown("""
     }
     .zoom-teacher-tag {
         position: absolute;
-        bottom: 20px;
-        right: 20px;
+        bottom: 14px;
+        right: 14px;
         background: rgba(15, 23, 42, 0.85);
         color: #ffffff;
         padding: 6px 16px;
@@ -440,7 +432,6 @@ def extract_json(text):
         clean_str = re.sub(r"[\r\n\t]+", " ", text)
         return json.loads(clean_str)
 
-# יצירת קובץ שמע אמיתי בעברית דרך השרת (ללא חסימות דפדפן)
 def create_audio_bytes(text):
     clean = re.sub(r"[*#_`>\[\]\(\)\n]", " ", text)
     clean = clean[:250].strip()
@@ -462,7 +453,6 @@ def create_pptx_file(slides_info, topic_name):
 
     for s in slides_info:
         slide = prs.slides.add_slide(blank_layout)
-        
         title_box = slide.shapes.add_textbox(Inches(1), Inches(0.8), Inches(11.333), Inches(1.2))
         tf = title_box.text_frame
         tf.word_wrap = True
@@ -1018,22 +1008,27 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (וידאו חי פנימי + שמע אמיתי מובנה) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
-    st.caption("שיחת וידאו חיה בתנועה, מענה קולי ישיר ותרגול מותאם אישית!")
+    st.caption("שיחת וידאו חיה, מענה קולי אוטומטי ותרגול שיעורי בית מותאם אישית!")
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
-        # שימוש בווידאו נתמך ישירות דרך st.video של Streamlit ללא תלות בדפדפן
-        st.markdown('<div class="zoom-stage-box"><div class="zoom-live-pill">● שידור חי פועל</div>', unsafe_allow_html=True)
-        st.video("https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", loop=True, autoplay=True, muted=True)
-        st.markdown('<div class="zoom-teacher-tag">המורה מיה (בשיחה חיה)</div></div>', unsafe_allow_html=True)
+        # הטמעת נגן רשת ישיר שאינו נחסם בדפדפן
+        embed_video_html = """
+        <div class="video-zoom-wrapper">
+            <div class="zoom-live-pill">● שידור חי פועל</div>
+            <iframe width="100%" height="280" src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1&controls=0&loop=1&playlist=jfKfPfyJRdk" frameborder="0" allow="autoplay" style="pointer-events: none; border-radius: 20px;"></iframe>
+            <div class="zoom-teacher-tag">המורה מיה (בשיחה חיה)</div>
+        </div>
+        """
+        st.components.v1.html(embed_video_html, height=295)
         
-        # נגן שמע שמקבל קובץ MP3 שנוצר בשרת
+        # השמעת קובץ השמע שנוצר בשרת
         if st.session_state.last_voice_audio_bytes:
-            st.markdown("<div style='margin-top: 14px; margin-bottom: 4px; font-weight: 700; color: #0f2b5c;'>🔊 השמעת קול המורה מיה:</div>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-top: 10px; margin-bottom: 4px; font-weight: 700; color: #0f2b5c;'>🔊 השמעת קול המורה מיה:</div>", unsafe_allow_html=True)
             st.audio(st.session_state.last_voice_audio_bytes, format="audio/mp3", autoplay=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
@@ -1100,7 +1095,6 @@ elif st.session_state.current_room == "חדר זום":
                 try:
                     res_zoom = generate_ai(zoom_prompt)
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
-                    # יצירת קובץ MP3 חי לקול המורה
                     st.session_state.last_voice_audio_bytes = create_audio_bytes(res_zoom.text)
                     st.rerun()
                 except Exception as err:
