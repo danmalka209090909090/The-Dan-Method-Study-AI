@@ -1035,7 +1035,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (דיבור קולי + זיהוי דיבור) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (הקלטה קולית חיה כמו בוואטסאפ) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -1068,10 +1068,10 @@ elif st.session_state.current_room == "חדר זום":
                         "המשימה צריכה לכלול:\n"
                         "1. תרגיל/שאלה 1 ברמה בסיסית.\n"
                         "2. תרגיל/שאלה 2 ברמת בגרות/מבחן כיתתי.\n"
-                        "3. הנחיה מה לכתוב לך בחזרה בצ'אט כדי שתבדקי ותתני ציון."
+                        "3. הנחיה מה לכתוב או להקליט לך בחזרה כדי שתבדקי ותתני ציון."
                     )
                     res_hw = generate_ai(hw_prompt)
-                    reply_text = "הכנתי לך שתי שאלות תרגול מעולות. תפתור אותן ותכתוב לי כאן את התשובות ואבדוק לך מיד!"
+                    reply_text = "הכנתי לך שתי שאלות תרגול מעולות. תפתור אותן ותקליט לי או תכתוב לי כאן את התשובות ואבדוק לך מיד!"
                     st.session_state.zoom_homework = res_hw.text
                     st.session_state.last_voice_audio_bytes = create_audio_bytes(reply_text)
                     st.rerun()
@@ -1094,77 +1094,46 @@ elif st.session_state.current_room == "חדר זום":
             """, unsafe_allow_html=True)
 
         st.markdown("<b>💬 שיחה חיה עם המורה מיה:</b>", unsafe_allow_html=True)
-        chat_box = st.container(height=300)
+        chat_box = st.container(height=280)
         with chat_box:
             if not st.session_state.zoom_chat_history:
-                st.info(f"👋 **המורה מיה:** היי! שמחה לפגוש אותך לשיעור ב{z_subject}. תגיד לי איזה נושא או תרגיל מציק לך, ונתחיל לפרק אותו ביחד!")
+                st.info(f"👋 **המורה מיה:** היי! שמחה לפגוש אותך לשיעור ב{z_subject}. אתה יכול לכתוב לי או פשוט להקליט הודעה קולית למטה ולדבר איתי ישירות!")
             else:
                 for m in st.session_state.zoom_chat_history:
                     with st.chat_message(m["role"]):
                         st.write(m["content"])
 
-        mic_html = """
-        <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
-            <button id="micBtn" onclick="toggleRecording()" style="padding: 6px 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: Assistant, sans-serif;">
-                🎤 לחץ כאן לדיבור בקול
-            </button>
-            <span id="micStatus" style="font-size: 0.85rem; color: #64748b; font-family: Assistant, sans-serif;">לחץ על הכפתור כדי לדבר במקום להקליד</span>
-        </div>
-        <script>
-            var recognition;
-            var isRecording = false;
-            function toggleRecording() {
-                var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) {
-                    alert("דפדפן זה אינו תומך בזיהוי דיבור. השתמש ב-Google Chrome.");
-                    return;
-                }
-                var btn = document.getElementById('micBtn');
-                var status = document.getElementById('micStatus');
-                
-                if (!isRecording) {
-                    recognition = new SpeechRecognition();
-                    recognition.lang = 'he-IL';
-                    recognition.continuous = false;
-                    recognition.interimResults = false;
-                    
-                    recognition.onstart = function() {
-                        isRecording = true;
-                        btn.style.background = '#dc2626';
-                        btn.innerHTML = '⏹️ מקשיב לך... דבר עכשיו';
-                        status.innerHTML = 'מקשיב בעברית... דבר ברור';
-                    };
-                    
-                    recognition.onresult = function(event) {
-                        var text = event.results[0][0].transcript;
-                        status.innerHTML = 'זוהה: "' + text + '" (העתק לתיבה למטה ושלח)';
-                        var chatInput = parent.document.querySelector('textarea[data-testid="stChatInputTextArea"]');
-                        if (chatInput) {
-                            chatInput.value = text;
-                            chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+        # הקלטה קולית ישירה כמו בוואטסאפ (st.audio_input)
+        st.markdown("<div style='font-weight:700; font-size:0.9rem; color:#0f2b5c; margin-top:8px;'>🎙️ הקלט הודעה קולית למורה מיה (כמו בוואטסאפ):</div>", unsafe_allow_html=True)
+        voice_rec = st.audio_input("הקלט הודעה קולית למיה", label_visibility="collapsed")
+        
+        if voice_rec is not None:
+            audio_bytes_data = voice_rec.read()
+            with st.spinner("המורה מיה מקשיבה להקלטה שלך ומכינה תשובה..."):
+                try:
+                    prompt_audio = [
+                        (
+                            f"את המורה מיה בשיעור פרטי אישי חי עם תלמיד ב-{student_context}.\n"
+                            f"מקצוע השיעור: {z_subject}.\n"
+                            "התלמיד שלח לך הקלטה קולית. הקשיבי לה ועני לו ישירות בעברית.\n"
+                            "הנחיות: דברי בלשון נקבה על עצמך, עני בגובה העיניים, מעודד וממוקד (עד 3 משפטים).\n"
+                            "אם הוא פתר תרגיל, בדקי אותו ותני ציון. בסוף שאלי שאלה קצרה."
+                        ),
+                        {
+                            "mime_type": "audio/wav",
+                            "data": audio_bytes_data
                         }
-                    };
-                    
-                    recognition.onerror = function() {
-                        status.innerHTML = 'לא נקלט קול, נסה שוב.';
-                    };
-                    
-                    recognition.onend = function() {
-                        isRecording = false;
-                        btn.style.background = '#2563eb';
-                        btn.innerHTML = '🎤 לחץ כאן לדיבור בקול';
-                    };
-                    
-                    recognition.start();
-                } else {
-                    recognition.stop();
-                }
-            }
-        </script>
-        """
-        st.components.v1.html(mic_html, height=45)
+                    ]
+                    res_zoom = generate_ai(prompt_audio)
+                    st.session_state.zoom_chat_history.append({"role": "user", "content": "🎙️ [שלח הקלטה קולית]"})
+                    st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
+                    st.session_state.last_voice_audio_bytes = create_audio_bytes(res_zoom.text)
+                    st.rerun()
+                except Exception as err:
+                    st.error(f"שגיאה בעיבוד ההקלטה: {err}")
 
-        text_spoken = st.chat_input("הקלד תשובה או שאלה למורה מיה...")
+        # אפשרות חלופית להקלדת טקסט
+        text_spoken = st.chat_input("או הקלד כאן הודעה בטקסט...")
         if text_spoken:
             st.session_state.zoom_chat_history.append({"role": "user", "content": text_spoken})
             history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.zoom_chat_history[-6:]])
@@ -1289,7 +1258,7 @@ elif st.session_state.current_room == "רנטגן":
                 prompt = f"חשוף מלכודות בוחנים בנושא: {xray_topic} עבור {student_context}."
                 res = generate_ai(prompt)
                 st.markdown(f'<div class="room-content-card">{res.text}</div>', unsafe_allow_html=True)
-                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף מוקשים בוואטסאפ</a>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף מוקשים בוואטסאפ</a>', unsafe_aim_html=True)
 
 elif st.session_state.current_room == "ערעור":
     st.markdown('<span class="room-badge-pill" style="background:#e0f2fe; color:#0369a1;">⚖️ Appeal Generator</span>', unsafe_allow_html=True)
