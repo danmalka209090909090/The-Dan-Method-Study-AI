@@ -21,7 +21,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# שפת עיצוב LearnIt וטיפוגרפיה
+# שפת עיצוב LearnIt
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
@@ -300,7 +300,7 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
-    /* חלון שיחת זום אינטראקטיבי */
+    /* נגן וידאו חי ותקין של המורה */
     .zoom-video-container {
         background: #0f172a;
         border-radius: 24px;
@@ -309,14 +309,12 @@ st.markdown("""
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
         position: relative;
         height: 310px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
-    .zoom-video-container video {
+    .zoom-video-container iframe {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        border: none;
+        pointer-events: none;
     }
     .zoom-live-pill {
         position: absolute;
@@ -417,8 +415,8 @@ if not api_key:
 
 client = genai.Client(api_key=api_key)
 
-# שימוש במודלים זמינים תמיד ב-v1beta ללא שגיאת 404
-AVAILABLE_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]
+# מודלים רשמיים נתמכים ב-100% לפי הודעת גוגל
+AVAILABLE_MODELS = ["gemini-3.5-flash-lite", "gemini-3.8-flash"]
 
 def generate_ai(contents, use_cache=False):
     if use_cache and isinstance(contents, str) and contents in st.session_state.ai_cache:
@@ -451,7 +449,6 @@ def extract_json(text):
         clean_str = re.sub(r"[\r\n\t]+", " ", text)
         return json.loads(clean_str)
 
-# דיבור חי בדפדפן בחינם דרך Web Speech API
 def speak_in_browser(text):
     clean = re.sub(r"[*#_`>\[\]\(\)\n]", " ", text)
     clean = clean.replace('"', '\\"').strip()
@@ -1041,7 +1038,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (חינם לגמרי עם Web Speech API) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -1049,18 +1046,14 @@ elif st.session_state.current_room == "חדר זום":
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
-        # וידאו חי של מורה
         st.markdown("""
             <div class="zoom-video-container">
                 <div class="zoom-live-pill">● שידור חי פועל</div>
-                <video autoplay loop muted playsinline>
-                    <source src="https://assets.mixkit.co/videos/preview/mixkit-young-woman-talking-on-video-call-40013-large.mp4" type="video/mp4">
-                </video>
+                <iframe src="https://player.cloudinary.com/embed/?public_id=docs%2Ffemale_talking&cloud_name=demo&profile=cld-default&autoplay=true&loop=true&muted=true" allow="autoplay; fullscreen"></iframe>
                 <div class="zoom-teacher-tag">המורה מיה (מחוברת)</div>
             </div>
         """, unsafe_allow_html=True)
         
-        # הפעלת קול הדפדפן (Web Speech API) ללא עלות
         if st.session_state.last_voice_reply:
             speak_in_browser(st.session_state.last_voice_reply)
             st.markdown("<div style='margin-top:10px; color:#16a34a; font-weight:700;'>🔊 המורה מיה מדברת אליך בקול...</div>", unsafe_allow_html=True)
