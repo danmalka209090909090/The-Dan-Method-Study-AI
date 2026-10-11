@@ -8,6 +8,7 @@ import json
 import re
 import time
 import urllib.parse
+import hashlib
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -404,6 +405,8 @@ if "zoom_chat_history" not in st.session_state:
     st.session_state.zoom_chat_history = []
 if "last_voice_audio_bytes" not in st.session_state:
     st.session_state.last_voice_audio_bytes = None
+if "last_processed_audio_hash" not in st.session_state:
+    st.session_state.last_processed_audio_hash = None
 if "zoom_homework" not in st.session_state:
     st.session_state.zoom_homework = None
 if "mock_exam_data" not in st.session_state:
@@ -1036,7 +1039,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (הודעות קוליות כמו בוואטסאפ) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (הודעות קוליות ללא לולאות כפולות) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -1082,6 +1085,7 @@ elif st.session_state.current_room == "חדר זום":
         if st.button("🧹 איפוס שיחה", use_container_width=True):
             st.session_state.zoom_chat_history = []
             st.session_state.last_voice_audio_bytes = None
+            st.session_state.last_processed_audio_hash = None
             st.session_state.zoom_homework = None
             st.rerun()
 
@@ -1104,36 +1108,41 @@ elif st.session_state.current_room == "חדר זום":
                     with st.chat_message(m["role"]):
                         st.write(m["content"])
 
-        # הקלטה קולית חיה כמו בוואטסאפ
-        st.markdown("<div style='font-weight:700; font-size:0.9rem; color:#0f2b5c; margin-top:8px;'>🎙️ הקלט הודעה קולית למורה מיה (כמו בוואטסאפ):</div>", unsafe_allow_html=True)
+        # הקלטה קולית חיה עם בדיקת מניעת כפילויות
+        st.markdown("<div style='font-weight:700; font-size:0.9rem; color:#0f2b5c; margin-top:8px;'>🎙️ הקלט הודעה קולית למורה מיה:</div>", unsafe_allow_html=True)
         voice_rec = st.audio_input("הקלט הודעה קולית למיה", label_visibility="collapsed")
         
         if voice_rec is not None:
             audio_bytes_data = voice_rec.read()
-            with st.spinner("המורה מיה מקשיבה להקלטה שלך ומכינה מענה..."):
-                try:
-                    # שימוש במחלקת types.Part.from_bytes למניעת שגיאת ולידציה
-                    audio_part = types.Part.from_bytes(
-                        data=audio_bytes_data,
-                        mime_type="audio/wav"
-                    )
-                    prompt_audio = [
-                        (
-                            f"את המורה מיה בשיעור פרטי אישי חי עם תלמיד ב-{student_context}.\n"
-                            f"מקצוע השיעור: {z_subject}.\n"
-                            "התלמיד שלח לך הקלטה קולית זו. הקשיבי לה ועני לו ישירות בעברית.\n"
-                            "הנחיות: דברי בלשון נקבה על עצמך, עני בגובה העיניים, מעודד וממוקד (עד 3 משפטים).\n"
-                            "אם הוא פתר תרגיל, בדקי אותו ותני ציון. בסוף שאלי שאלה קצרה."
-                        ),
-                        audio_part
-                    ]
-                    res_zoom = generate_ai(prompt_audio)
-                    st.session_state.zoom_chat_history.append({"role": "user", "content": "🎙️ [שלח הודעה קולית]"})
-                    st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
-                    st.session_state.last_voice_audio_bytes = create_audio_bytes(res_zoom.text)
-                    st.rerun()
-                except Exception as err:
-                    st.error(f"שגיאה בעיבוד ההקלטה: {err}")
+            # יצירת מזהה ייחודי לקובץ
+            current_hash = hashlib.md5(audio_bytes_data).hexdigest()
+            
+            # מעבדים אך ורק אם מדובר בהקלטה שטרם עובדה
+            if current_hash != st.session_state.last_processed_audio_hash:
+                st.session_state.last_processed_audio_hash = current_hash
+                with st.spinner("המורה מיה מקשיבה להקלטה שלך ומכינה מענה..."):
+                    try:
+                        audio_part = types.Part.from_bytes(
+                            data=audio_bytes_data,
+                            mime_type="audio/wav"
+                        )
+                        prompt_audio = [
+                            (
+                                f"את המורה מיה בשיעור פרטי אישי חי עם תלמיד ב-{student_context}.\n"
+                                f"מקצוע השיעור: {z_subject}.\n"
+                                "התלמיד שלח לך הקלטה קולית זו. הקשיבי לה ועני לו ישירות בעברית.\n"
+                                "הנחיות: דברי בלשון נקבה על עצמך, עני בגובה העיניים, מעודד וממוקד (עד 3 משפטים).\n"
+                                "אם הוא פתר תרגיל, בדקי אותו ותני ציון. בסוף שאלי שאלה קצרה."
+                            ),
+                            audio_part
+                        ]
+                        res_zoom = generate_ai(prompt_audio)
+                        st.session_state.zoom_chat_history.append({"role": "user", "content": "🎙️ [שלח הודעה קולית]"})
+                        st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
+                        st.session_state.last_voice_audio_bytes = create_audio_bytes(res_zoom.text)
+                        st.rerun()
+                    except Exception as err:
+                        st.error(f"שגיאה בעיבוד ההקלטה: {err}")
 
         text_spoken = st.chat_input("או הקלד כאן הודעה בטקסט...")
         if text_spoken:
