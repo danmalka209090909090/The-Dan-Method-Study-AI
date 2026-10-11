@@ -224,7 +224,7 @@ st.markdown("""
 
     .pastel-tile {
         border-radius: 18px;
-        padding: 24px 16px;
+        padding: 20px 14px;
         text-align: center;
         margin-bottom: 14px;
         border: 1px solid transparent;
@@ -235,16 +235,16 @@ st.markdown("""
         box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
     }
     .pastel-tile-icon {
-        font-size: 32px;
-        margin-bottom: 8px;
+        font-size: 30px;
+        margin-bottom: 6px;
     }
     .pastel-tile-title {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         font-weight: 800;
         margin-bottom: 3px;
     }
     .pastel-tile-count {
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         font-weight: 600;
         opacity: 0.8;
     }
@@ -257,6 +257,7 @@ st.markdown("""
     .tile-slate  { background-color: #f1f5f9; border-color: #e2e8f0; color: #334155; }
     .tile-pink   { background-color: #fce7f3; border-color: #fbcfe8; color: #be185d; }
     .tile-indigo { background-color: #e0e7ff; border-color: #c7d2fe; color: #4338ca; }
+    .tile-teal   { background-color: #ccfbf1; border-color: #99f6e4; color: #0f766e; }
 
     .room-content-card {
         background: #ffffff;
@@ -642,7 +643,7 @@ if st.session_state.app_mode == "מורה" and not st.session_state.teacher_auth
             <div style="font-size: 44px; margin-bottom: 8px;">🔒</div>
             <h2 style="color: #0f2b5c; margin: 0 0 8px 0; font-weight: 800;">אזור מוגן לצוות הוראה והנהלה</h2>
             <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
-                כלי המורים כוללים מחווני בחינה ומערכי שיעור.<br>
+                כלי המורים כוללים מחווני בחינה, מערכי שיעור וכלי הערכה.<br>
                 כדי למנוע דליפת פתרונות, הגישה מותרת באמצעות קוד מורה בלבד.
             </p>
         </div>
@@ -669,7 +670,7 @@ if st.session_state.app_mode == "מורה" and not st.session_state.teacher_auth
 # ----------------- דף הבית -----------------
 if st.session_state.current_room == "דף הבית":
     mode_title = "הדרך שלך להצלחה מתחילה כאן." if st.session_state.app_mode == "תלמיד" else "מרחב הפדגוגיה וההוראה החכמה."
-    mode_sub = "לימודים קלים יותר, בכל מקום ובכל זמן. כל מה שצריך כדי להצליח – במקום אחד." if st.session_state.app_mode == "תלמיד" else "הכנת מערכי שיעור, בחני פתע ומחוונים רשמיים בתוך שניות."
+    mode_sub = "לימודים קלים יותר, בכל מקום ובכל זמן. כל מה שצריך כדי להצליח – במקום אחד." if st.session_state.app_mode == "תלמיד" else "הכנת מערכי שיעור, בחני פתע, משובים להורים ומחוונים רשמיים בתוך שניות."
     
     st.markdown(f"""
         <div class="hero-banner">
@@ -877,7 +878,8 @@ if st.session_state.current_room == "דף הבית":
                 st.rerun()
 
     else:
-        col_m1, col_m2, col_m3, col_m4, col_m5, col_m6 = st.columns(6)
+        # שורת כלים 1 למורים
+        col_m1, col_m2, col_m3, col_m4, col_m5 = st.columns(5)
         with col_m1:
             st.markdown('<div class="pastel-tile tile-blue"><div class="pastel-tile-icon">📊</div><div class="pastel-tile-title">מצגת לשיעור</div><div class="pastel-tile-count">הורדת מצגת PPTX</div></div>', unsafe_allow_html=True)
             if st.button("מצגת מורה", key="pm_slides", use_container_width=True):
@@ -908,8 +910,34 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "דפי הדפסה"
                 st.rerun()
 
+        # שורת כלים 2 למורים (הכלים החדשים שהוספנו)
+        col_m6, col_m7, col_m8, col_m9, col_m10 = st.columns(5)
         with col_m6:
-            st.markdown('<div class="pastel-tile tile-purple"><div class="pastel-tile-icon">🩻</div><div class="pastel-tile-title">מוקשי למידה</div><div class="pastel-tile-count">טעויות נפוצות</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="pastel-tile tile-yellow"><div class="pastel-tile-icon">✍️</div><div class="pastel-tile-title">בנק הערכות</div><div class="pastel-tile-count">משובים לתעודות</div></div>', unsafe_allow_html=True)
+            if st.button("הערכות", key="pm_feedback", use_container_width=True):
+                st.session_state.current_room = "בנק הערכות"
+                st.rerun()
+
+        with col_m7:
+            st.markdown('<div class="pastel-tile tile-mint"><div class="pastel-tile-icon">📱</div><div class="pastel-tile-title">הודעה להורים</div><div class="pastel-tile-count">וואטסאפ כיתתי</div></div>', unsafe_allow_html=True)
+            if st.button("הורים", key="pm_parents", use_container_width=True):
+                st.session_state.current_room = "הודעות הורים"
+                st.rerun()
+
+        with col_m8:
+            st.markdown('<div class="pastel-tile tile-purple"><div class="pastel-tile-icon">🪜</div><div class="pastel-tile-title">מבדק דיפרנציאלי</div><div class="pastel-tile-count">3 רמות קושי</div></div>', unsafe_allow_html=True)
+            if st.button("דיפרנציאלי", key="pm_diff", use_container_width=True):
+                st.session_state.current_room = "מבדק דיפרנציאלי"
+                st.rerun()
+
+        with col_m9:
+            st.markdown('<div class="pastel-tile tile-teal"><div class="pastel-tile-icon">💡</div><div class="pastel-tile-title">פתיחת שיעור</div><div class="pastel-tile-count">Hook של 5 דקות</div></div>', unsafe_allow_html=True)
+            if st.button("פתיחה", key="pm_hook", use_container_width=True):
+                st.session_state.current_room = "פתיחת שיעור"
+                st.rerun()
+
+        with col_m10:
+            st.markdown('<div class="pastel-tile tile-pink"><div class="pastel-tile-icon">🩻</div><div class="pastel-tile-title">מוקשי למידה</div><div class="pastel-tile-count">טעויות נפוצות</div></div>', unsafe_allow_html=True)
             if st.button("מלכודות", key="pm_xray", use_container_width=True):
                 st.session_state.current_room = "רנטגן"
                 st.rerun()
@@ -1039,7 +1067,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (עם כפתורי דמו מהירים) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -1108,7 +1136,6 @@ elif st.session_state.current_room == "חדר זום":
                     with st.chat_message(m["role"]):
                         st.write(m["content"])
 
-        # כפתורי דמו מהירים להדגמה קלה בלחיצה אחת
         st.markdown("<div style='font-size: 0.85rem; font-weight: 700; color: #64748b; margin-top: 6px;'>⚡ שאלות מהירות לדמו (לחיצה אחת):</div>", unsafe_allow_html=True)
         col_demo1, col_demo2, col_demo3 = st.columns(3)
         trigger_demo_text = None
@@ -1122,7 +1149,6 @@ elif st.session_state.current_room == "חדר זום":
             if st.button("🎯 טיפ למאיות", use_container_width=True):
                 trigger_demo_text = "איזה טיפ זהב יבטיח לי 100 במבחן הקרוב?"
 
-        # הקלטה קולית חיה
         st.markdown("<div style='font-weight:700; font-size:0.9rem; color:#0f2b5c; margin-top:8px;'>🎙️ הקלט הודעה קולית למורה מיה:</div>", unsafe_allow_html=True)
         voice_rec = st.audio_input("הקלט הודעה קולית למיה", label_visibility="collapsed")
         
@@ -1180,6 +1206,149 @@ elif st.session_state.current_room == "חדר זום":
                     st.rerun()
                 except Exception as err:
                     st.error(f"שגיאה בתקשורת עם המורה: {err}")
+
+# ----------------- חדר: בנק הערכות ומשובים לתעודות (חדש למורים) -----------------
+elif st.session_state.current_room == "בנק הערכות":
+    st.markdown('<span class="room-badge-pill" style="background:#fef9c3; color:#a16207;">✍️ Report Cards & Evaluations</span>', unsafe_allow_html=True)
+    st.title("מחולל הערכות ומשובים לתעודות ולימי הורים")
+    st.caption("ניסוח משובים פדגוגיים, מכבדים ומעצימים המוכנים להעתקה ישירה למשו״ב / סמארטסקול.")
+    
+    col_fb1, col_fb2 = st.columns(2)
+    with col_fb1:
+        st_name = st.text_input("שם התלמיד/ה:", placeholder="למשל: דניאל, יובל, מאיה...")
+        st_gender = st.radio("מגדר:", ["תלמיד (זכר)", "תלמידה (נקבה)"], horizontal=True)
+        st_sub = st.text_input("מקצוע הלימוד:", placeholder="מתמטיקה, היסטוריה, אנגלית...")
+    with col_fb2:
+        st_level = st.selectbox("הישגים לימודיים:", ["מצטיין / גבוה מאוד (90-100)", "טוב מאוד / שולט בחומר (80-89)", "הישגים בינוניים / דרוש תרגול (65-79)", "מתקשה / פערים לימודיים (מתחת ל-65)"])
+        st_effort = st.selectbox("השקעה והתנהגות:", ["השקעה גבוהה, פעיל ותורם לשיעור", "משקיע ומכין מטלות אך שקט", "פוטנציאל גבוה שאינו ממומש", "קושי בהתמדה ואיחורים/חיסורים"])
+
+    if st.button("✨ נסח משוב אישי ומעצים", use_container_width=True):
+        if st_name and st_sub:
+            with st.spinner("מנסח משוב אישי פדגוגי..."):
+                p_gender = "זכר" if "זכר" in st_gender else "נקבה"
+                fb_prompt = (
+                    f"אתה יועץ חינוכי ומורה מומחה במערכת החינוך בישראל.\n"
+                    f"נסח משוב לתעודה/יום הורים עבור התלמיד/ה {st_name} (מגדר: {p_gender}) במקצוע {st_sub}.\n"
+                    f"שכבת גיל: {chosen_grade}.\n"
+                    f"הישגים: {st_level}, השקעה: {st_effort}.\n"
+                    "דרישות:\n"
+                    "1. משוב מעצים ומכבד שמתמקד בחוזקות לצד יעד ברור לשיפור.\n"
+                    "2. אורך: 3-4 שורות ממוקדות שמתאימות לשדה הערכה במשו\"ב.\n"
+                    "3. ניסוח רשמי אך חם."
+                )
+                res_eval = generate_ai(fb_prompt)
+                st.markdown(f'<div class="room-content-card" style="border-right: 4px solid #f59e0b;">{res_eval.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_eval.text)}" target="_blank">📲 שתף משוב בוואטסאפ</a>', unsafe_allow_html=True)
+        else:
+            st.warning("נא להזין שם תלמיד ומקצוע לימוד.")
+
+# ----------------- חדר: הודעות וואטסאפ להורים (חדש למורים) -----------------
+elif st.session_state.current_room == "הודעות הורים":
+    st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📱 Classroom WhatsApp Broadcast</span>', unsafe_allow_html=True)
+    st.title("מחולל הודעות וואטסאפ רשמיות להורים")
+    st.caption("ניסוח הודעות ברורות, חמות ומאורגנות לקבוצת ההורים או להורה ספציפי.")
+    
+    col_pmsg1, col_pmsg2 = st.columns(2)
+    with col_pmsg1:
+        pmsg_type = st.selectbox("סוג ההודעה:", [
+            "עדכון לקראת מבחן קרוב וטיפים ללמידה בבית",
+            "סיכום שבועי של הלמידה והישגי הכיתה",
+            "תזכורת חמה לגבי הגשת מטלה / שיעורי בית",
+            "הודעה אישית להורה על התקדמות יפה של תלמיד",
+            "הודעה על התנהגות או פערים לימודיים הדורשים שיתוף פעולה"
+        ])
+        pmsg_subject = st.text_input("מקצוע או נושא:", placeholder="מתמטיקה, היסטוריה, אנגלית...")
+    with col_pmsg2:
+        pmsg_details = st.text_area("פרטים נוספים שכדאי להכניס להודעה:", placeholder="למשל: המבחן יתקיים ביום רביעי, החומר כולל עמודים 30-50, חשוב להביא סרגל ומחשבון...")
+
+    if st.button("📲 צור נוסח הודעה מוכן לשליחה", use_container_width=True):
+        if pmsg_subject:
+            with st.spinner("מנסח הודעה ייצוגית..."):
+                prompt_parent = (
+                    f"אתה מורה/מחנך בישראל עבור כיתה {chosen_grade}.\n"
+                    f"נסח הודעת וואטסאפ רשמית, חמה ומסודרת.\n"
+                    f"סוג ההודעה: {pmsg_type}, נושא: {pmsg_subject}, פרטים נוספים: {pmsg_details}.\n"
+                    "דרישות:\n"
+                    "1. ניסוח נעים ומכבד בגובה העיניים עם אימוג'ים מתאימים.\n"
+                    "2. חלוקה לנקודות ברורות שקל לקרוא בטלפון.\n"
+                    "3. סיום בהזמנה ליצירת קשר וברכת שבוע טוב / בהצלחה."
+                )
+                res_pmsg = generate_ai(prompt_parent)
+                st.markdown(f'<div class="room-content-card" style="border-right: 4px solid #22c55e;">{res_pmsg.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_pmsg.text)}" target="_blank">📲 שלח ישירות בוואטסאפ</a>', unsafe_allow_html=True)
+        else:
+            st.warning("נא להזין מקצוע או נושא.")
+
+# ----------------- חדר: מבדק דיפרנציאלי (חדש למורים) -----------------
+elif st.session_state.current_room == "מבדק דיפרנציאלי":
+    st.markdown('<span class="room-badge-pill" style="background:#f3e8ff; color:#6b21a8;">🪜 Differentiated Assessment</span>', unsafe_allow_html=True)
+    st.title("מחולל מבדק דיפרנציאלי ב-3 רמות")
+    st.caption("יצירת תרגול המותאם לכיתה הטרוגנית: רמת בסיס, רמת ליבה ורמת אתגר ומצוינות.")
+    
+    col_d1, col_d2 = st.columns(2)
+    with col_d1:
+        diff_sub = st.text_input("מקצוע:", placeholder="מתמטיקה, מדעים, לשון, אנגלית...")
+        diff_topic = st.text_input("הנושא הנלמד:", placeholder="למשל: משוואות מעריכיות, שמות תואר, מערכת העיכול...")
+    with col_d2:
+        diff_type = st.selectbox("מבנה המטלה:", [
+            "שאלות פתוחות עם שלבי פתרון",
+            "שאלות אמריקאיות (רב-ברירה) עם נימוק",
+            "משימת חקר / ניתוח קטע קצר"
+        ])
+
+    if st.button("🪜 בנה מבדק ב-3 רמות", use_container_width=True):
+        if diff_sub and diff_topic:
+            with st.spinner("בונה מבדק מדורג..."):
+                prompt_diff = (
+                    f"בנה דף תרגול ומבדק דיפרנציאלי מותאם לכיתה {chosen_grade}.\n"
+                    f"מקצוע: {diff_sub}, נושא: {diff_topic}, מבנה: {diff_type}.\n"
+                    "חלק את הדף ל-3 חלקים ברורים:\n"
+                    "1. רמת מדרגה ראשונה (בסיס וחיזוק) - שאלות מונחות עם רמזים לתלמידים מתקשים.\n"
+                    "2. רמת ליבה (מבחן סטנדרטי) - שאלות ברמת תוכנית הלימודים הרגילה.\n"
+                    "3. רמת אתגר ומצוינות (למתקדמים) - שאלת חשיבה גבוהה/יישום שמאתגרת את התלמידים החזקים.\n"
+                    "הוסף בסוף מחוון פתרונות קצר למורה."
+                )
+                res_diff = generate_ai(prompt_diff)
+                st.markdown(f'<div class="room-content-card" style="border-right: 4px solid #8b5cf6;">{res_diff.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_diff.text)}" target="_blank">📲 שתף מבדק דיפרנציאלי בוואטסאפ</a>', unsafe_allow_html=True)
+        else:
+            st.warning("נא להזין מקצוע ונושא.")
+
+# ----------------- חדר: פתיחת שיעור מסקרנת (חדש למורים) -----------------
+elif st.session_state.current_room == "פתיחת שיעור":
+    st.markdown('<span class="room-badge-pill" style="background:#ccfbf1; color:#0f766e;">💡 5-Minute Class Hook</span>', unsafe_allow_html=True)
+    st.title("מחולל פתיחת שיעור מסקרנת (Hook)")
+    st.caption("רעיונות להפעלות של 5 דקות בתחילת השיעור שמעוררות עניין וסקרנות בקרב התלמידים.")
+    
+    col_hk1, col_hk2 = st.columns(2)
+    with col_hk1:
+        hk_sub = st.text_input("מקצוע:", placeholder="אזרחות, היסטוריה, מדעים, ספרות...")
+        hk_topic = st.text_input("נושא השיעור:", placeholder="למשל: דמוקרטיה וזכויות אדם, חוקי ניוטון, שירת ימי הביניים...")
+    with col_hk2:
+        hk_style = st.selectbox("סגנון הפתיחה המבוקש:", [
+            "דילמה מוסרית או משפטית מעוררת ויכוח",
+            "חידה / פרדוקס שקשור לנושא",
+            "שאלה שמחברת את החומר לחיים האמיתיים של הנוער",
+            "משחקון קצר או הצבעה כיתתית אינטראקטיבית"
+        ])
+
+    if st.button("💡 צור 3 רעיונות לפתיחת שיעור", use_container_width=True):
+        if hk_sub and hk_topic:
+            with st.spinner("מייצר רעיונות סוחפים לפתיחת השיעור..."):
+                prompt_hook = (
+                    f"אתה מומחה להוראה פעילה ופדגוגיה חדשנית בישראל עבור כיתה {chosen_grade}.\n"
+                    f"מקצוע: {hk_sub}, נושא: {hk_topic}, סגנון: {hk_style}.\n"
+                    "הצע 3 אפשרויות שונות לפתיחת שיעור מסקרנת של 5 דקות:\n"
+                    "עבור כל אפשרות פרט:\n"
+                    "- מה המורה אומר/מציג על הלוח (הטריגר)\n"
+                    "- שאלת הפעלה לתלמידים\n"
+                    "- איך לחבר את התשובות שלהם לנושא המרכזי של השיעור"
+                )
+                res_hk = generate_ai(prompt_hook)
+                st.markdown(f'<div class="room-content-card" style="border-right: 4px solid #0d9488;">{res_hk.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_hk.text)}" target="_blank">📲 שתף פתיחת שיעור בוואטסאפ</a>', unsafe_allow_html=True)
+        else:
+            st.warning("נא להזין מקצוע ונושא.")
 
 # ----------------- שאר החדרים -----------------
 elif st.session_state.current_room == "מערכי שיעור":
