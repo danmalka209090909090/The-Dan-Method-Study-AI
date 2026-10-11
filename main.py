@@ -293,6 +293,74 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
+    /* מסגרת וידאו חיה ומודרנית בסגנון Zoom / Teams */
+    .zoom-video-stage {
+        position: relative;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 3px solid #1e3a8a;
+        background: #0f172a;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.3);
+        height: 300px;
+    }
+    .zoom-video-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 20%;
+        filter: brightness(0.97);
+    }
+    .zoom-live-pill {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: rgba(15, 23, 42, 0.85);
+        color: #22c55e;
+        border: 1px solid #22c55e;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        background: #22c55e;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 8px #22c55e;
+    }
+    .zoom-teacher-tag {
+        position: absolute;
+        bottom: 14px;
+        right: 14px;
+        background: rgba(15, 23, 42, 0.85);
+        color: #ffffff;
+        padding: 6px 16px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        backdrop-filter: blur(6px);
+    }
+    .zoom-audio-indicator {
+        position: absolute;
+        bottom: 14px;
+        left: 14px;
+        background: rgba(15, 23, 42, 0.85);
+        color: #38bdf8;
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
     .whatsapp-btn {
         display: inline-flex;
         align-items: center;
@@ -971,7 +1039,7 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (דמות וקטורית חיה ללא תקלות רשת) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (ממשק איכותי ויציב ללא שגיאות) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
@@ -979,56 +1047,20 @@ elif st.session_state.current_room == "חדר זום":
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
-        # אווטאר וקטורי חי שפועל ישירות מ-HTML5 ואינו תלוי בקישורים חיצוניים
-        avatar_html = """
-        <div style="background: radial-gradient(circle at 50% 40%, #1e293b, #090d16); border-radius: 24px; border: 3px solid #1e3a8a; height: 285px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.35);">
-            <div style="position: absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.85); color: #22c55e; border: 1px solid #22c55e; padding: 3px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; font-family: sans-serif;">● שידור חי פועל</div>
-            <div style="position: relative; width: 140px; height: 160px; display: flex; justify-content: center;">
-                <svg width="140" height="160" viewBox="0 0 140 160">
-                    <style>
-                        @keyframes headTilt { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-4px) rotate(1deg); } }
-                        @keyframes blinkEyes { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
-                        @keyframes mouthTalk { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15, 1.4); } }
-                        .head-elem { transform-origin: 70px 90px; animation: headTilt 4s ease-in-out infinite; }
-                        .eye-elem { transform-origin: center; animation: blinkEyes 3.5s infinite; }
-                        .mouth-elem { transform-origin: 70px 105px; animation: mouthTalk 0.5s ease-in-out infinite; }
-                    </style>
-                    <g class="head-elem">
-                        <!-- שיער רקע -->
-                        <path d="M 35 60 C 25 15, 115 15, 105 60 C 115 110, 110 140, 105 150 C 95 150, 45 150, 35 150 C 30 140, 25 110, 35 60 Z" fill="#4a2e18"/>
-                        <!-- צוואר -->
-                        <rect x="60" y="105" width="20" height="25" fill="#fbcfe8" rx="4"/>
-                        <!-- ראש -->
-                        <ellipse cx="70" cy="75" rx="32" ry="38" fill="#fce7f3"/>
-                        <!-- שיער קדמי -->
-                        <path d="M 40 55 C 60 40, 80 40, 100 55 C 105 65, 105 80, 102 90 C 96 65, 80 60, 70 60 C 60 60, 44 65, 38 90 C 35 80, 35 65, 40 55 Z" fill="#5c381e"/>
-                        <!-- משקפיים -->
-                        <rect x="47" y="66" width="18" height="14" rx="4" fill="none" stroke="#0f2b5c" stroke-width="2.5"/>
-                        <rect x="75" y="66" width="18" height="14" rx="4" fill="none" stroke="#0f2b5c" stroke-width="2.5"/>
-                        <line x1="65" y1="73" x2="75" y2="73" stroke="#0f2b5c" stroke-width="2.5"/>
-                        <!-- עיניים -->
-                        <g class="eye-elem">
-                            <circle cx="56" cy="73" r="3.5" fill="#1e293b"/>
-                            <circle cx="84" cy="73" r="3.5" fill="#1e293b"/>
-                            <circle cx="57" cy="71.5" r="1.2" fill="#ffffff"/>
-                            <circle cx="85" cy="71.5" r="1.2" fill="#ffffff"/>
-                        </g>
-                        <!-- חיוך / דיבור -->
-                        <path class="mouth-elem" d="M 62 102 Q 70 110 78 102" fill="#be185d" stroke="#be185d" stroke-width="2" stroke-linecap="round"/>
-                        <!-- חולצה -->
-                        <path d="M 40 135 C 50 120, 90 120, 100 135 L 115 160 L 25 160 Z" fill="#2563eb"/>
-                        <polygon points="70,135 60,123 80,123" fill="#ffffff"/>
-                    </g>
-                </svg>
-            </div>
-            <div style="position: absolute; bottom: 10px; right: 12px; background: rgba(15, 23, 42, 0.85); color: #ffffff; padding: 4px 14px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; font-family: sans-serif;">המורה מיה (בשיחה חיה)</div>
+        # ממשק וידאו ריאליסטי ואיכותי של מורה צעירה ללא תלות בשרתי סטרימינג חיצוניים
+        zoom_ui_html = """
+        <div class="zoom-video-stage">
+            <div class="zoom-live-pill"><span class="live-dot"></span> שידור חי פועל</div>
+            <img class="zoom-video-img" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80" alt="המורה מיה">
+            <div class="zoom-audio-indicator">🎤 מחוברת</div>
+            <div class="zoom-teacher-tag">המורה מיה (בשיחה חיה)</div>
         </div>
         """
-        st.components.v1.html(avatar_html, height=290)
+        st.markdown(zoom_ui_html, unsafe_allow_html=True)
         
         # השמעת שמע שנוצר ישירות בשרת
         if st.session_state.last_voice_audio_bytes:
-            st.markdown("<div style='margin-top: 10px; margin-bottom: 4px; font-weight: 700; color: #0f2b5c;'>🔊 השמעת קול המורה מיה:</div>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-top: 12px; margin-bottom: 4px; font-weight: 700; color: #0f2b5c;'>🔊 השמעת קול המורה מיה:</div>", unsafe_allow_html=True)
             st.audio(st.session_state.last_voice_audio_bytes, format="audio/mp3", autoplay=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
@@ -1205,7 +1237,7 @@ elif st.session_state.current_room == "רנטגן":
                 st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף מוקשים בוואטסאפ</a>', unsafe_allow_html=True)
 
 elif st.session_state.current_room == "ערעור":
-    st.markdown('<span class="room-badge-pill" style="background:#e0f2fe; color:#0369a1;">⚖️ Appeal Generator</span>', unsafe_allow_html=True)
+    st.markdown('<span class="room-badge-pill" style="background:#e0e7ff; color:#0369a1;">⚖️ Appeal Generator</span>', unsafe_allow_html=True)
     st.title("מחולל מכתב ערעור על ציון")
     c_sub = st.text_input("מקצוע המבחן:")
     c_q = st.text_area("השאלה:")
