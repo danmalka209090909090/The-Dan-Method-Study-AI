@@ -18,7 +18,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# עיצוב מותאם לכל המכשירים + ביטול סיידבר מוחלט + כפתורים קריאים וברורים
+# הגדרות עיצוב עמידות למק (Safari), ווינדוס ומובייל
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800;900&display=swap');
@@ -29,7 +29,11 @@ st.markdown("""
         text-align: right;
     }
 
-    /* ביטול סיידבר סורר */
+    * {
+        box-sizing: border-box;
+    }
+
+    /* נטרול סיידבר מוחלט כדי למנוע זליגת טקסט שקוף מאחורי הכרטיסים */
     [data-testid="stSidebar"], 
     section[data-testid="stSidebar"],
     [data-testid="stSidebarCollapsedControl"] {
@@ -63,29 +67,7 @@ st.markdown("""
         margin: 0 auto;
     }
 
-    /* כותרת מרכז הלמידה */
-    .dashboard-header-container {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 25px 0 15px 0;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #e2e8f0;
-    }
-    .dashboard-header-title {
-        font-size: 1.6rem;
-        font-weight: 900;
-        color: #0f2b5c;
-        margin: 0;
-    }
-    .dashboard-header-subtitle {
-        color: #64748b;
-        font-weight: 700;
-        font-size: 0.95rem;
-    }
-
-    /* Navbar */
+    /* Navbar עליון */
     .learnit-navbar {
         background-color: #ffffff;
         border: 1px solid #e2e8f0;
@@ -102,6 +84,7 @@ st.markdown("""
         align-items: center;
         gap: 12px;
         direction: ltr;
+        white-space: nowrap;
     }
     .brand-main-name {
         font-size: 1.3rem;
@@ -110,13 +93,13 @@ st.markdown("""
         line-height: 1.1;
     }
     .brand-sub-badge {
-        font-size: 0.7rem;
+        font-size: 0.72rem;
         font-weight: 800;
         color: #2563eb;
         line-height: 1.1;
     }
 
-    /* Hero */
+    /* Hero Banner */
     .hero-banner {
         background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.96)), 
                     url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
@@ -141,7 +124,113 @@ st.markdown("""
         font-weight: 500;
     }
 
-    /* כרטיסיות חדרים - קופסאות יפות ומיושרות */
+    /* שורת יתרונות עליונה */
+    .features-ribbon {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 12px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+    .ribbon-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-align: right;
+    }
+    .ribbon-icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    /* תיבת הסבר על השיטה */
+    .story-card {
+        background: linear-gradient(135deg, #0f2b5c 0%, #1e3a8a 100%);
+        color: #ffffff;
+        border-radius: 20px;
+        padding: 24px 26px;
+        margin-bottom: 22px;
+        box-shadow: 0 8px 25px rgba(15, 43, 92, 0.12);
+        width: 100%;
+        display: block;
+    }
+    .story-title {
+        font-size: 1.45rem;
+        font-weight: 900;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
+    .story-p {
+        font-size: 1.05rem;
+        color: #e2e8f0;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* טבלת השוואה */
+    .compare-container {
+        margin-bottom: 26px;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+        overflow-x: auto;
+        width: 100%;
+        display: block;
+    }
+    .compare-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 14px;
+        text-align: right;
+    }
+    .compare-table th {
+        padding: 12px;
+        border-bottom: 2px solid #e2e8f0;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+    .compare-table td {
+        padding: 13px 12px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.95rem;
+    }
+
+    /* כותרת מרכז הלמידה */
+    .dashboard-header-container {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 25px 0 15px 0;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .dashboard-header-title {
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: #0f2b5c;
+        margin: 0;
+    }
+    .dashboard-header-subtitle {
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    /* כרטיסיות חדרים */
     .room-tile {
         border-radius: 14px 14px 0 0;
         padding: 16px 10px;
@@ -175,9 +264,8 @@ st.markdown("""
     .cat-teal   { background: #e6faf7; }
     .cat-indigo { background: #eef2ff; }
     .cat-pink   { background: #fdf2f8; }
-    .cat-slate  { background: #f8fafc; }
 
-    /* תיקון הכפתורים השחורים - כפתור כחול/נייבי ברור, קריא ומחובר לכרטיסייה */
+    /* כפתורי מערכת Streamlit מחוברים יציבים */
     .stButton button {
         background-color: #0f2b5c !important;
         color: #ffffff !important;
@@ -253,6 +341,12 @@ if "math_units" not in st.session_state:
     st.session_state.math_units = "הקבצה א' / מצוינות"
 if "no_yap" not in st.session_state:
     st.session_state.no_yap = True
+if "reviews" not in st.session_state:
+    st.session_state.reviews = [
+        {"name": "עידו כ.", "grade": "כיתה ט'", "rating": 5, "text": "השליף חירום סגר לי את החומר לפני המבחן בהיסטוריה, הציל לי 20 נקודות."},
+        {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "האתר נראה יוקרתי, נקי מכל השטויות ובאמת מדבר בגובה העיניים."},
+        {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה לי 9 נקודות!"}
+    ]
 
 api_key = st.secrets.get("GEMINI_API_KEY", "")
 if not api_key:
@@ -370,7 +464,91 @@ if st.session_state.current_room == "דף הבית":
                 </div>
             """, unsafe_allow_html=True)
 
-    # כותרת מרכז הלמידה - ברורה, עליונה ומיושרת
+    st.markdown("""
+        <div class="features-ribbon">
+            <div class="ribbon-item">
+                <div class="ribbon-icon-circle" style="background: #f3e8ff; color: #9333ea;">📖</div>
+                <div>
+                    <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">תוכן איכותי ומדויק</div>
+                    <div style="color:#64748b; font-size:0.8rem;">מכויל לבגרויות ולחטיבה</div>
+                </div>
+            </div>
+            <div class="ribbon-item">
+                <div class="ribbon-icon-circle" style="background: #e0f2fe; color: #0284c7;">⏱️</div>
+                <div>
+                    <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">חוסך שעות עבודה</div>
+                    <div style="color:#64748b; font-size:0.8rem;">הכנה ותרגול ב-60 שניות</div>
+                </div>
+            </div>
+            <div class="ribbon-item">
+                <div class="ribbon-icon-circle" style="background: #dcfce7; color: #16a34a;">👥</div>
+                <div>
+                    <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">מותאם לצוות ולתלמידים</div>
+                    <div style="color:#64748b; font-size:0.8rem;">התאמה מלאה לרמות ולמגמות</div>
+                </div>
+            </div>
+            <div class="ribbon-item">
+                <div class="ribbon-icon-circle" style="background: #fef9c3; color: #ca8a04;">⭐</div>
+                <div>
+                    <div style="font-weight:700; color:#0f172a; font-size:0.95rem;">למידה עצמאית מנצחת</div>
+                    <div style="color:#64748b; font-size:0.8rem;">הישגים גבוהים בפחות זמן</div>
+                </div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # 1. על השיטה של The Dan Method (מוחזר כאן במלואו)
+    st.markdown("""
+        <div class="story-card">
+            <div class="story-title">⚡ על השיטה של The Dan Method</div>
+            <p class="story-p">
+                נמאס לשבת שעות מול סיכומים ארוכים, מורים שמדברים מסביב ואתרי לימוד שנראים כמו שנת 2005.<br>
+                <b>The Dan Method</b> נבנה במטרה אחת ברורה: לתת לתלמידי ומורי ישראל את הדרך הקצרה, המדויקת והחדה ביותר להצלחה במבחנים ובבגרויות.<br>
+                במקום ללמוד 4 שעות ולזכור חצי – אנחנו מפרקים כל נושא לשלבי ברזל, מסננים חפירות מיותרות (מצב תכל'ס), ומלמדים אותך בדיוק לפי מה שהבוחן מחפש בעין בטופס הבדיקה.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # 2. טבלת השוואה מול כלי AI רגילים (מוחזר כאן במלואו)
+    st.markdown("""
+        <div class="compare-container">
+            <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.3rem; font-weight: 800;">למה The Dan Method ולא סתם בינה מלאכותית רגילה?</h3>
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">מודלים רגילים לא מכירים את בתי הספר בישראל ומבזבזים לך זמן. הנה ההבדל:</p>
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th style="width: 32%;">תכונה</th>
+                        <th style="width: 34%; color: #1e3a8a;">The Dan Method 🎓</th>
+                        <th style="width: 34%;">כלי בינה מלאכותית רגיל</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 600;">התאמה למערכת החינוך</td>
+                        <td style="color: #16a34a; font-weight: 700;">מכויל בול לפי מחווני בגרות, הקבצות וכיתות ז'-י"ב בישראל</td>
+                        <td style="color: #64748b;">תשובות גנריות באנגלית שתורגמו, לא מכיר מחווני בדיקה</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">אורך המענה והיעילות</td>
+                        <td style="color: #16a34a; font-weight: 700;">מצב תכל'ס (No Yap) – פירוק ממוקד ב-3 שורות בדיוק למה שצריך</td>
+                        <td style="color: #64748b;">פסקאות פתיחה וסיום ארוכות, חפירות ומריחת זמן</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">בדיקת מבחנים וציונים</td>
+                        <td style="color: #16a34a; font-weight: 700;">חישוב ציון אמיתי מתוך 100 עם הורדת נקודות לפי נימוקים חסרים</td>
+                        <td style="color: #64748b;">סתם מחמיא לתשובה ולא יודע לתת ציון בגרות אמיתי</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">חילוץ רגע לפני מבחן</td>
+                        <td style="color: #16a34a; font-weight: 700;">שליף 60 שניות, מצב חילוץ בלילה ורנטגן שגיאות</td>
+                        <td style="color: #64748b;">מייצר טקסטים ענקיים שבלתי אפשרי לקרוא תחת לחץ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # 3. מרכז החדרים וכלי העבודה
     header_text = "מרכז הלמידה של התלמיד" if st.session_state.app_mode == "תלמיד" else "מרכז הכלים למורים וצוות"
     st.markdown(f"""
         <div class="dashboard-header-container">
@@ -379,7 +557,6 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # פריסה של 3 עמודות רחבות - לא נחתכות בשום מסך (3x3 במקום 4 שנמחץ)
     if st.session_state.app_mode == "תלמיד":
         # שורה 1
         c1, c2, c3 = st.columns(3)
@@ -436,7 +613,7 @@ if st.session_state.current_room == "דף הבית":
                 st.rerun()
 
     else:
-        # מצב מורה ב-3 עמודות
+        # מצב מורה
         m1, m2, m3 = st.columns(3)
         with m1:
             st.markdown('<div class="room-tile cat-pink"><div style="font-size:28px;">📊</div><h4>מחולל מצגות</h4><p>שקופיות והערות מורה</p></div>', unsafe_allow_html=True)
@@ -453,6 +630,45 @@ if st.session_state.current_room == "דף הבית":
             if st.button("יצירת בוחן ומחוון", key="btn_quiz_m", use_container_width=True):
                 st.session_state.current_room = "בחנים ומחוונים"
                 st.rerun()
+
+    # חוות דעת והמלצות
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.subheader("⭐ מה שאומרים על The Dan Method")
+    col_rev1, col_rev2 = st.columns([1.8, 1.2])
+    with col_rev1:
+        for r in st.session_state.reviews:
+            stars = "⭐" * r["rating"]
+            st.markdown(f"""
+                <div class="clean-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b>{r['name']}</b> ({r['grade']})
+                        <span style="font-size:0.9rem;">{stars}</span>
+                    </div>
+                    <p style="color: #475569; margin: 6px 0 0 0; font-size: 0.95rem;">{r['text']}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+    with col_rev2:
+        st.markdown('<div class="clean-box"><h4 style="margin-top:0;">✍️ הוסף חוות דעת:</h4>', unsafe_allow_html=True)
+        with st.form("feedback_form_home", clear_on_submit=True):
+            fb_name = st.text_input("שם או כינוי:")
+            fb_grade = st.selectbox("תפקיד / כיתה:", ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב", "מורה מקצועי", "מחנך / יועצת"], index=2)
+            fb_rating = st.slider("דירוג (כוכבים):", 1, 5, 5)
+            fb_text = st.text_area("איך הפלטפורמה עזרה לך?")
+            submitted_fb = st.form_submit_button("שלח חוות דעת 🚀")
+            if submitted_fb:
+                if not fb_text.strip():
+                    st.warning("נא לכתוב כמה מילים.")
+                else:
+                    st.session_state.reviews.insert(0, {
+                        "name": fb_name.strip() if fb_name.strip() else "אנונימי",
+                        "grade": fb_grade,
+                        "rating": fb_rating,
+                        "text": fb_text.strip()
+                    })
+                    st.success("תודה! חוות הדעת נוספה בהצלחה.")
+                    st.balloons()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ----------------- החדרים הנוספים -----------------
 elif st.session_state.current_room == "מצגות":
