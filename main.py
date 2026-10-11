@@ -21,7 +21,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# שפת עיצוב LearnIt: נקייה, בהירה, פסטלית ולא רובוטית
+# שפת עיצוב LearnIt נקייה, בהירה ומודרנית
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
@@ -300,45 +300,50 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
-    /* חלון שיחת וידאו חיה לזום */
-    .zoom-video-frame {
+    /* חלון שיחת וידאו חיה ומלאה של המורה */
+    .zoom-video-container {
         background: #0f172a;
         border-radius: 24px;
         overflow: hidden;
-        border: 2px solid #334155;
-        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.25);
+        border: 3px solid #1e3a8a;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
         position: relative;
-        text-align: center;
+        height: 310px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    .zoom-video-frame img {
+    .zoom-video-container video {
         width: 100%;
-        height: 280px;
+        height: 100%;
         object-fit: cover;
-        opacity: 0.95;
     }
-    .zoom-video-badge {
+    .zoom-live-pill {
         position: absolute;
         top: 14px;
         right: 14px;
         background: rgba(15, 23, 42, 0.85);
-        color: #4ade80;
+        color: #22c55e;
         border: 1px solid #22c55e;
-        padding: 4px 12px;
+        padding: 4px 14px;
         border-radius: 20px;
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         font-weight: 800;
-        backdrop-filter: blur(4px);
+        backdrop-filter: blur(6px);
+        z-index: 10;
     }
-    .zoom-teacher-name-tag {
+    .zoom-teacher-tag {
         position: absolute;
         bottom: 14px;
         right: 14px;
         background: rgba(15, 23, 42, 0.85);
         color: #ffffff;
-        padding: 4px 14px;
-        border-radius: 8px;
+        padding: 6px 16px;
+        border-radius: 10px;
         font-weight: 700;
         font-size: 0.9rem;
+        backdrop-filter: blur(6px);
+        z-index: 10;
     }
 
     .whatsapp-btn {
@@ -388,10 +393,10 @@ if "zoom_chat_history" not in st.session_state:
     st.session_state.zoom_chat_history = []
 if "last_voice_reply" not in st.session_state:
     st.session_state.last_voice_reply = None
+if "zoom_homework" not in st.session_state:
+    st.session_state.zoom_homework = None
 if "mock_exam_data" not in st.session_state:
     st.session_state.mock_exam_data = None
-if "exam_submitted" not in st.session_state:
-    st.session_state.exam_submitted = False
 if "ai_cache" not in st.session_state:
     st.session_state.ai_cache = {}
 if "slides_data" not in st.session_state:
@@ -454,7 +459,6 @@ def get_whatsapp_share_link(text):
     encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:450]}")
     return f"https://api.whatsapp.com/send?text={encoded}"
 
-# פונקציה לייצור קובץ PowerPoint אמיתי (.pptx)
 def create_pptx_file(slides_info, topic_name):
     prs = Presentation()
     prs.slide_width = Inches(13.333)
@@ -464,7 +468,6 @@ def create_pptx_file(slides_info, topic_name):
     for s in slides_info:
         slide = prs.slides.add_slide(blank_layout)
         
-        # כותרת שקופית
         title_box = slide.shapes.add_textbox(Inches(1), Inches(0.8), Inches(11.333), Inches(1.2))
         tf = title_box.text_frame
         tf.word_wrap = True
@@ -474,7 +477,6 @@ def create_pptx_file(slides_info, topic_name):
         p.font.bold = True
         p.font.color.rgb = RGBColor(15, 43, 92)
 
-        # נקודות התוכן
         body_box = slide.shapes.add_textbox(Inches(1), Inches(2.2), Inches(11.333), Inches(4.5))
         btf = body_box.text_frame
         btf.word_wrap = True
@@ -485,7 +487,6 @@ def create_pptx_file(slides_info, topic_name):
             bp.font.color.rgb = RGBColor(30, 41, 59)
             bp.space_after = Pt(14)
             
-        # הוספת הערות דובר
         if "speaker_notes" in s and s["speaker_notes"]:
             notes_slide = slide.notes_slide
             text_frame = notes_slide.notes_text_frame
@@ -496,7 +497,7 @@ def create_pptx_file(slides_info, topic_name):
     bio.seek(0)
     return bio
 
-# --- סרגל צד נקי (פרופיל אישי בלבד) ---
+# --- סרגל צד נקי ---
 with st.sidebar:
     st.markdown("""
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -660,8 +661,8 @@ if st.session_state.current_room == "דף הבית":
                         </div>
                     """, unsafe_allow_html=True)
                     st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_bot.text)}" target="_blank">📲 שתף מענה בוואטסאפ</a>', unsafe_allow_html=True)
-                except Exception:
-                    st.warning("לא הצלחנו לפענח כרגע, נסה לשאול שוב.")
+                except Exception as err:
+                    st.error(f"שגיאה בעיבוד השאלה: {err}")
 
     st.markdown("""
         <div class="features-ribbon">
@@ -696,7 +697,6 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # 1. על השיטה
     st.markdown("""
         <div class="method-card-learnit">
             <div class="method-title-badge">⚡ על השיטה של The Dan Method</div>
@@ -708,7 +708,6 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # 2. כרטיסיית ההשוואה
     st.markdown("""
         <div class="compare-card-learnit">
             <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.35rem; font-weight: 800;">למה The Dan Method ולא סתם בינה מלאכותית רגילה?</h3>
@@ -747,7 +746,6 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # גריד קטגוריות פסטליות
     st.markdown("""
         <div style="margin-top: 10px; margin-bottom: 12px;">
             <div class="cat-grid-title">קטגוריות לימוד וכלים</div>
@@ -770,7 +768,7 @@ if st.session_state.current_room == "דף הבית":
                 st.rerun()
 
         with col_c3:
-            st.markdown('<div class="pastel-tile tile-mint"><div class="pastel-tile-icon">📹</div><div class="pastel-tile-title">חדר זום</div><div class="pastel-tile-count">וידאו וקול חי 1-על-1</div></div>', unsafe_allow_html=True)
+            st.markdown('<div class="pastel-tile tile-mint"><div class="pastel-tile-icon">📹</div><div class="pastel-tile-title">חדר זום</div><div class="pastel-tile-count">וידאו, קול ותרגול</div></div>', unsafe_allow_html=True)
             if st.button("זום חי", key="p_zoom", use_container_width=True):
                 st.session_state.current_room = "חדר זום"
                 st.rerun()
@@ -831,7 +829,6 @@ if st.session_state.current_room == "דף הבית":
                 st.rerun()
 
     else:
-        # מצב מורה וצוות חינוכי
         col_m1, col_m2, col_m3, col_m4, col_m5, col_m6 = st.columns(6)
         with col_m1:
             st.markdown('<div class="pastel-tile tile-blue"><div class="pastel-tile-icon">📊</div><div class="pastel-tile-title">מצגת לשיעור</div><div class="pastel-tile-count">הורדת מצגת PPTX</div></div>', unsafe_allow_html=True)
@@ -913,7 +910,7 @@ if st.session_state.current_room == "דף הבית":
                     st.balloons()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ----------------- חדר: מחולל מצגות (עם הורדת קובץ PPTX אמיתי!) -----------------
+# ----------------- חדר: מחולל מצגות -----------------
 elif st.session_state.current_room == "מצגות":
     st.markdown('<span class="room-badge-pill" style="background:#e0f2fe; color:#0369a1;">📊 LearnIt Deck Builder & Exporter</span>', unsafe_allow_html=True)
     st.title("מחולל מצגות PowerPoint אמיתי")
@@ -936,8 +933,8 @@ elif st.session_state.current_room == "מצגות":
             st.warning("נא להזין נושא למצגת.")
         else:
             prompt_slides = (
-                f"אתה מומחה להכנת מצגות לימודיות מעולות עבור מערכת החינוך בישראל ({student_context}).\n"
-                f"נושא המצגת: {slide_topic}, מקצוע: {slide_subject}, מספר שקופיות: {slide_count}, מטרה: {slide_goal}.\n\n"
+                f"אתה מומחה להכנת מצגות לימודיות עבור מערכת החינוך בישראל ({student_context}).\n"
+                f"נושא: {slide_topic}, מקצוע: {slide_subject}, שקופיות: {slide_count}, מטרה: {slide_goal}.\n\n"
                 "החזר אך ורק מערך JSON תקין שבו כל איבר מייצג שקופית:\n"
                 "[\n"
                 "  {\n"
@@ -947,8 +944,7 @@ elif st.session_state.current_room == "מצגות":
                 '    "visual_idea": "תיאור קצר לתמונה",\n'
                 '    "speaker_notes": "הסבר בעל פה לדובר (עד 3 משפטים)"\n'
                 "  }\n"
-                "]\n"
-                "אל תוסיף שום טקסט מחוץ ל-JSON. שמור על תחביר JSON תקין."
+                "]"
             )
             with st.spinner("בונה שקופיות ומייצר קובץ מצגת להורדה..."):
                 try:
@@ -958,24 +954,14 @@ elif st.session_state.current_room == "מצגות":
                         config={"response_mime_type": "application/json"}
                     )
                     st.session_state.slides_data = json.loads(res.text)
-                    # יצירת קובץ ה-PPTX
                     st.session_state.pptx_bytes = create_pptx_file(st.session_state.slides_data, slide_topic)
                     st.success("המצגת נוצרה בהצלחה! ניתן להוריד את הקובץ ישירות.")
                     st.rerun()
-                except Exception:
-                    try:
-                        res = generate_ai(prompt_slides)
-                        st.session_state.slides_data = extract_json(res.text)
-                        st.session_state.pptx_bytes = create_pptx_file(st.session_state.slides_data, slide_topic)
-                        st.success("המצגת נוצרה בהצלחה!")
-                        st.rerun()
-                    except Exception as err:
-                        st.error(f"שגיאה בבניית המצגת: {err}")
+                except Exception as err:
+                    st.error(f"שגיאה בבניית המצגת: {err}")
 
     if st.session_state.slides_data:
         st.markdown("---")
-        
-        # כפתור הורדת קובץ PPTX אמיתי!
         if st.session_state.pptx_bytes:
             st.download_button(
                 label="📥 הורד קובץ מצגת PowerPoint מוכן (.pptx)",
@@ -1009,39 +995,73 @@ elif st.session_state.current_room == "מצגות":
 
         st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(full_text_for_share)}" target="_blank">📲 שתף את שלד המצגת בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: שיעור זום חי עם המורה מיה (רואים ושומעים אותה!) -----------------
+# ----------------- חדר: שיעור זום חי עם המורה מיה (וידאו זז, קול ותרגול אישי!) -----------------
 elif st.session_state.current_room == "חדר זום":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📹 Live Interactive Zoom Class</span>', unsafe_allow_html=True)
     st.title("שיעור פרטי בזום עם המורה מיה")
-    st.caption("שיחת וידאו אינטראקטיבית: המורה מקשיבה, עונה ומדברת בקול חי!")
+    st.caption("שיחת וידאו חיה, הסבר קולי ותרגול שיעורי בית מותאם אישית!")
     
     col_z1, col_z2 = st.columns([1.1, 1.9])
     with col_z1:
-        # חלון שיחת וידאו חיה
+        # וידאו זז אמיתי של מורה מדברת ומביטה למצלמה (במקום תמונה חתוכה)
         st.markdown("""
-            <div class="zoom-video-frame">
-                <div class="zoom-video-badge">● שיחת וידאו פעילה</div>
-                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=700&q=80" alt="המורה מיה בשיחה חיה">
-                <div class="zoom-teacher-name-tag">המורה מיה (מחוברת)</div>
+            <div class="zoom-video-container">
+                <div class="zoom-live-pill">● שידור חי פועל</div>
+                <video autoplay loop muted playsinline>
+                    <source src="https://assets.mixkit.co/videos/preview/mixkit-young-woman-talking-on-video-call-40013-large.mp4" type="video/mp4">
+                </video>
+                <div class="zoom-teacher-tag">המורה מיה (מחוברת)</div>
             </div>
         """, unsafe_allow_html=True)
         
-        # השמעת קול המורה מיה באופן בולט
+        # השמעת קול המורה מיה
         if st.session_state.last_voice_reply:
-            st.markdown("<br><b>🔊 המורה מיה מדברת (לחץ להשמעה חוזרת):</b>", unsafe_allow_html=True)
+            st.markdown("<br><b>🔊 השמעת תשובת המורה מיה:</b>", unsafe_allow_html=True)
             audio_url = get_tts_audio_url(st.session_state.last_voice_reply)
             st.audio(audio_url, format="audio/mp3", autoplay=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
-        z_subject = st.selectbox("בחר מקצוע לשיעור:", ["מתמטיקה", "אנגלית", "היסטוריה", "לשון והבעה", "ביולוגיה", "אזרחות"])
+        z_subject = st.selectbox("מקצוע השיעור:", ["מתמטיקה", "אנגלית", "היסטוריה", "לשון והבעה", "ביולוגיה", "אזרחות"])
+        
+        # כפתור משימת תרגול ושיעורי בית מהמורה מיה
+        if st.button("📚 תני לי משימת תרגול / שיעורי בית לשיעור", use_container_width=True):
+            with st.spinner("המורה מיה מכינה תרגילי אתגר לשיעור..."):
+                try:
+                    hw_prompt = (
+                        f"את המורה מיה. תני לתלמיד ב-{student_context} משימת תרגול קצרה ומאתגרת (שיעורי בית) ב{z_subject}.\n"
+                        "המשימה צריכה לכלול:\n"
+                        "1. תרגיל/שאלה 1 ברמה בסיסית.\n"
+                        "2. תרגיל/שאלה 2 ברמת בגרות/מבחן כיתתי.\n"
+                        "3. הנחיה מה לכתוב לך בחזרה בצ'אט כדי שתבדקי ותתני ציון."
+                    )
+                    res_hw = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=hw_prompt
+                    )
+                    st.session_state.zoom_homework = res_hw.text
+                    st.session_state.last_voice_reply = "הכנתי לך שתי שאלות תרגול מעולות שסוגרות את הפינה. תפתור אותן ותכתוב לי כאן את התשובות ואבדוק לך מיד!"
+                    st.rerun()
+                except Exception as err:
+                    st.error(f"שגיאה בהכנת המשימה: {err}")
+
         if st.button("🧹 איפוס שיחה", use_container_width=True):
             st.session_state.zoom_chat_history = []
             st.session_state.last_voice_reply = None
+            st.session_state.zoom_homework = None
             st.rerun()
 
     with col_z2:
-        st.markdown("<b>💬 מהלך השיעור החי:</b>", unsafe_allow_html=True)
-        chat_box = st.container(height=320)
+        # אם יש משימת שיעורי בית פעילה
+        if st.session_state.zoom_homework:
+            st.markdown(f"""
+                <div class="room-content-card" style="border-right: 4px solid #16a34a; background:#f0fdf4;">
+                    <span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📝 משימת תרגול מותאמת מהמורה מיה</span>
+                    <div style="font-size:1rem; line-height:1.7;">{st.session_state.zoom_homework}</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("<b>💬 שיחה חיה עם המורה מיה:</b>", unsafe_allow_html=True)
+        chat_box = st.container(height=300)
         with chat_box:
             if not st.session_state.zoom_chat_history:
                 st.info(f"👋 **המורה מיה:** היי! שמחה לפגוש אותך לשיעור ב{z_subject}. תגיד לי איזה נושא או תרגיל מציק לך, ונתחיל לפרק אותו ביחד!")
@@ -1050,46 +1070,31 @@ elif st.session_state.current_room == "חדר זום":
                     with st.chat_message(m["role"]):
                         st.write(m["content"])
 
-        st.caption("🎙️ דיבור ישיר במיקרופון למורה:")
-        audio_prompt = st.audio_input("הקלט שאלה קולית:")
-        if audio_prompt is not None:
-            with st.spinner("המורה מיה מקשיבה ומכינה מענה קולי..."):
-                try:
-                    audio_bytes = audio_prompt.read()
-                    prompt_audio = (
-                        f"את המורה מיה, מורה פרטית ישראלית מקצועית בשיעור וידאו עם תלמיד ב-{student_context}.\n"
-                        f"מקצוע: {z_subject}.\n"
-                        "עני לתלמיד ישירות, בגובה העיניים ובקצרה (עד 3 משפטים ממוקדים), וסיימי בשאלה קצרה לבדיקת הבנה."
-                    )
-                    res_voice = generate_ai([prompt_audio, {"mime_type": "audio/wav", "data": audio_bytes}])
-                    reply_text = res_voice.text
-                    st.session_state.zoom_chat_history.append({"role": "user", "content": "🎙️ [שאלה קולית הושמעה בשיעור]"})
-                    st.session_state.zoom_chat_history.append({"role": "assistant", "content": reply_text})
-                    st.session_state.last_voice_reply = reply_text
-                    st.rerun()
-                except Exception:
-                    st.error("הייתה תקלה בהקלטה, נסה שוב.")
-
-        text_spoken = st.chat_input("או הקלד שאלה למורה מיה...")
+        text_spoken = st.chat_input("הקלד תשובה או שאלה למורה מיה...")
         if text_spoken:
             st.session_state.zoom_chat_history.append({"role": "user", "content": text_spoken})
             history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.zoom_chat_history[-6:]])
             zoom_prompt = (
-                f"את המורה מיה בשיעור פרטי עם תלמיד ב-{student_context}.\n"
-                f"מקצוע: {z_subject}.\n"
-                "1. דברי בלשון נקבה על עצמך ('אני איתך', 'בוא נראה').\n"
-                "2. עני בגובה העיניים, מעודד וקצר (2-3 משפטים ממוקדים).\n"
-                "3. בסוף התשובה שאלי שאלה קצרה לבדיקת הבנה.\n\n"
-                f"היסטוריה:\n{history_text}\nשאלה: {text_spoken}"
+                f"את המורה מיה בשיעור פרטי אישי חי עם תלמיד ב-{student_context}.\n"
+                f"מקצוע השיעור: {z_subject}.\n"
+                "הנחיות קריטיות:\n"
+                "1. דברי בלשון נקבה על עצמך ('אני כאן איתך', 'בדקתי את התשובה').\n"
+                "2. עני בגובה העיניים, מעודד וממוקד מאוד (עד 3 משפטים).\n"
+                "3. אם התלמיד פותר תרגיל או שיעורי בית – בדקי אותו, תני לו משוב וציון!\n"
+                "4. בסוף התשובה שאלי שאלה קצרה כדי לוודא שהוא הבין.\n\n"
+                f"היסטוריה:\n{history_text}\n\nהודעת התלמיד: {text_spoken}"
             )
-            with st.spinner("המורה מיה עונה ומדברת..."):
+            with st.spinner("המורה מיה מקשיבה ומכינה מענה..."):
                 try:
-                    res_zoom = generate_ai(zoom_prompt)
+                    res_zoom = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=zoom_prompt
+                    )
                     st.session_state.zoom_chat_history.append({"role": "assistant", "content": res_zoom.text})
                     st.session_state.last_voice_reply = res_zoom.text
                     st.rerun()
-                except Exception:
-                    st.error("הייתה תקלה בתקשורת, נסה לשלוח שוב.")
+                except Exception as err:
+                    st.error(f"שגיאה בתקשורת עם המורה: {err}")
 
 # ----------------- שאר החדרים -----------------
 elif st.session_state.current_room == "מערכי שיעור":
