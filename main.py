@@ -11,6 +11,7 @@ import urllib.parse
 import hashlib
 import random
 import smtplib
+import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from pptx import Presentation
@@ -34,12 +35,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# הגדרת פונט Rubik הנקי והעגלגל בכל רחבי המערכת
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
 
     * {
-        font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         box-sizing: border-box;
     }
 
@@ -355,38 +357,37 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------- פונקציית שליחת אימייל אמיתית -----------------
+# ----------------- פונקציית שליחת אימייל מאובטחת דרך SSL (פורט 465) -----------------
 def send_email_otp(recipient_email, code):
     sender = st.secrets.get("SMTP_SENDER_EMAIL", "")
     password = st.secrets.get("SMTP_APP_PASSWORD", "")
     
     if not sender or not password:
-        return False, "הגדרות שרת המייל (SMTP) אינן מוגדרות ב-Secrets."
+        return False, "הגדרות שרת המייל (SMTP) אינן מוגדרות ב-Secrets של Streamlit."
     
     msg = MIMEMultipart()
     msg['From'] = f"The Dan Method <{sender}>"
     msg['To'] = recipient_email
     msg['Subject'] = f"{code} - קוד האימות שלך ל-The Dan Method"
     
-    body = f"""
-    שלום,
-    
-    קוד האימות החד-פעמי שלך לכניסה למערכת The Dan Method הוא:
-    
-    {code}
-    
-    קוד זה תקף לשימוש מיידי בלבד.
-    בהצלחה בלימודים!
-    The Dan Method Team
-    """
+    body = f"""שלום,
+
+קוד האימות החד-פעמי שלך לכניסה למערכת The Dan Method הוא:
+
+{code}
+
+קוד זה תקף לשימוש מיידי בלבד.
+בהצלחה בלימודים!
+The Dan Method Team
+"""
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
     
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(sender, password)
-        server.send_message(msg)
-        server.quit()
+        # שימוש ישיר ב-SSL דרך פורט 465 העוקף חסימות ענן
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context, timeout=10) as server:
+            server.login(sender, password)
+            server.send_message(msg)
         return True, "הקוד נשלח בהצלחה!"
     except Exception as e:
         return False, str(e)
