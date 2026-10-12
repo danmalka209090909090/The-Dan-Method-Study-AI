@@ -392,7 +392,7 @@ if "reviews" not in st.session_state:
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה נקודות!"}
     ]
 
-# ----------------- מסך כניסה חכם ומבודד -----------------
+# ----------------- מסך כניסה חכם ומבודד (ללא שגיאות) -----------------
 if not st.session_state.user_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 30px auto; border-top: 5px solid #0f2b5c;">
@@ -406,24 +406,24 @@ if not st.session_state.user_authenticated:
     
     col_l1, col_l2, col_l3 = st.columns([1, 1.4, 1])
     with col_l2:
-        chosen_type = st.radio("סוג משתמש:", ["תלמיד/ה 🎓", "מורה / איש צוות 🧑‍🏫"], horizontal=True)[cite: 9]
+        chosen_type = st.radio("סוג משתמש:", ["תלמיד/ה 🎓", "מורה / איש צוות 🧑‍🏫"], horizontal=True)
         is_teacher = "מורה" in chosen_type
 
         with st.form("unified_login_form"):
-            in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")[cite: 9]
-            allow_guest = st.checkbox("אני מבית ספר אחר (פיילוט)")[cite: 9]
-            in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")[cite: 9]
+            in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")
+            allow_guest = st.checkbox("אני מבית ספר אחר (פיילוט)")
+            in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
             
             st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:6px;'>בחר אווטאר:</div>", unsafe_allow_html=True)
             avatar_list = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🏫 מורה", "🔬 חוקר"]
-            in_avatar = st.selectbox("אווטאר:", avatar_list, index=6 if is_teacher else 0, label_visibility="collapsed")[cite: 9]
+            in_avatar = st.selectbox("אווטאר:", avatar_list, index=6 if is_teacher else 0, label_visibility="collapsed")
             
             teacher_pass_input = ""
             if is_teacher:
                 st.markdown("---")
                 teacher_pass_input = st.text_input("קוד גישה למורה (ראשוני: DAN100):", type="password", placeholder="הזן סיסמת מורה...")
 
-            btn_submit_login = st.form_submit_button("כניסה למערכת 🚀", use_container_width=True)[cite: 9]
+            btn_submit_login = st.form_submit_button("כניסה למערכת 🚀", use_container_width=True)
             if btn_submit_login:
                 email_clean = in_email.strip().lower()
                 domain_part = email_clean.split("@")[-1] if "@" in email_clean else ""
@@ -631,7 +631,7 @@ with st.sidebar:
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
 student_context = f"משתמש: {st.session_state.user_name} ({st.session_state.user_role}), שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
 
-# ----------------- סרגל עליון (ללא כפתור מעבר בין תלמיד למורה) -----------------
+# ----------------- סרגל עליון -----------------
 col_nav_logo, col_nav_role_badge, col_nav_btn = st.columns([2.5, 1.5, 1])
 with col_nav_logo:
     st.markdown(f"""
@@ -798,7 +798,7 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # אם המשתמש תלמיד - מציג אך ורק כלי תלמידים
+    # כלי תלמיד
     if st.session_state.user_role == "תלמיד":
         col_c1, col_c2, col_c3, col_c4, col_c5, col_c6 = st.columns(6)
         with col_c1:
@@ -874,7 +874,7 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "מחשבון"
                 st.rerun()
 
-    # אם המשתמש מורה - מציג אך ורק כלי הוראה והנהלה
+    # כלי מורה בלבד
     else:
         col_m1, col_m2, col_m3, col_m4, col_m5, col_m6 = st.columns(6)
         with col_m1:
