@@ -16,6 +16,14 @@ from gtts import gTTS
 
 TEACHER_ACCESS_CODE = "DAN100"
 
+# רשימת סיומות בית ספריות מורשות (ניתן להוסיף כאן סיומות של בתי ספר נוספים)
+ALLOWED_SCHOOL_DOMAINS = [
+    "tichonoz.org.il",
+    "school.org.il",
+    "msh.org.il",
+    "k12.gov.il"
+]
+
 st.set_page_config(
     page_title="The Dan Method | לומדים. מתקדמים.",
     page_icon="🎓",
@@ -457,14 +465,15 @@ if "reviews" not in st.session_state:
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה נקודות!"}
     ]
 
-# מסך כניסה
+# מסך כניסה עם אימות אימייל בית ספרי
 if not st.session_state.user_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 40px auto; border-top: 5px solid #2563eb;">
             <div style="font-size: 50px; margin-bottom: 8px;">🎓</div>
             <h2 style="color: #0f2b5c; margin: 0 0 8px 0; font-weight: 800;">ברוך הבא ל-The Dan Method</h2>
             <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
-                כדי להתאים את הלמידה אישית עבורך, הזן את האימייל הבית-ספרי ובחר לעצמך כינוי ואווטאר:
+                הכניסה מיועדת לבעלי אימייל בית-ספרי רשמי.<br>
+                הזן את האימייל, הכינוי ובחר את האווטאר שלך:
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -472,7 +481,8 @@ if not st.session_state.user_authenticated:
     col_l1, col_l2, col_l3 = st.columns([1, 1.3, 1])
     with col_l2:
         with st.form("login_form"):
-            in_email = st.text_input("אימייל בית ספרי / אישי:", placeholder="yourname@school.org.il")
+            in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")
+            allow_guest = st.checkbox("אני מבית ספר אחר שמשתתף בפיילוט")
             in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
             
             st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:8px;'>בחר את האווטאר שלך:</div>", unsafe_allow_html=True)
@@ -481,12 +491,17 @@ if not st.session_state.user_authenticated:
             
             btn_login = st.form_submit_button("כניסה למערכת 🚀", use_container_width=True)
             if btn_login:
-                if not in_email.strip() or "@" not in in_email:
+                email_clean = in_email.strip().lower()
+                domain_part = email_clean.split("@")[-1] if "@" in email_clean else ""
+                
+                if not email_clean or "@" not in email_clean:
                     st.error("נא להזין כתובת אימייל תקינה.")
+                elif not allow_guest and not any(domain_part == d or domain_part.endswith("." + d) for d in ALLOWED_SCHOOL_DOMAINS):
+                    st.error(f"האימייל אינו שייך לבית ספר מאושר. יש להשתמש בחשבון בית ספרי (למשל: @tichonoz.org.il) או לסמן פיילוט.")
                 elif not in_name.strip():
                     st.error("נא להזין שם או כינוי לתצוגה.")
                 else:
-                    st.session_state.user_email = in_email.strip()
+                    st.session_state.user_email = email_clean
                     st.session_state.user_name = in_name.strip()
                     st.session_state.user_avatar = in_avatar.split()[0]
                     st.session_state.user_authenticated = True
@@ -716,7 +731,7 @@ with col_nav_btn:
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
-# נעילת אבטחה הרמטית: אם המצב הוא מורה והמשתמש לא הזדהה, כלום לא מוצג חוץ ממסך הנעילה
+# נעילת אבטחה הרמטית למצב מורה
 if st.session_state.app_mode == "מורה" and not st.session_state.teacher_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 40px auto; border-top: 5px solid #0f2b5c;">
@@ -1035,6 +1050,51 @@ if st.session_state.current_room == "דף הבית":
             if st.button("דפי עבודה", key="pm_print", use_container_width=True):
                 st.session_state.current_room = "דפי הדפסה"
                 st.rerun()
+
+    # אזור חוות דעת ומשובים
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style="margin-bottom: 12px;">
+            <div class="cat-grid-title" style="font-size:1.35rem;">⭐ חוות דעת של תלמידים ומורים</div>
+            <div class="cat-grid-subtitle">משובים אמיתיים מרחבי הארץ</div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col_rev1, col_rev2 = st.columns([1.8, 1.2])
+    with col_rev1:
+        for r in st.session_state.reviews:
+            stars = "⭐" * r["rating"]
+            st.markdown(f"""
+                <div class="room-content-card" style="padding: 16px 20px; margin-bottom: 12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <b>{r['name']}</b> <span style="color:#64748b; font-size:0.9rem;">({r['grade']})</span>
+                        <span style="font-size:0.9rem;">{stars}</span>
+                    </div>
+                    <p style="color: #475569; margin: 6px 0 0 0; font-size: 0.95rem;">{r['text']}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+    with col_rev2:
+        st.markdown('<div class="room-content-card"><h4 style="margin-top:0; color:#0f2b5c;">✍️ הוסף חוות דעת:</h4>', unsafe_allow_html=True)
+        with st.form("feedback_form_home", clear_on_submit=True):
+            fb_name = st.text_input("שם או כינוי:", value=st.session_state.user_name)
+            fb_grade = st.selectbox("תפקיד / כיתה:", ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב", "מורה מקצועי", "מחנך / יועצת"], index=2)
+            fb_rating = st.slider("דירוג (כוכבים):", 1, 5, 5)
+            fb_text = st.text_area("איך הפלטפורמה עזרה לך?")
+            submitted_fb = st.form_submit_button("שלח חוות דעת 🚀")
+            if submitted_fb:
+                if not fb_text.strip():
+                    st.warning("נא לכתוב כמה מילים.")
+                else:
+                    st.session_state.reviews.insert(0, {
+                        "name": fb_name.strip() if fb_name.strip() else "אנונימי",
+                        "grade": fb_grade,
+                        "rating": fb_rating,
+                        "text": fb_text.strip()
+                    })
+                    st.success("תודה! חוות הדעת נוספה בהצלחה.")
+                    st.balloons()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ----------------- חדר: לוח בקרה ומדדי למידה להנהלה -----------------
 elif st.session_state.current_room == "לוח בקרה":
@@ -1756,7 +1816,7 @@ elif st.session_state.current_room == "ערעור":
                 prompt = f"נסח ערעור רשמי ומנומק למורה עבור {student_context}. מקצוע: {c_sub}, שאלה: {c_q}, תשובה: {c_ans}, הערה: {c_lost}."
                 res = generate_ai(prompt)
                 st.markdown(f'<div class="room-content-card">{res.text}</div>', unsafe_allow_html=True)
-                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף נוסח ערעור בוואטסאפ</a>', unsafe_allow_メント_True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף נוסח ערעור בוואטסאפ</a>', unsafe_allow_html=True)
 
 elif st.session_state.current_room == "כרטיסיות":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">🎴 Flashcards</span>', unsafe_allow_html=True)
