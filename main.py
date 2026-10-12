@@ -599,6 +599,7 @@ with st.sidebar:
     if st.button("🚪 החלף משתמש / התנתק", use_container_width=True):
         st.session_state.user_authenticated = False
         st.session_state.teacher_authenticated = False
+        st.session_state.app_mode = "תלמיד"
         st.rerun()
 
     st.markdown("---")
@@ -715,14 +716,15 @@ with col_nav_btn:
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
+# נעילת אבטחה הרמטית: אם המצב הוא מורה והמשתמש לא הזדהה, כלום לא מוצג חוץ ממסך הנעילה
 if st.session_state.app_mode == "מורה" and not st.session_state.teacher_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 40px auto; border-top: 5px solid #0f2b5c;">
             <div style="font-size: 44px; margin-bottom: 8px;">🔒</div>
             <h2 style="color: #0f2b5c; margin: 0 0 8px 0; font-weight: 800;">אזור מוגן לצוות הוראה והנהלה</h2>
             <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
-                כלי המורים כוללים מחווני בחינה, מערכי שיעור, לוח בקרה ומחוללי הערכה.<br>
-                כדי למנוע דליפת פתרונות, הגישה מותרת באמצעות קוד מורה בלבד.
+                מרחב זה מכיל כלי בקרה להנהלה, מחוללי בחנים ומחוונים רשמיים.<br>
+                הכניסה מותרת לצוות מורשה בלבד באמצעות קוד גישה מורה.
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -737,11 +739,12 @@ if st.session_state.app_mode == "מורה" and not st.session_state.teacher_auth
                 time.sleep(0.5)
                 st.rerun()
             else:
-                st.error("קוד הגישה אינו תקין. הגישה מותרת לצוות מורשה בלבד.")
+                st.error("קוד גישה שגוי. הכניסה לתלמידים חסומה.")
         
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("⬅️ חזרה למצב תלמיד", use_container_width=True):
             st.session_state.app_mode = "תלמיד"
+            st.session_state.current_room = "דף הבית"
             st.rerun()
     st.stop()
 
@@ -958,6 +961,7 @@ if st.session_state.current_room == "דף הבית":
                 st.rerun()
 
     else:
+        # אזור כלים למורים (מוצג אך ורק לאחר אימות קוד מורה DAN100)
         col_m1, col_m2, col_m3, col_m4, col_m5, col_m6 = st.columns(6)
         with col_m1:
             st.markdown('<div class="pastel-tile tile-indigo"><div class="pastel-tile-icon">📊</div><div class="pastel-tile-title">לוח בקרה</div><div class="pastel-tile-count">מדדי בית ספר</div></div>', unsafe_allow_html=True)
@@ -1621,7 +1625,7 @@ elif st.session_state.current_room == "הנהלה":
     """, unsafe_allow_html=True)
     st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(letter_display)}" target="_blank">📲 שתף מכתב להנהלה בוואטסאפ</a>', unsafe_allow_html=True)
 
-# ----------------- חדר: רווחה (כולל טיימר פוקוס פעיל וספירה לאחור) -----------------
+# ----------------- חדר: רווחה -----------------
 elif st.session_state.current_room == "רווחה":
     st.markdown('<span class="room-badge-pill" style="background:#ffedd5; color:#c2410c;">🧘 Wellbeing & Calm</span>', unsafe_allow_html=True)
     st.title("מרחב רווחה, ויסות והפחתת לחץ")
@@ -1752,7 +1756,7 @@ elif st.session_state.current_room == "ערעור":
                 prompt = f"נסח ערעור רשמי ומנומק למורה עבור {student_context}. מקצוע: {c_sub}, שאלה: {c_q}, תשובה: {c_ans}, הערה: {c_lost}."
                 res = generate_ai(prompt)
                 st.markdown(f'<div class="room-content-card">{res.text}</div>', unsafe_allow_html=True)
-                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף נוסח ערעור בוואטסאפ</a>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף נוסח ערעור בוואטסאפ</a>', unsafe_allow_メント_True)
 
 elif st.session_state.current_room == "כרטיסיות":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">🎴 Flashcards</span>', unsafe_allow_html=True)
