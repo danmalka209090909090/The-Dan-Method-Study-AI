@@ -110,6 +110,19 @@ st.markdown("""
         letter-spacing: 1.2px;
     }
 
+    .user-profile-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #0f2b5c;
+    }
+
     .hero-banner {
         background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.92)), 
                     url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
@@ -180,34 +193,6 @@ st.markdown("""
         font-weight: 800;
         font-size: 0.95rem;
         margin-bottom: 12px;
-    }
-
-    .compare-card-learnit {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 22px;
-        padding: 26px 30px;
-        margin-bottom: 28px;
-        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
-    }
-    .compare-table-learnit {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 14px;
-        text-align: right;
-    }
-    .compare-table-learnit th {
-        padding: 14px;
-        border-bottom: 2px solid #f1f5f9;
-        font-weight: 800;
-        font-size: 0.95rem;
-        color: #475569;
-    }
-    .compare-table-learnit td {
-        padding: 16px 14px;
-        border-bottom: 1px solid #f8fafc;
-        font-size: 0.95rem;
-        line-height: 1.6;
     }
 
     .cat-grid-title {
@@ -416,6 +401,16 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# ----------------- ניהול משתמש ופרופיל -----------------
+if "user_authenticated" not in st.session_state:
+    st.session_state.user_authenticated = False
+if "user_email" not in st.session_state:
+    st.session_state.user_email = ""
+if "user_name" not in st.session_state:
+    st.session_state.user_name = ""
+if "user_avatar" not in st.session_state:
+    st.session_state.user_avatar = "🎓"
+
 if "app_mode" not in st.session_state:
     st.session_state.app_mode = "תלמיד"
 if "teacher_authenticated" not in st.session_state:
@@ -446,6 +441,44 @@ if "reviews" not in st.session_state:
         {"name": "נועה ל.", "grade": "כיתה י\"א (ביולוגיה)", "rating": 5, "text": "האתר נראה יוקרתי, נקי מכל השטויות ובאמת מדבר בגובה העיניים."},
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה נקודות!"}
     ]
+
+# מסך כניסה למשתמש
+if not st.session_state.user_authenticated:
+    st.markdown("""
+        <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 40px auto; border-top: 5px solid #2563eb;">
+            <div style="font-size: 50px; margin-bottom: 8px;">🎓</div>
+            <h2 style="color: #0f2b5c; margin: 0 0 8px 0; font-weight: 800;">ברוך הבא ל-The Dan Method</h2>
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
+                כדי להתאים את הלמידה אישית עבורך, הזן את האימייל הבית-ספרי ובחר לעצמך כינוי ואווטאר:
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col_l1, col_l2, col_l3 = st.columns([1, 1.3, 1])
+    with col_l2:
+        with st.form("login_form"):
+            in_email = st.text_input("אימייל בית ספרי / אישי:", placeholder="yourname@school.org.il")
+            in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
+            
+            st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:8px;'>בחר את האווטאר שלך:</div>", unsafe_allow_html=True)
+            avatar_options = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🔬 מדען", "🎨 יוצר"]
+            in_avatar = st.selectbox("אווטאר:", avatar_options, label_visibility="collapsed")
+            
+            btn_login = st.form_submit_button("כניסה למערכת 🚀", use_container_width=True)
+            if btn_login:
+                if not in_email.strip() or "@" not in in_email:
+                    st.error("נא להזין כתובת אימייל תקינה.")
+                elif not in_name.strip():
+                    st.error("נא להזין שם או כינוי לתצוגה.")
+                else:
+                    st.session_state.user_email = in_email.strip()
+                    st.session_state.user_name = in_name.strip()
+                    st.session_state.user_avatar = in_avatar.split()[0]
+                    st.session_state.user_authenticated = True
+                    st.success(f"שלום {st.session_state.user_name}! נכנסים למערכת...")
+                    time.sleep(0.5)
+                    st.rerun()
+    st.stop()
 
 api_key = st.secrets.get("GEMINI_API_KEY", "")
 if not api_key:
@@ -537,15 +570,23 @@ def create_pptx_file(slides_info, topic_name):
     return bio
 
 with st.sidebar:
-    st.markdown("""
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-            <span style="font-size: 26px;">🎓</span>
-            <span style="font-size: 1.3rem; font-weight: 800; color: #0f2b5c;">The Dan Method</span>
+    st.markdown(f"""
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #f8fafc; padding: 10px 14px; border-radius: 14px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 26px;">{st.session_state.user_avatar}</span>
+                <div>
+                    <div style="font-weight: 800; color: #0f2b5c; font-size: 0.95rem;">{st.session_state.user_name}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">{st.session_state.user_email[:20]}...</div>
+                </div>
+            </div>
         </div>
-        <div style="font-size: 0.85rem; color: #2563eb; font-weight: 700; margin-bottom: 12px;">בס״ד | לומדים. מתקדמים.</div>
     """, unsafe_allow_html=True)
+    if st.button("🚪 החלף משתמש / התנתק", use_container_width=True):
+        st.session_state.user_authenticated = False
+        st.session_state.teacher_authenticated = False
+        st.rerun()
+
     st.markdown("---")
-    
     st.subheader("👤 הפרופיל שלך")
     chosen_grade = st.selectbox(
         "שכבת לימוד:",
@@ -622,19 +663,19 @@ with st.sidebar:
             st.rerun()
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
-student_context = f"שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה/מסלול: {chosen_major}."
+student_context = f"משתמש: {st.session_state.user_name}, שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה/מסלול: {chosen_major}."
 
 col_nav_logo, col_nav_mode, col_nav_btn = st.columns([2.5, 1.5, 1])
 with col_nav_logo:
-    st.markdown("""
+    st.markdown(f"""
         <div class="learnit-navbar">
             <div class="brand-logo-container">
                 <div style="width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #0f2b5c, #2563eb); display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 20px;">🎓</span>
+                    <span style="font-size: 20px;">{st.session_state.user_avatar}</span>
                 </div>
                 <div style="display: flex; flex-direction: column; text-align: left; line-height: 1.1;">
                     <span class="brand-main-name">THE DAN METHOD</span>
-                    <span class="brand-sub-badge">STUDY AI • לומדים. מתקדמים.</span>
+                    <span class="brand-sub-badge">שלום {st.session_state.user_name} • לומדים. מתקדמים.</span>
                 </div>
             </div>
         </div>
@@ -691,7 +732,7 @@ if st.session_state.app_mode == "מורה" and not st.session_state.teacher_auth
 
 # ----------------- דף הבית -----------------
 if st.session_state.current_room == "דף הבית":
-    mode_title = "הדרך שלך להצלחה מתחילה כאן." if st.session_state.app_mode == "תלמיד" else "מרחב הפדגוגיה וההוראה החכמה."
+    mode_title = f"שלום {st.session_state.user_name}, הדרך שלך להצלחה מתחילה כאן." if st.session_state.app_mode == "תלמיד" else f"שלום {st.session_state.user_name}, מרחב הפדגוגיה וההוראה החכמה."
     mode_sub = "לימודים קלים יותר, בכל מקום ובכל זמן. כל מה שצריך כדי להצליח – במקום אחד." if st.session_state.app_mode == "תלמיד" else "הכנת מערכי שיעור, בחני פתע, לוח בקרה בית ספרי ומחוונים רשמיים בתוך שניות."
     
     st.markdown(f"""
@@ -724,7 +765,7 @@ if st.session_state.current_room == "דף הבית":
         else:
             with st.spinner("מעבד תשובה ממוקדת..."):
                 try:
-                    res_bot = generate_ai(f"אתה עוזר לימודי אישי חכם ({'לתלמיד' if st.session_state.app_mode == 'תלמיד' else 'למורה'}). בהקשר: {student_context}. ענה על השאלה ישירות, ברור וקצר לתכל'ס בלי חפירות: {query_search}. {anti_yap_rule}", use_cache=True)
+                    res_bot = generate_ai(f"אתה עוזר לימודי אישי חכם ({'לתלמיד' if st.session_state.app_mode == 'תלמיד' else 'למורה'}). פנה אל המשתמש בשם {st.session_state.user_name}. בהקשר: {student_context}. ענה על השאלה ישירות, ברור וקצר לתכל'ס בלי חפירות: {query_search}. {anti_yap_rule}", use_cache=True)
                     st.markdown(f"""
                         <div class="room-content-card" style="border-right: 4px solid #2563eb;">
                             <span class="room-badge-pill" style="background:#e0f2fe; color:#0369a1;">💡 מענה מהיר של דן AI</span>
@@ -765,17 +806,6 @@ if st.session_state.current_room == "דף הבית":
                     <div style="color:#64748b; font-size:0.8rem;">מהיסודי ועד הבגרות</div>
                 </div>
             </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-        <div class="method-card-learnit">
-            <div class="method-title-badge">⚡ על השיטה של The Dan Method</div>
-            <p style="font-size: 1.05rem; color: #334155; line-height: 1.75; margin: 0;">
-                נמאס לשבת שעות מול סיכומים ארוכים, מורים שמדברים מסביב ואתרי לימוד שנראים כמו שנת 2005.<br>
-                <b>The Dan Method</b> נבנה במטרה אחת ברורה: לתת לתלמידי ומורי ישראל את הדרך הקצרה, המדויקת והחדה ביותר להצלחה במבחנים ובבגרויות.<br>
-                במקום ללמוד 4 שעות ולזכור חצי – אנחנו מפרקים כל נושא לשלבי ברזל, מסננים חפירות מיותרות (מצב תכל'ס), ומלמדים אותך בדיוק לפי מה שהבוחן מחפש בעין בטופס הבדיקה.
-            </p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -862,7 +892,6 @@ if st.session_state.current_room == "דף הבית":
                 st.rerun()
 
     else:
-        # שורת כלים 1 למורים (כולל לוח בקרה להנהלה ומטלת חקר 30%)
         col_m1, col_m2, col_m3, col_m4, col_m5, col_m6 = st.columns(6)
         with col_m1:
             st.markdown('<div class="pastel-tile tile-indigo"><div class="pastel-tile-icon">📊</div><div class="pastel-tile-title">לוח בקרה</div><div class="pastel-tile-count">מדדי בית ספר</div></div>', unsafe_allow_html=True)
@@ -900,7 +929,6 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "הנהלה"
                 st.rerun()
 
-        # שורת כלים 2 למורים
         col_m7, col_m8, col_m9, col_m10, col_m11, col_m12 = st.columns(6)
         with col_m7:
             st.markdown('<div class="pastel-tile tile-peach"><div class="pastel-tile-icon">✍️</div><div class="pastel-tile-title">בנק הערכות</div><div class="pastel-tile-count">משובים לתעודות</div></div>', unsafe_allow_html=True)
@@ -938,51 +966,7 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "דפי הדפסה"
                 st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""
-        <div style="margin-bottom: 12px;">
-            <div class="cat-grid-title" style="font-size:1.35rem;">⭐ חוות דעת של תלמידים ומורים</div>
-            <div class="cat-grid-subtitle">משובים אמיתיים מרחבי הארץ</div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col_rev1, col_rev2 = st.columns([1.8, 1.2])
-    with col_rev1:
-        for r in st.session_state.reviews:
-            stars = "⭐" * r["rating"]
-            st.markdown(f"""
-                <div class="room-content-card" style="padding: 16px 20px; margin-bottom: 12px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <b>{r['name']}</b> <span style="color:#64748b; font-size:0.9rem;">({r['grade']})</span>
-                        <span style="font-size:0.9rem;">{stars}</span>
-                    </div>
-                    <p style="color: #475569; margin: 6px 0 0 0; font-size: 0.95rem;">{r['text']}</p>
-                </div>
-            """, unsafe_allow_html=True)
-            
-    with col_rev2:
-        st.markdown('<div class="room-content-card"><h4 style="margin-top:0; color:#0f2b5c;">✍️ הוסף חוות דעת:</h4>', unsafe_allow_html=True)
-        with st.form("feedback_form_home", clear_on_submit=True):
-            fb_name = st.text_input("שם או כינוי:")
-            fb_grade = st.selectbox("תפקיד / כיתה:", ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב", "מורה מקצועי", "מחנך / יועצת"], index=2)
-            fb_rating = st.slider("דירוג (כוכבים):", 1, 5, 5)
-            fb_text = st.text_area("איך הפלטפורמה עזרה לך?")
-            submitted_fb = st.form_submit_button("שלח חוות דעת 🚀")
-            if submitted_fb:
-                if not fb_text.strip():
-                    st.warning("נא לכתוב כמה מילים.")
-                else:
-                    st.session_state.reviews.insert(0, {
-                        "name": fb_name.strip() if fb_name.strip() else "אנונימי",
-                        "grade": fb_grade,
-                        "rating": fb_rating,
-                        "text": fb_text.strip()
-                    })
-                    st.success("תודה! חוות הדעת נוספה בהצלחה.")
-                    st.balloons()
-        st.markdown('</div>', unsafe_allow_html=True)
-
-# ----------------- חדר: לוח בקרה ומדדי למידה להנהלה (חדש למורים) -----------------
+# ----------------- חדר: לוח בקרה ומדדי למידה להנהלה -----------------
 elif st.session_state.current_room == "לוח בקרה":
     st.markdown('<span class="room-badge-pill" style="background:#e0e7ff; color:#4338ca;">📊 School Leadership Analytics</span>', unsafe_allow_html=True)
     st.title("לוח בקרה ומדדי למידה בית-ספריים")
@@ -1038,7 +1022,7 @@ elif st.session_state.current_room == "לוח בקרה":
             </div>
         """, unsafe_allow_html=True)
 
-# ----------------- חדר: בגרות בעל פה באנגלית (חדש לתלמידים) -----------------
+# ----------------- חדר: בגרות בעל פה באנגלית -----------------
 elif st.session_state.current_room == "בגרות בעל פה":
     st.markdown('<span class="room-badge-pill" style="background:#e0e7ff; color:#4338ca;">🇬🇧 English Oral Bagrut (COBE Simulator)</span>', unsafe_allow_html=True)
     st.title("סימולטור בגרות בעל פה באנגלית")
@@ -1058,7 +1042,7 @@ elif st.session_state.current_room == "בגרות בעל פה":
         level_oral = st.selectbox("English Level:", ["4 Points (Good & Clear)", "5 Points (Rich Vocabulary & Idioms)"])
         
         if st.button("🚀 Start / New Oral Question", use_container_width=True):
-            prompt_or = f"You are the official English Bagrut Oral Examiner (COBE) in Israel for high school students. Level: {level_oral}. Part: {part_oral}. Give the student ONE authentic, clear exam question. Speak politely and clearly."
+            prompt_or = f"You are the official English Bagrut Oral Examiner (COBE) in Israel for high school students. Level: {level_oral}. Part: {part_oral}. The student's name is {st.session_state.user_name}. Give the student ONE authentic, clear exam question. Speak politely and clearly."
             with st.spinner("Examiner is preparing a question..."):
                 try:
                     res_or = generate_ai(prompt_or)
@@ -1098,7 +1082,7 @@ elif st.session_state.current_room == "בגרות בעל פה":
                     try:
                         audio_part = types.Part.from_bytes(data=v_data, mime_type="audio/wav")
                         prompt_eval = [
-                            f"You are the official Bagrut oral examiner in Israel. Listen to the student's answer. 1. Praise what they did well. 2. Give 1 vocabulary or grammar correction. 3. Rate their fluency out of 100. 4. Ask the next brief follow-up question. Keep it concise (under 4 sentences).",
+                            f"You are the official Bagrut oral examiner in Israel. Listen to the student ({st.session_state.user_name}). 1. Praise what they did well. 2. Give 1 vocabulary or grammar correction. 3. Rate their fluency out of 100. 4. Ask the next brief follow-up question. Keep it concise (under 4 sentences).",
                             audio_part
                         ]
                         res_eval_or = generate_ai(prompt_eval)
@@ -1109,7 +1093,7 @@ elif st.session_state.current_room == "בגרות בעל פה":
                     except Exception as e:
                         st.error(f"Error: {e}")
 
-# ----------------- חדר: מטלת חקר והערכה חלופית 30% (חדש למורים) -----------------
+# ----------------- חדר: מטלת חקר והערכה חלופית 30% -----------------
 elif st.session_state.current_room == "הערכה חלופית":
     st.markdown('<span class="room-badge-pill" style="background:#ccfbf1; color:#0f766e;">🔬 30% Alternative Assessment & PBL</span>', unsafe_allow_html=True)
     st.title("מחולל מטלות חקר והערכה חלופית (30% בגרות)")
@@ -1255,14 +1239,14 @@ elif st.session_state.current_room == "חדר זום":
             with st.spinner("המורה מיה מכינה תרגילי אתגר לשיעור..."):
                 try:
                     hw_prompt = (
-                        f"את המורה מיה. תני לתלמיד ב-{student_context} משימת תרגול קצרה ומאתגרת (שיעורי בית) ב{z_subject}.\n"
+                        f"את המורה מיה. תני לתלמיד {st.session_state.user_name} ב-{student_context} משימת תרגול קצרה ומאתגרת (שיעורי בית) ב{z_subject}.\n"
                         "המשימה צריכה לכלול:\n"
                         "1. תרגיל/שאלה 1 ברמה בסיסית.\n"
                         "2. תרגיל/שאלה 2 ברמת בגרות/מבחן כיתתי.\n"
                         "3. הנחיה מה לכתוב או להקליט לך בחזרה כדי שתבדקי ותתני ציון."
                     )
                     res_hw = generate_ai(hw_prompt)
-                    reply_text = "הכנתי לך שתי שאלות תרגול מעולות. תפתור אותן ותקליט לי או תכתוב לי כאן את התשובות ואבדוק לך מיד!"
+                    reply_text = f"היי {st.session_state.user_name}, הכנתי לך שתי שאלות תרגול מעולות. תפתור אותן ותקליט לי או תכתוב לי כאן את התשובות ואבדוק לך מיד!"
                     st.session_state.zoom_homework = res_hw.text
                     st.session_state.last_voice_audio_bytes = create_audio_bytes(reply_text)
                     st.rerun()
@@ -1289,7 +1273,7 @@ elif st.session_state.current_room == "חדר זום":
         chat_box = st.container(height=260)
         with chat_box:
             if not st.session_state.zoom_chat_history:
-                st.info(f"👋 **המורה מיה:** היי! שמחה לפגוש אותך לשיעור ב{z_subject}. אתה יכול לכתוב לי, להשתמש בשאלות ההדגמה למטה, או פשוט להקליט לי הודעה קולית ישירות!")
+                st.info(f"👋 **המורה מיה:** היי {st.session_state.user_name}! שמחה לפגוש אותך לשיעור ב{z_subject}. אתה יכול לכתוב לי, להשתמש בשאלות ההדגמה למטה, או פשוט להקליט לי הודעה קולית ישירות!")
             else:
                 for m in st.session_state.zoom_chat_history:
                     with st.chat_message(m["role"]):
@@ -1325,10 +1309,10 @@ elif st.session_state.current_room == "חדר זום":
                         )
                         prompt_audio = [
                             (
-                                f"את המורה מיה בשיעור פרטי אישי חי עם תלמיד ב-{student_context}.\n"
+                                f"את המורה מיה בשיעור פרטי אישי חי עם התלמיד {st.session_state.user_name} ב-{student_context}.\n"
                                 f"מקצוע השיעור: {z_subject}.\n"
                                 "התלמיד שלח לך הקלטה קולית זו. הקשיבי לה ועני לו ישירות בעברית.\n"
-                                "הנחיות: דברי בלשון נקבה על עצמך, עני בגובה העיניים, מעודד וממוקד (עד 3 משפטים).\n"
+                                "הנחיות: פני אליו בשמו, דברי בלשון נקבה על עצמך, עני בגובה העיניים, מעודד וממוקד (עד 3 משפטים).\n"
                                 "אם הוא פתר תרגיל, בדקי אותו ותני ציון. בסוף שאלי שאלה קצרה."
                             ),
                             audio_part
@@ -1348,13 +1332,14 @@ elif st.session_state.current_room == "חדר זום":
             st.session_state.zoom_chat_history.append({"role": "user", "content": final_input_to_send})
             history_text = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.zoom_chat_history[-6:]])
             zoom_prompt = (
-                f"את המורה מיה בשיעור פרטי אישי חי עם תלמיד ב-{student_context}.\n"
+                f"את המורה מיה בשיעור פרטי אישי חי עם התלמיד {st.session_state.user_name} ב-{student_context}.\n"
                 f"מקצוע השיעור: {z_subject}.\n"
                 "הנחיות קריטיות:\n"
-                "1. דברי בלשון נקבה על עצמך ('אני כאן איתך', 'בדקתי את התשובה').\n"
-                "2. עני בגובה העיניים, מעודד וממוקד מאוד (עד 3 משפטים).\n"
-                "3. אם התלמיד פותר תרגיל או שיעורי בית – בדקי אותו, תני לו משוב וציון!\n"
-                "4. בסוף התשובה שאלי שאלה קצרה כדי לוודא שהוא הבין.\n\n"
+                "1. פני אליו בשמו.\n"
+                "2. דברי בלשון נקבה על עצמך ('אני כאן איתך', 'בדקתי את התשובה').\n"
+                "3. עני בגובה העיניים, מעודד וממוקד מאוד (עד 3 משפטים).\n"
+                "4. אם התלמיד פותר תרגיל או שיעורי בית – בדקי אותו, תני לו משוב וציון!\n"
+                "5. בסוף התשובה שאלי שאלה קצרה כדי לוודא שהוא הבין.\n\n"
                 f"היסטוריה:\n{history_text}\n\nהודעת התלמיד: {final_input_to_send}"
             )
             with st.spinner("המורה מיה מקשיבה ומכינה מענה..."):
@@ -1544,6 +1529,7 @@ elif st.session_state.current_room == "הנהלה":
         with st.spinner("מנסח מכתב רשמי..."):
             prompt_lead = (
                 f"נסח מכתב פנייה רשמי ומקצועי למנהלת בית הספר ויועצת השכבה עבור שכבת {chosen_grade}.\n"
+                f"הפונה: {st.session_state.user_name} ({st.session_state.user_email}).\n"
                 f"נושא הפנייה: פלטפורמת 'The Dan Method'.\n"
                 f"מוקד: {lead_focus}.\n"
                 f"אורך מבוקש: {lead_length}.\n"
@@ -1552,7 +1538,8 @@ elif st.session_state.current_room == "הנהלה":
             res_lead = generate_ai(prompt_lead)
             st.session_state["custom_lead_letter"] = res_lead.text
 
-    letter_display = st.session_state.get("custom_lead_letter", """לכבוד: מנהלת בית הספר והיועצת החינוכית
+    letter_display = st.session_state.get("custom_lead_letter", f"""לכבוד: מנהלת בית הספר והיועצת החינוכית
+מאת: {st.session_state.user_name}
 הנדון: שילוב פלטפורמת 'The Dan Method' ככלי פדגוגי מסייע ללמידה עצמאית והפחתת חרדת בחינות
 
 מערכת The Dan Method פותחה מתוך הבנת האתגרים הייחודיים של תלמידי חטיבת הביניים והחטיבה העליונה בישראל, ומכוילת על פי תוכניות הלימודים ומחווני הבגרות של משרד החינוך.
@@ -1637,7 +1624,7 @@ elif st.session_state.current_room == "חילוץ לילה":
     if st.button("🚨 הצל אותי עכשיו!", use_container_width=True):
         if panic_sub and panic_top:
             with st.spinner("מחלץ תוכנית הצלה..."):
-                prompt = f"תוכנית חירום לתלמיד ב-{student_context}. מקצוע: {panic_sub}, חומר: {panic_top}, שעות: {hours_left}. 3 מושגי חובה, טריק הבחינה ומשפט פתיחה למאיות."
+                prompt = f"תוכנית חירום לתלמיד {st.session_state.user_name} ב-{student_context}. מקצוע: {panic_sub}, חומר: {panic_top}, שעות: {hours_left}. 3 מושגי חובה, טריק הבחינה ומשפט פתיחה למאיות."
                 res = generate_ai(prompt)
                 st.markdown(f'<div class="room-content-card" style="border-right: 4px solid #be185d;">{res.text}</div>', unsafe_allow_html=True)
                 st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף תוכנית הצלה בוואטסאפ</a>', unsafe_allow_html=True)
@@ -1736,7 +1723,7 @@ elif st.session_state.current_room == "מבחני דמה":
         st.markdown(f'<div class="room-content-card">{json.dumps(st.session_state.mock_exam_data, ensure_ascii=False, indent=2)}</div>', unsafe_allow_html=True)
 
 elif st.session_state.current_room == "מעבדת מתמטיקה":
-    st.markdown('<span class="room-badge-pill" style="background:#f3e8ff; color:#6b21a8;">🧮 Step-by-Step Lab</span>', unsafe_allow_html=True)
+    st.markdown('<span class="room-badge-pill" style="background:#f3e8ff; color:#6b21a8;">𮀮 Step-by-Step Lab</span>', unsafe_allow_html=True)
     st.title("מעבדת פירוק מתמטיקה ומדעים")
     m_topic = st.text_input("נושא:")
     m_input = st.text_area("תרגיל:")
