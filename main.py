@@ -9,7 +9,6 @@ import re
 import time
 import urllib.parse
 import hashlib
-import random
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -17,11 +16,12 @@ from gtts import gTTS
 
 DEFAULT_TEACHER_CODE = "DAN100"
 
-ALLOWED_SCHOOL_DOMAINS = [
-    "tichonoz.org.il",
-    "school.org.il",
-    "msh.org.il",
-    "k12.gov.il"
+# רשימת המיילים המאושרים בבית הספר (הוסף כאן מיילים מורשים נוספים)
+APPROVED_STUDENT_EMAILS = [
+    "dan.malka@tichonoz.org.il",
+    "student1@tichonoz.org.il",
+    "student2@tichonoz.org.il",
+    "test@tichonoz.org.il"
 ]
 
 st.set_page_config(
@@ -357,12 +357,6 @@ if "teacher_current_code" not in st.session_state:
     st.session_state.teacher_current_code = DEFAULT_TEACHER_CODE
 if "user_authenticated" not in st.session_state:
     st.session_state.user_authenticated = False
-if "otp_sent" not in st.session_state:
-    st.session_state.otp_sent = False
-if "generated_otp" not in st.session_state:
-    st.session_state.generated_otp = None
-if "pending_user_data" not in st.session_state:
-    st.session_state.pending_user_data = {}
 if "user_role" not in st.session_state:
     st.session_state.user_role = "תלמיד"
 if "user_email" not in st.session_state:
@@ -398,7 +392,7 @@ if "reviews" not in st.session_state:
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה נקודות!"}
     ]
 
-# ----------------- מסך אימות והתחברות (כולל OTP) -----------------
+# ----------------- מסך כניסה מאובטח (בדיקת רשימה מורשית) -----------------
 if not st.session_state.user_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 30px auto; border-top: 5px solid #0f2b5c;">
@@ -412,85 +406,44 @@ if not st.session_state.user_authenticated:
     
     col_l1, col_l2, col_l3 = st.columns([1, 1.4, 1])
     with col_l2:
-        if not st.session_state.otp_sent:
-            chosen_type = st.radio("סוג משתמש:", ["תלמיד/ה 🎓", "מורה / איש צוות 🧑‍🏫"], horizontal=True)
-            is_teacher = "מורה" in chosen_type
+        chosen_type = st.radio("סוג משתמש:", ["תלמיד/ה 🎓", "מורה / איש צוות 🧑‍🏫"], horizontal=True)
+        is_teacher = "מורה" in chosen_type
 
-            with st.form("step1_login_form"):
-                in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")
-                allow_guest = st.checkbox("אני מבית ספר אחר (פיילוט)")
-                in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
-                
-                st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:6px;'>בחר אווטאר:</div>", unsafe_allow_html=True)
-                avatar_list = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🏫 מורה", "🔬 חוקר"]
-                in_avatar = st.selectbox("אווטאר:", avatar_list, index=6 if is_teacher else 0, label_visibility="collapsed")
-                
-                teacher_pass_input = ""
-                if is_teacher:
-                    st.markdown("---")
-                    teacher_pass_input = st.text_input("קוד גישה למורה:", type="password", placeholder="הזן סיסמת מורה...")
-
-                btn_send_code = st.form_submit_button("המשך לקבלת קוד אימות 📩", use_container_width=True)
-                if btn_send_code:
-                    email_clean = in_email.strip().lower()
-                    domain_part = email_clean.split("@")[-1] if "@" in email_clean else ""
-                    
-                    if not email_clean or "@" not in email_clean:
-                        st.error("נא להזין כתובת אימייל תקינה.")
-                    elif not allow_guest and not any(domain_part == d or domain_part.endswith("." + d) for d in ALLOWED_SCHOOL_DOMAINS):
-                        st.error("האימייל אינו שייך לבית ספר מאושר. יש להשתמש בחשבון בית ספרי (למשל: @tichonoz.org.il) או לסמן פיילוט.")
-                    elif not in_name.strip():
-                        st.error("נא להזין שם או כינוי לתצוגה.")
-                    elif is_teacher and teacher_pass_input.strip() != st.session_state.teacher_current_code:
-                        st.error("קוד גישה למורה שגוי.")
-                    else:
-                        code_val = str(random.randint(1000, 9999))
-                        st.session_state.generated_otp = code_val
-                        st.session_state.pending_user_data = {
-                            "email": email_clean,
-                            "name": in_name.strip(),
-                            "avatar": in_avatar.split()[0],
-                            "role": "מורה" if is_teacher else "תלמיד"
-                        }
-                        st.session_state.otp_sent = True
-                        st.rerun()
-
-        else:
-            p_data = st.session_state.pending_user_data
-            st.info(f"קוד אימות נשלח לכתובת: **{p_data['email']}**")
+        with st.form("clean_login_form"):
+            in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")
+            allow_guest = st.checkbox("אני מבית ספר אחר (פיילוט)")
+            in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
             
-            # כרטיס הדמיית OTP ייעודי לבדיקה ולהצגה למנהלת
-            st.markdown(f"""
-                <div style="background:#eff6ff; border:1px dashed #2563eb; border-radius:12px; padding:12px; text-align:center; margin-bottom:12px;">
-                    <div style="font-size:0.85rem; color:#1e40af;">קוד האימות החד-פעמי שלך (OTP):</div>
-                    <div style="font-size:1.8rem; font-weight:900; letter-spacing:4px; color:#1d4ed8;">{st.session_state.generated_otp}</div>
-                </div>
-            """, unsafe_allow_html=True)
+            st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:6px;'>בחר אווטאר:</div>", unsafe_allow_html=True)
+            avatar_list = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🏫 מורה", "🔬 חוקר"]
+            in_avatar = st.selectbox("אווטאר:", avatar_list, index=6 if is_teacher else 0, label_visibility="collapsed")
+            
+            teacher_pass_input = ""
+            if is_teacher:
+                st.markdown("---")
+                teacher_pass_input = st.text_input("קוד גישה למורה:", type="password", placeholder="הזן סיסמת מורה...")
 
-            with st.form("step2_otp_form"):
-                entered_otp = st.text_input("הזן את 4 ספרות קוד האימות:", placeholder="4 ספרות...")
-                col_otp_btn1, col_otp_btn2 = st.columns(2)
-                with col_otp_btn1:
-                    btn_verify = st.form_submit_button("אמת קוד והתחבר 🚀", use_container_width=True)
-                with col_otp_btn2:
-                    btn_back = st.form_submit_button("חזור לעריכת פרטים", use_container_width=True)
-
-                if btn_verify:
-                    if entered_otp.strip() == st.session_state.generated_otp:
-                        st.session_state.user_email = p_data["email"]
-                        st.session_state.user_name = p_data["name"]
-                        st.session_state.user_avatar = p_data["avatar"]
-                        st.session_state.user_role = p_data["role"]
-                        st.session_state.user_authenticated = True
-                        st.session_state.current_room = "דף הבית"
-                        st.success(f"אימות הושלם בהצלחה! ברוך הבא {p_data['name']}.")
-                        time.sleep(0.5)
-                        st.rerun()
-                    else:
-                        st.error("קוד אימות שגוי. נסה שוב.")
-                elif btn_back:
-                    st.session_state.otp_sent = False
-                    st.session_state.generated_otp = None
+            btn_submit_login = st.form_submit_button("כניסה למערכת 🚀", use_container_width=True)
+            if btn_submit_login:
+                email_clean = in_email.strip().lower()
+                
+                if not email_clean or "@" not in email_clean:
+                    st.error("נא להזין כתובת אימייל תקינה.")
+                elif not is_teacher and not allow_guest and email_clean not in APPROVED_STUDENT_EMAILS:
+                    st.error("כתובת אימייל זו אינה מופיעה ברשימת התלמידים המאושרים לפיילוט בבית הספר.")
+                elif not in_name.strip():
+                    st.error("נא להזין שם או כינוי לתצוגה.")
+                elif is_teacher and teacher_pass_input.strip() != st.session_state.teacher_current_code:
+                    st.error("קוד גישה למורה שגוי.")
+                else:
+                    st.session_state.user_email = email_clean
+                    st.session_state.user_name = in_name.strip()
+                    st.session_state.user_avatar = in_avatar.split()[0]
+                    st.session_state.user_role = "מורה" if is_teacher else "תלמיד"
+                    st.session_state.user_authenticated = True
+                    st.session_state.current_room = "דף הבית"
+                    st.success(f"שלום {st.session_state.user_name}! נכנסים למערכת...")
+                    time.sleep(0.5)
                     st.rerun()
     st.stop()
 
@@ -599,8 +552,6 @@ with st.sidebar:
     
     if st.button("🚪 התנתק / החלף משתמש", use_container_width=True):
         st.session_state.user_authenticated = False
-        st.session_state.otp_sent = False
-        st.session_state.generated_otp = None
         st.session_state.user_role = "תלמיד"
         st.session_state.current_room = "דף הבית"
         st.rerun()
