@@ -36,15 +36,17 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# הגדרות עיצוב אחידות המותאמות לסביבות Mac, Windows ומובייל
+# הגדרות עיצוב מתוקנות: תאימות מלאה ל-Mac ו-Windows בלי דריסת צבעים שחורים
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
 
-    html, body, [class*="css"] {
+    html, body, [class*="css"], .stApp {
         font-family: 'Rubik', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+        direction: rtl;
+        text-align: right;
+        background-color: #fbfcfd;
+        color: #1e293b;
     }
 
     * {
@@ -55,25 +57,28 @@ st.markdown("""
         display: none !important;
     }
 
-    .stApp {
-        direction: rtl;
-        text-align: right;
-        background-color: #fbfcfd;
-        color: #1e293b;
-    }
-
     .main .block-container {
         padding-top: 1.5rem !important;
         padding-bottom: 2rem !important;
-        max-width: 1180px;
+        max-width: 1100px;
         margin: 0 auto;
     }
 
-    input, select, textarea {
-        -webkit-appearance: none !important;
-        appearance: none !important;
+    /* תוויות וטקסטים כהים וברורים */
+    label, p, span, .stMarkdown {
+        color: #1e293b !important;
+    }
+
+    /* תיקון שדות קלט למק/ווינדוס: רקע לבן ומסגרת נקייה */
+    div[data-baseweb="input"] {
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
         border-radius: 10px !important;
-        font-family: 'Rubik', sans-serif !important;
+    }
+
+    div[data-baseweb="input"] input {
+        color: #0f172a !important;
+        background-color: transparent !important;
     }
 
     [data-testid="stSidebar"] {
@@ -254,9 +259,9 @@ st.markdown("""
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 20px;
-        padding: 22px;
-        box-shadow: 0 3px 12px rgba(15, 23, 42, 0.03);
-        margin-bottom: 18px;
+        padding: 24px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        margin-bottom: 20px;
         line-height: 1.7;
     }
     .room-badge-pill {
@@ -346,8 +351,8 @@ st.markdown("""
         border: none !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
-        padding: 8px 16px !important;
-        -webkit-appearance: none !important;
+        padding: 10px 20px !important;
+        width: 100% !important;
     }
     div.stButton > button:hover {
         background-color: #1e3a8a !important;
@@ -774,7 +779,7 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # טבלת השוואה וכרטיסיית שיטה מותאמת תפקיד: למורה מול לתלמיד
+    # טבלת השוואה מותאמת תפקיד: למורה מול לתלמיד
     if st.session_state.user_role == "מורה":
         st.markdown("""
             <div class="compare-card-learnit">
@@ -1601,7 +1606,7 @@ elif st.session_state.current_room == "פתיחת שיעור" and st.session_sta
                     f"אתה מומחה להוראה פעילה ופדגוגיה חדשנית בישראל עבור כיתה {chosen_grade}.\n"
                     f"מקצוע: {hk_sub}, נושא: {hk_topic}, סגנון: {hk_style}.\n"
                     "הצע 3 אפשרויות שונות לפתיחת שיעור מסקרנת של 5 דקות:\n"
-                    "עבור כל אפשרות פרט:\n"
+                    "עבור כל אפשרורת פרט:\n"
                     "- מה המורה אומר/מציג על הלוח (הטריגר)\n"
                     "- שאלת הפעלה לתלמידים\n"
                     "- איך לחבר את התשובות שלהם לנושא המרכזי של השיעור"
