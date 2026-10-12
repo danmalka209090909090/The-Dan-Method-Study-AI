@@ -35,7 +35,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# נעילת ערכת נושא בהירה ופונט רוביק התואם למק, ווינדוס ומובייל
+# עיצוב מותאם ונעול שמונע בעיות צבע וניגודיות במק
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
@@ -59,12 +59,12 @@ st.markdown("""
         margin: 0 auto;
     }
 
-    /* תוויות וטקסטים ברורים וכהים תמיד */
+    /* תוויות וטקסטים כהים וברורים */
     label, p, span, h1, h2, h3, h4, .stMarkdown {
         color: #0f172a !important;
     }
 
-    /* כפיית שדות קלט בהירים ומסודרים גם במצב Dark Mode של מק */
+    /* תיקון קלט ל-Mac */
     div[data-baseweb="input"], div[data-baseweb="select"] {
         background-color: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
@@ -76,13 +76,7 @@ st.markdown("""
         background-color: #ffffff !important;
     }
 
-    /* סרגל צד */
-    [data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-        border-left: 1px solid #e2e8f0;
-    }
-
-    /* כרטיס תוכן */
+    /* כרטיס תוכן כללי */
     .room-content-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
@@ -146,18 +140,24 @@ st.markdown("""
         font-size: 0.95rem;
     }
 
-    /* כפתורי מערכת */
+    /* תיקון קריטי לכל הכפתורים: צבע לבן ברור עם ניגודיות מלאה */
     div.stButton > button {
         background-color: #0f2b5c !important;
+        border: 1px solid #0f2b5c !important;
+        border-radius: 12px !important;
+        padding: 10px 16px !important;
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.1) !important;
+    }
+
+    div.stButton > button p, div.stButton > button span {
         color: #ffffff !important;
-        border: none !important;
-        border-radius: 10px !important;
-        font-weight: 700 !important;
-        padding: 8px 16px !important;
+        font-weight: 800 !important;
+        font-size: 1rem !important;
     }
 
     div.stButton > button:hover {
         background-color: #1e3a8a !important;
+        border-color: #1e3a8a !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -185,12 +185,6 @@ if "last_voice_audio_bytes" not in st.session_state:
     st.session_state.last_voice_audio_bytes = None
 if "last_processed_audio_hash" not in st.session_state:
     st.session_state.last_processed_audio_hash = None
-if "zoom_homework" not in st.session_state:
-    st.session_state.zoom_homework = None
-if "mock_exam_data" not in st.session_state:
-    st.session_state.mock_exam_data = None
-if "ai_cache" not in st.session_state:
-    st.session_state.ai_cache = {}
 if "slides_data" not in st.session_state:
     st.session_state.slides_data = None
 if "pptx_bytes" not in st.session_state:
@@ -254,8 +248,6 @@ if not st.session_state.user_authenticated:
                         st.session_state.user_role = "מורה"
                         st.session_state.user_authenticated = True
                         st.session_state.current_room = "דף הבית"
-                        st.success(f"שלום {st.session_state.user_name}! נכנסים למרחב ההוראה...")
-                        time.sleep(0.5)
                         st.rerun()
                 else:
                     if allow_guest or email_clean in st.session_state.approved_emails:
@@ -265,8 +257,6 @@ if not st.session_state.user_authenticated:
                         st.session_state.user_role = "תלמיד"
                         st.session_state.user_authenticated = True
                         st.session_state.current_room = "דף הבית"
-                        st.success(f"אימות הושלם בהצלחה! ברוך הבא {st.session_state.user_name}.")
-                        time.sleep(0.5)
                         st.rerun()
                     else:
                         st.error("כתובת אימייל זו אינה מופיעה ברשימת התלמידים המאושרים לפיילוט.")
@@ -281,17 +271,11 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 AVAILABLE_MODELS = ["gemini-3.5-flash-lite", "gemini-3.8-flash"]
 
-def generate_ai(contents, use_cache=False):
-    if use_cache and isinstance(contents, str) and contents in st.session_state.ai_cache:
-        return st.session_state.ai_cache[contents]
-
+def generate_ai(contents):
     last_err = None
     for m in AVAILABLE_MODELS:
         try:
-            res = client.models.generate_content(model=m, contents=contents)
-            if use_cache and isinstance(contents, str):
-                st.session_state.ai_cache[contents] = res
-            return res
+            return client.models.generate_content(model=m, contents=contents)
         except Exception as e:
             last_err = e
             time.sleep(0.5)
@@ -321,10 +305,6 @@ def create_audio_bytes(text, lang='iw'):
     fp.seek(0)
     return fp.read()
 
-def get_whatsapp_share_link(text):
-    encoded = urllib.parse.quote(f"היי, מצאתי את זה ב-The Dan Method:\n\n{text[:450]}")
-    return f"https://api.whatsapp.com/send?text={encoded}"
-
 def create_pptx_file(slides_info, topic_name):
     prs = Presentation()
     prs.slide_width = Inches(13.333)
@@ -351,11 +331,6 @@ def create_pptx_file(slides_info, topic_name):
             bp.font.size = Pt(22)
             bp.font.color.rgb = RGBColor(30, 41, 59)
             bp.space_after = Pt(14)
-            
-        if "speaker_notes" in s and s["speaker_notes"]:
-            notes_slide = slide.notes_slide
-            text_frame = notes_slide.notes_text_frame
-            text_frame.text = s["speaker_notes"]
 
     bio = BytesIO()
     prs.save(bio)
@@ -365,7 +340,7 @@ def create_pptx_file(slides_info, topic_name):
 # ----------------- סרגל צד -----------------
 with st.sidebar:
     st.markdown(f"""
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #f8fafc; padding: 10px 14px; border-radius: 14px; border: 1px solid #e2e8f0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #ffffff; padding: 10px 14px; border-radius: 14px; border: 1px solid #e2e8f0;">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 26px;">{st.session_state.user_avatar}</span>
                 <div>
@@ -382,44 +357,12 @@ with st.sidebar:
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
-    if st.session_state.user_role == "מורה":
-        with st.expander("🔑 שינוי סיסמת מורה"):
-            with st.form("change_pass_form"):
-                old_pass = st.text_input("סיסמה נוכחית:", type="password")
-                new_pass = st.text_input("סיסמה חדשה:", type="password")
-                confirm_pass = st.text_input("אימות סיסמה:", type="password")
-                btn_change = st.form_submit_button("עדכן")
-                if btn_change:
-                    if old_pass.strip() != st.session_state.teacher_current_code:
-                        st.error("הסיסמה הנוכחית שגויה.")
-                    elif len(new_pass.strip()) < 4:
-                        st.error("לפחות 4 תווים.")
-                    elif new_pass.strip() != confirm_pass.strip():
-                        st.error("הסיסמאות אינן תואמות.")
-                    else:
-                        st.session_state.teacher_current_code = new_pass.strip()
-                        st.success("עודכן בהצלחה!")
-
-    st.markdown("---")
     chosen_grade = st.selectbox(
         "שכבת לימוד:",
         ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב (בגרות)"],
         index=2
     )
-    
-    if chosen_grade in ["כיתה ז'", "כיתה ח'", "כיתה ט'"]:
-        math_units = st.selectbox("מתמטיקה:", ["הקבצה א' / מופת", "הקבצה א' רגילה", "הקבצה ב'", "רמה רגילה"])
-        eng_units = st.selectbox("אנגלית:", ["דוברי אנגלית", "הקבצה א'", "הקבצה ב'", "רמה רגילה"])
-        chosen_major = st.selectbox("מסלול בחטיבה:", ["ללא מסלול", "עמ\"ט", "סייבר ומחשבים", "מדעים ורפואה"])
-    else:
-        math_units = st.selectbox("מתמטיקה לבגרות:", ["5 יחידות", "4 יחידות", "3 יחידות"])
-        eng_units = st.selectbox("אנגלית לבגרות:", ["5 יחידות", "4 יחידות", "3 יחידות"])
-        chosen_major = st.selectbox("מגמה בתיכון:", ["ללא מגמה", "הנדסת תוכנה", "פיזיקה", "ביולוגיה"])
-    
-    no_yap = st.toggle("מצב תכל'ס (מענה ממוקד)", value=True)
-
-anti_yap_rule = "השב ישירות לתכל'ס ללא פסקאות פתיחה וסיום." if no_yap else ""
-student_context = f"משתמש: {st.session_state.user_name} ({st.session_state.user_role}), שכבה: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
+    student_context = f"משתמש: {st.session_state.user_name} ({st.session_state.user_role}), שכבה: {chosen_grade}."
 
 # ----------------- סרגל עליון -----------------
 col_nav_logo, col_nav_role_badge, col_nav_btn = st.columns([2.5, 1.5, 1])
@@ -464,7 +407,7 @@ if st.session_state.current_room == "דף הבית":
     if query_search.strip():
         with st.spinner("מעבד מענה..."):
             try:
-                res_bot = generate_ai(f"אתה עוזר לימודי אישי חכם עבור {st.session_state.user_role}. פנה אל המשתמש בשם {st.session_state.user_name}. בהקשר: {student_context}. ענה ישירות: {query_search}. {anti_yap_rule}", use_cache=True)
+                res_bot = generate_ai(f"אתה עוזר לימודי אישי חכם עבור {st.session_state.user_role}. בהקשר: {student_context}. ענה ישירות: {query_search}.")
                 st.markdown(f"""
                     <div class="room-content-card" style="border-right: 4px solid #2563eb;">
                         <span style="font-weight: 700; color: #2563eb;">💡 מענה מהיר של דן AI:</span>
@@ -503,11 +446,6 @@ if st.session_state.current_room == "דף הבית":
                             <td style="color: #16a34a; font-weight: 700;">✔️ חלוקה ל-3 רמות קושי (בסיס, ליבה, מצוינות)</td>
                             <td style="color: #64748b;">❌ רמת קושי אחידה שאינה מותאמת לכיתה</td>
                         </tr>
-                        <tr>
-                            <td style="font-weight: 700;">חיסכון בזמן הערכה</td>
-                            <td style="color: #16a34a; font-weight: 700;">✔️ ניסוח משובים לתעודות והודעות הורים להעתקה למשו"ב</td>
-                            <td style="color: #64748b;">❌ ניסוחים רובוטיים שאינם מתאימים לשפה בית-ספרית</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -535,11 +473,6 @@ if st.session_state.current_room == "דף הבית":
                             <td style="color: #16a34a; font-weight: 700;">✔️ מענה מדורג וממוקד ללא עומס קוגניטיבי</td>
                             <td style="color: #64748b;">❌ מלל ארוך ומפוזר הדורש סינון ומאריך את הלמידה</td>
                         </tr>
-                        <tr>
-                            <td style="font-weight: 700;">הערכה ומשוב מדויק</td>
-                            <td style="color: #16a34a; font-weight: 700;">✔️ מחוון ניקוד רשמי והצבעה על חוסרים בתשובה</td>
-                            <td style="color: #64748b;">❌ משוב כללי ללא הערכת ניקוד אמינה</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -547,7 +480,7 @@ if st.session_state.current_room == "דף הבית":
 
     st.markdown("<h3 style='color: #0f2b5c;'>מרחבי למידה וכלי עזר</h3>", unsafe_allow_html=True)
 
-    # כלי מערכת
+    # כרטיסים מאוחדים עם כפתורי כניסה ברורים
     if st.session_state.user_role == "תלמיד":
         tools = [
             ("מעבדת מתמטיקה", "🧮 מתמטיקה", "פירוק שלב-אחר-שלב", "#f3e8ff", "#6b21a8"),
@@ -586,16 +519,16 @@ if st.session_state.current_room == "דף הבית":
                 room_id, title, desc, bg_color, text_color = tools[i + j]
                 with cols[j]:
                     st.markdown(f"""
-                        <div style="background-color: {bg_color}; border: 1px solid rgba(0,0,0,0.06); border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 8px;">
-                            <div style="font-weight: 800; font-size: 1rem; color: {text_color};">{title}</div>
-                            <div style="font-size: 0.8rem; color: #475569; margin-top: 4px;">{desc}</div>
+                        <div style="background-color: {bg_color}; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px 16px 0 0; padding: 18px 12px; text-align: center;">
+                            <div style="font-weight: 800; font-size: 1.05rem; color: {text_color};">{title}</div>
+                            <div style="font-size: 0.82rem; color: #475569; margin-top: 4px;">{desc}</div>
                         </div>
                     """, unsafe_allow_html=True)
-                    if st.button("כניסה ⬅️", key=f"btn_{room_id}", use_container_width=True):
+                    if st.button("כניסה לחדר ⬅️", key=f"btn_{room_id}", use_container_width=True):
                         st.session_state.current_room = room_id
                         st.rerun()
 
-    # אזור חוות דעת מתוקן
+    # אזור חוות דעת
     st.markdown("<br><h3 style='color: #0f2b5c;'>⭐ חוות דעת תלמידים ומורים</h3>", unsafe_allow_html=True)
     col_rev1, col_rev2 = st.columns([1.8, 1.2])
     with col_rev1:
@@ -630,7 +563,7 @@ if st.session_state.current_room == "דף הבית":
                     st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ----------------- החדרים המקצועיים -----------------
+# ----------------- החדרים הפנימיים -----------------
 elif st.session_state.current_room == "לוח בקרה":
     st.title("לוח בקרה ומדדי למידה בית-ספריים")
     col_s1, col_s2, col_s3 = st.columns(3)
