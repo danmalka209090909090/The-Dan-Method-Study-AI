@@ -10,10 +10,6 @@ import time
 import urllib.parse
 import hashlib
 import random
-import smtplib
-import ssl
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -35,7 +31,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# הגדרת פונט Rubik הנקי והעגלגל בכל רחבי המערכת
+# עיצוב מותאם Rubik ומותאם באופן אחיד לווינדוס, מק ומובייל
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
@@ -357,38 +353,42 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------- פונקציית שליחת אימייל מאובטחת דרך SSL (פורט 465) -----------------
+# ----------------- פונקציית שליחת אימייל חסינת חסימות דרך HTTPS -----------------
 def send_email_otp(recipient_email, code):
-    sender = st.secrets.get("SMTP_SENDER_EMAIL", "")
-    password = st.secrets.get("SMTP_APP_PASSWORD", "")
+    api_key_resend = st.secrets.get("RESEND_API_KEY", "")
     
-    if not sender or not password:
-        return False, "הגדרות שרת המייל (SMTP) אינן מוגדרות ב-Secrets של Streamlit."
+    if not api_key_resend:
+        return False, "מפתח RESEND_API_KEY אינו מוגדר ב-Secrets של Streamlit."
     
-    msg = MIMEMultipart()
-    msg['From'] = f"The Dan Method <{sender}>"
-    msg['To'] = recipient_email
-    msg['Subject'] = f"{code} - קוד האימות שלך ל-The Dan Method"
-    
-    body = f"""שלום,
-
-קוד האימות החד-פעמי שלך לכניסה למערכת The Dan Method הוא:
-
-{code}
-
-קוד זה תקף לשימוש מיידי בלבד.
-בהצלחה בלימודים!
-The Dan Method Team
-"""
-    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+    url = "https://api.resend.com/emails"
+    headers = {
+        "Authorization": f"Bearer {api_key_resend}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "from": "The Dan Method <onboarding@resend.dev>",
+        "to": [recipient_email],
+        "subject": f"{code} - קוד האימות שלך ל-The Dan Method",
+        "html": f"""
+        <div style="direction: rtl; font-family: sans-serif; padding: 20px; color: #0f2b5c;">
+            <h2>שלום!</h2>
+            <p>קוד האימות החד-פעמי שלך לכניסה למערכת The Dan Method הוא:</p>
+            <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #2563eb; margin: 20px 0;">
+                {code}
+            </div>
+            <p>הקוד תקף לשימוש מיידי בלבד.</p>
+            <br>
+            <p>בהצלחה בלימודים!<br><b>צוות The Dan Method</b></p>
+        </div>
+        """
+    }
     
     try:
-        # שימוש ישיר ב-SSL דרך פורט 465 העוקף חסימות ענן
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context, timeout=10) as server:
-            server.login(sender, password)
-            server.send_message(msg)
-        return True, "הקוד נשלח בהצלחה!"
+        response = requests.post(url, headers=headers, json=payload, timeout=10)
+        if response.status_code in [200, 201]:
+            return True, "הקוד נשלח בהצלחה!"
+        else:
+            return False, response.text
     except Exception as e:
         return False, str(e)
 
