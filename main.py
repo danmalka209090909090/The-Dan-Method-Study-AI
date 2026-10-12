@@ -14,9 +14,8 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from gtts import gTTS
 
-TEACHER_ACCESS_CODE = "DAN100"
+DEFAULT_TEACHER_CODE = "DAN100"
 
-# רשימת סיומות בית ספריות מורשות (ניתן להוסיף כאן סיומות של בתי ספר נוספים)
 ALLOWED_SCHOOL_DOMAINS = [
     "tichonoz.org.il",
     "school.org.il",
@@ -36,25 +35,16 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800;900&display=swap');
 
     * {
-        font-family: 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        font-family: 'Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
         -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
     }
 
-    header, [data-testid="stHeader"], .stAppHeader, 
-    div[data-testid="stToolbar"], .stAppToolbar, 
-    div[class*="stToolbar"], div[class*="StatusWidget"],
-    #MainMenu, footer, [data-testid="stDecoration"] {
+    #MainMenu, footer, div[data-testid="stDecoration"] {
         display: none !important;
-        visibility: hidden !important;
-        height: 0px !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        opacity: 0 !important;
     }
 
     .stApp {
-        margin-top: -45px !important;
-        padding-top: 0px !important;
         direction: rtl;
         text-align: right;
         background-color: #fbfcfd;
@@ -62,7 +52,8 @@ st.markdown("""
     }
 
     .main .block-container {
-        padding-top: 1.2rem !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
         max-width: 1180px;
         margin: 0 auto;
     }
@@ -70,34 +61,20 @@ st.markdown("""
     [data-testid="stSidebar"] {
         background-color: #ffffff !important;
         border-left: 1px solid #f1f5f9;
-        min-width: 290px !important;
-        max-width: 330px !important;
-        white-space: normal !important;
-    }
-
-    [data-testid="stSidebar"] * {
-        word-break: normal !important;
-        white-space: normal !important;
-    }
-
-    div[data-testid="stSlider"] > div {
-        direction: ltr !important;
-    }
-    div[data-testid="stSlider"] label {
-        direction: rtl !important;
-        text-align: right !important;
+        min-width: 280px !important;
+        max-width: 320px !important;
     }
 
     .learnit-navbar {
         background-color: #ffffff;
         border: 1px solid #eef2f6;
         border-radius: 18px;
-        padding: 12px 24px;
-        margin-bottom: 22px;
+        padding: 12px 20px;
+        margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
     }
     .brand-logo-container {
         display: inline-flex;
@@ -119,24 +96,24 @@ st.markdown("""
     }
 
     .hero-banner {
-        background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.92)), 
+        background: linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.94)), 
                     url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
         border: 1px solid #e2e8f0;
-        border-radius: 28px;
-        padding: 44px 30px 30px 30px;
-        box-shadow: 0 6px 24px rgba(15, 23, 42, 0.03);
+        border-radius: 24px;
+        padding: 36px 20px 24px 20px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.03);
         margin-bottom: 22px;
         text-align: center;
     }
     .hero-main-title {
-        font-size: 2.9rem;
+        font-size: 2.6rem;
         font-weight: 900;
         color: #0f2b5c;
         line-height: 1.25;
         margin-bottom: 10px;
     }
     .hero-desc {
-        font-size: 1.15rem;
+        font-size: 1.1rem;
         color: #64748b;
         margin-bottom: 16px;
         font-weight: 500;
@@ -147,63 +124,65 @@ st.markdown("""
         justify-content: space-around;
         background: #ffffff;
         border: 1px solid #f1f5f9;
-        border-radius: 20px;
-        padding: 16px 20px;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
+        border-radius: 18px;
+        padding: 14px 18px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
     }
     .ribbon-item {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         text-align: right;
     }
     .ribbon-icon-circle {
-        width: 44px;
-        height: 44px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .compare-card-learnit {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 22px;
-        padding: 26px 30px;
-        margin-bottom: 24px;
-        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+        border-radius: 20px;
+        padding: 24px 26px;
+        margin-bottom: 22px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+        overflow-x: auto;
     }
     .compare-table-learnit {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 14px;
+        margin-top: 12px;
         text-align: right;
+        min-width: 500px;
     }
     .compare-table-learnit th {
-        padding: 14px;
+        padding: 12px;
         border-bottom: 2px solid #f1f5f9;
         font-weight: 800;
         font-size: 0.95rem;
         color: #475569;
     }
     .compare-table-learnit td {
-        padding: 16px 14px;
+        padding: 14px 12px;
         border-bottom: 1px solid #f8fafc;
         font-size: 0.95rem;
-        line-height: 1.6;
+        line-height: 1.5;
     }
 
     .method-card-learnit {
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-right: 5px solid #2563eb;
-        border-radius: 22px;
-        padding: 26px 30px;
+        border-radius: 20px;
+        padding: 24px 26px;
         margin-bottom: 24px;
-        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
     }
     .method-title-badge {
         display: inline-flex;
@@ -219,7 +198,7 @@ st.markdown("""
     }
 
     .cat-grid-title {
-        font-size: 1.55rem;
+        font-size: 1.5rem;
         font-weight: 800;
         color: #0f2b5c;
         margin-bottom: 4px;
@@ -227,35 +206,20 @@ st.markdown("""
     .cat-grid-subtitle {
         color: #64748b;
         font-size: 0.95rem;
-        margin-bottom: 18px;
+        margin-bottom: 16px;
     }
 
     .pastel-tile {
-        border-radius: 18px;
-        padding: 20px 14px;
+        border-radius: 16px;
+        padding: 18px 10px;
         text-align: center;
-        margin-bottom: 14px;
+        margin-bottom: 12px;
         border: 1px solid transparent;
-        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        transition: transform 0.15s ease;
     }
-    .pastel-tile:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-    }
-    .pastel-tile-icon {
-        font-size: 30px;
-        margin-bottom: 6px;
-    }
-    .pastel-tile-title {
-        font-size: 1.05rem;
-        font-weight: 800;
-        margin-bottom: 3px;
-    }
-    .pastel-tile-count {
-        font-size: 0.8rem;
-        font-weight: 600;
-        opacity: 0.8;
-    }
+    .pastel-tile-icon { font-size: 28px; margin-bottom: 4px; }
+    .pastel-tile-title { font-size: 1rem; font-weight: 800; margin-bottom: 2px; }
+    .pastel-tile-count { font-size: 0.8rem; font-weight: 600; opacity: 0.8; }
 
     .tile-purple { background-color: #f3e8ff; border-color: #e9d5ff; color: #6b21a8; }
     .tile-blue   { background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
@@ -271,9 +235,9 @@ st.markdown("""
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 20px;
-        padding: 24px;
-        box-shadow: 0 3px 14px rgba(15, 23, 42, 0.03);
-        margin-bottom: 20px;
+        padding: 22px;
+        box-shadow: 0 3px 12px rgba(15, 23, 42, 0.03);
+        margin-bottom: 18px;
         line-height: 1.7;
     }
     .room-badge-pill {
@@ -290,48 +254,36 @@ st.markdown("""
         border: 1px solid #e2e8f0;
         border-right: 4px solid #2563eb;
         border-radius: 16px;
-        padding: 22px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
-    }
-    .slide-speaker-notes {
-        background: #f8fafc;
-        border: 1px dashed #cbd5e1;
-        border-radius: 12px;
-        padding: 14px;
-        margin-top: 12px;
-        color: #334155;
-        font-size: 0.95rem;
+        padding: 20px;
+        margin-bottom: 14px;
     }
 
     .zoom-video-stage {
         position: relative;
-        border-radius: 24px;
+        border-radius: 22px;
         overflow: hidden;
         border: 3px solid #1e3a8a;
         background: #0f172a;
-        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.3);
-        height: 310px;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.3);
+        height: 290px;
     }
     .zoom-video-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         object-position: center top;
-        filter: brightness(0.98);
     }
     .zoom-live-pill {
         position: absolute;
-        top: 14px;
-        right: 14px;
+        top: 12px;
+        right: 12px;
         background: rgba(15, 23, 42, 0.85);
         color: #22c55e;
         border: 1px solid #22c55e;
-        padding: 4px 14px;
+        padding: 3px 12px;
         border-radius: 20px;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         font-weight: 800;
-        backdrop-filter: blur(6px);
         display: flex;
         align-items: center;
         gap: 6px;
@@ -342,30 +294,17 @@ st.markdown("""
         background: #22c55e;
         border-radius: 50%;
         display: inline-block;
-        box-shadow: 0 0 8px #22c55e;
     }
     .zoom-teacher-tag {
         position: absolute;
-        bottom: 14px;
-        right: 14px;
+        bottom: 12px;
+        right: 12px;
         background: rgba(15, 23, 42, 0.85);
         color: #ffffff;
-        padding: 6px 16px;
-        border-radius: 10px;
+        padding: 5px 14px;
+        border-radius: 8px;
         font-weight: 700;
-        font-size: 0.9rem;
-        backdrop-filter: blur(6px);
-    }
-    .zoom-audio-indicator {
-        position: absolute;
-        bottom: 14px;
-        left: 14px;
-        background: rgba(15, 23, 42, 0.85);
-        color: #38bdf8;
-        padding: 6px 12px;
-        border-radius: 10px;
         font-size: 0.85rem;
-        backdrop-filter: blur(6px);
     }
 
     .whatsapp-btn {
@@ -380,7 +319,6 @@ st.markdown("""
         text-decoration: none;
         font-size: 0.95rem;
         margin-top: 10px;
-        box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
     }
 
     div.stButton > button {
@@ -389,55 +327,44 @@ st.markdown("""
         border: none !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
-        padding: 8px 18px !important;
-        transition: all 0.15s ease !important;
+        padding: 8px 16px !important;
     }
     div.stButton > button:hover {
         background-color: #1e3a8a !important;
-        box-shadow: 0 4px 12px rgba(15, 43, 92, 0.2) !important;
     }
 
     .stat-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 16px;
-        padding: 18px;
+        padding: 16px;
         text-align: center;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
     }
-    .stat-val {
-        font-size: 2rem;
-        font-weight: 900;
-        color: #0f2b5c;
-        margin-bottom: 2px;
-    }
-    .stat-lbl {
-        color: #64748b;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
+    .stat-val { font-size: 1.8rem; font-weight: 900; color: #0f2b5c; }
+    .stat-lbl { color: #64748b; font-size: 0.85rem; font-weight: 600; }
 
     @media (max-width: 768px) {
-        .hero-main-title { font-size: 2.1rem; }
-        .features-ribbon { flex-direction: column; gap: 12px; }
+        .hero-main-title { font-size: 2rem; }
+        .features-ribbon { flex-direction: column; gap: 10px; }
+        .main .block-container { padding-left: 12px !important; padding-right: 12px !important; }
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------- ניהול משתמש ופרופיל -----------------
+# ----------------- ניהול מצבי משתמש וסיסמאות -----------------
+if "teacher_current_code" not in st.session_state:
+    st.session_state.teacher_current_code = DEFAULT_TEACHER_CODE
 if "user_authenticated" not in st.session_state:
     st.session_state.user_authenticated = False
+if "user_role" not in st.session_state:
+    st.session_state.user_role = "תלמיד"
 if "user_email" not in st.session_state:
     st.session_state.user_email = ""
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 if "user_avatar" not in st.session_state:
     st.session_state.user_avatar = "🎓"
-
-if "app_mode" not in st.session_state:
-    st.session_state.app_mode = "תלמיד"
-if "teacher_authenticated" not in st.session_state:
-    st.session_state.teacher_authenticated = False
 if "current_room" not in st.session_state:
     st.session_state.current_room = "דף הבית"
 if "zoom_chat_history" not in st.session_state:
@@ -465,46 +392,57 @@ if "reviews" not in st.session_state:
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה נקודות!"}
     ]
 
-# מסך כניסה עם אימות אימייל בית ספרי
+# ----------------- מסך כניסה חכם ומבודד -----------------
 if not st.session_state.user_authenticated:
     st.markdown("""
-        <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 40px auto; border-top: 5px solid #2563eb;">
-            <div style="font-size: 50px; margin-bottom: 8px;">🎓</div>
-            <h2 style="color: #0f2b5c; margin: 0 0 8px 0; font-weight: 800;">ברוך הבא ל-The Dan Method</h2>
-            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
-                הכניסה מיועדת לבעלי אימייל בית-ספרי רשמי.<br>
-                הזן את האימייל, הכינוי ובחר את האווטאר שלך:
+        <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 30px auto; border-top: 5px solid #0f2b5c;">
+            <div style="font-size: 46px; margin-bottom: 6px;">🎓</div>
+            <h2 style="color: #0f2b5c; margin: 0 0 6px 0; font-weight: 800;">ברוך הבא ל-The Dan Method</h2>
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 18px;">
+                בחר את סוג המשתמש לכניסה:
             </p>
         </div>
     """, unsafe_allow_html=True)
     
-    col_l1, col_l2, col_l3 = st.columns([1, 1.3, 1])
+    col_l1, col_l2, col_l3 = st.columns([1, 1.4, 1])
     with col_l2:
-        with st.form("login_form"):
-            in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")
-            allow_guest = st.checkbox("אני מבית ספר אחר שמשתתף בפיילוט")
-            in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
+        chosen_type = st.radio("סוג משתמש:", ["תלמיד/ה 🎓", "מורה / איש צוות 🧑‍🏫"], horizontal=True)[cite: 9]
+        is_teacher = "מורה" in chosen_type
+
+        with st.form("unified_login_form"):
+            in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")[cite: 9]
+            allow_guest = st.checkbox("אני מבית ספר אחר (פיילוט)")[cite: 9]
+            in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")[cite: 9]
             
-            st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:8px;'>בחר את האווטאר שלך:</div>", unsafe_allow_html=True)
-            avatar_options = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🔬 מדען", "🎨 יוצר"]
-            in_avatar = st.selectbox("אווטאר:", avatar_options, label_visibility="collapsed")
+            st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:6px;'>בחר אווטאר:</div>", unsafe_allow_html=True)
+            avatar_list = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🏫 מורה", "🔬 חוקר"]
+            in_avatar = st.selectbox("אווטאר:", avatar_list, index=6 if is_teacher else 0, label_visibility="collapsed")[cite: 9]
             
-            btn_login = st.form_submit_button("כניסה למערכת 🚀", use_container_width=True)
-            if btn_login:
+            teacher_pass_input = ""
+            if is_teacher:
+                st.markdown("---")
+                teacher_pass_input = st.text_input("קוד גישה למורה (ראשוני: DAN100):", type="password", placeholder="הזן סיסמת מורה...")
+
+            btn_submit_login = st.form_submit_button("כניסה למערכת 🚀", use_container_width=True)[cite: 9]
+            if btn_submit_login:
                 email_clean = in_email.strip().lower()
                 domain_part = email_clean.split("@")[-1] if "@" in email_clean else ""
                 
                 if not email_clean or "@" not in email_clean:
                     st.error("נא להזין כתובת אימייל תקינה.")
                 elif not allow_guest and not any(domain_part == d or domain_part.endswith("." + d) for d in ALLOWED_SCHOOL_DOMAINS):
-                    st.error(f"האימייל אינו שייך לבית ספר מאושר. יש להשתמש בחשבון בית ספרי (למשל: @tichonoz.org.il) או לסמן פיילוט.")
+                    st.error("האימייל אינו שייך לבית ספר מאושר. יש להשתמש בחשבון בית ספרי (למשל: @tichonoz.org.il) או לסמן פיילוט.")
                 elif not in_name.strip():
                     st.error("נא להזין שם או כינוי לתצוגה.")
+                elif is_teacher and teacher_pass_input.strip() != st.session_state.teacher_current_code:
+                    st.error("קוד גישה למורה שגוי.")
                 else:
                     st.session_state.user_email = email_clean
                     st.session_state.user_name = in_name.strip()
                     st.session_state.user_avatar = in_avatar.split()[0]
+                    st.session_state.user_role = "מורה" if is_teacher else "תלמיד"
                     st.session_state.user_authenticated = True
+                    st.session_state.current_room = "דף הבית"
                     st.success(f"שלום {st.session_state.user_name}! נכנסים למערכת...")
                     time.sleep(0.5)
                     st.rerun()
@@ -599,6 +537,7 @@ def create_pptx_file(slides_info, topic_name):
     bio.seek(0)
     return bio
 
+# ----------------- סרגל צד -----------------
 with st.sidebar:
     st.markdown(f"""
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #f8fafc; padding: 10px 14px; border-radius: 14px; border: 1px solid #e2e8f0;">
@@ -606,19 +545,39 @@ with st.sidebar:
                 <span style="font-size: 26px;">{st.session_state.user_avatar}</span>
                 <div>
                     <div style="font-weight: 800; color: #0f2b5c; font-size: 0.95rem;">{st.session_state.user_name}</div>
-                    <div style="font-size: 0.75rem; color: #64748b;">{st.session_state.user_email[:20]}...</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">סוג משתמש: <b>{st.session_state.user_role}</b></div>
                 </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
-    if st.button("🚪 החלף משתמש / התנתק", use_container_width=True):
+    
+    if st.button("🚪 התנתק / החלף משתמש", use_container_width=True):
         st.session_state.user_authenticated = False
-        st.session_state.teacher_authenticated = False
-        st.session_state.app_mode = "תלמיד"
+        st.session_state.user_role = "תלמיד"
+        st.session_state.current_room = "דף הבית"
         st.rerun()
 
+    # שינוי סיסמה אך ורק למורה
+    if st.session_state.user_role == "מורה":
+        with st.expander("🔑 שינוי סיסמת מורה"):
+            with st.form("change_pass_form"):
+                old_pass = st.text_input("סיסמה נוכחית:", type="password")
+                new_pass = st.text_input("סיסמה חדשה:", type="password")
+                confirm_pass = st.text_input("אימות סיסמה חדשה:", type="password")
+                btn_change = st.form_submit_button("עדכן סיסמה")
+                if btn_change:
+                    if old_pass.strip() != st.session_state.teacher_current_code:
+                        st.error("הסיסמה הנוכחית שגויה.")
+                    elif len(new_pass.strip()) < 4:
+                        st.error("הסיסמה חייבת לכלול לפחות 4 תווים.")
+                    elif new_pass.strip() != confirm_pass.strip():
+                        st.error("הסיסמה החדשה אינה תואמת לאימות.")
+                    else:
+                        st.session_state.teacher_current_code = new_pass.strip()
+                        st.success("הסיסמה עודכנה בהצלחה!")
+
     st.markdown("---")
-    st.subheader("👤 הפרופיל שלך")
+    st.subheader("👤 הפרופיל הלימודי")
     chosen_grade = st.selectbox(
         "שכבת לימוד:",
         ["כיתה ז'", "כיתה ח'", "כיתה ט'", "כיתה י'", "כיתה י\"א", "כיתה י\"ב (בגרות)"],
@@ -644,10 +603,6 @@ with st.sidebar:
             "מדעי המחשב / סייבר ורובוטיקה",
             "מדעים, רפואה וביולוגיה",
             "תקשורת, עיתונות ורדיו",
-            "אמנות חזותית ועיצוב גרפי",
-            "קולנוע ומולטימדיה",
-            "מוזיקה וסאונד",
-            "תיאטרון ומשחק",
             "מנהיגות, יזמות ומשפטים"
         ])
     else:
@@ -661,42 +616,23 @@ with st.sidebar:
             "4 יחידות לימוד (Modules C, D, E)", 
             "3 יחידות לימוד (Modules A, B, C)"
         ])
-        chosen_major = st.selectbox("מגמה בתיכון (מקצוע בחירה מוגבר):", [
+        chosen_major = st.selectbox("מגמה בתיכון:", [
             "ללא מגמה (מקצועות ליבה בלבד)",
             "מדעי המחשב / הנדסת תוכנה (10 יח')",
-            "סייבר והגנת מרחב הסייבר",
             "פיזיקה (5 יח')",
-            "ביולוגיה / ביוטכנולוגיה",
-            "כימיה (5 יח')",
-            "מערכות רפואיות / מדעי הבריאות",
-            "ניהול עסקי / יזמות וכלכלה",
-            "מדעי החברה: פסיכולוגיה וסוציולוגיה",
-            "משפטים ומדע המדינה",
-            "קולנוע, טלוויזיה והפקה",
-            "תקשורת ומדיה דיגיטלית",
-            "אמנות פלסטית ועיצוב",
-            "ערבית ואסלאם מוגבר",
-            "גיאוגרפיה ופיתוח סביבתי",
-            "היסטוריה מוגברת (5 יח')",
-            "ספרות מוגברת (5 יח')",
-            "תנ\"ך מוגבר (5 יח')"
+            "ביולוגיה / כימיה",
+            "ניהול עסקי / יזמות",
+            "מדעי החברה / משפטים"
         ])
     
     st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (מענה ממוקד ולעניין)", value=True)
 
-    if st.session_state.app_mode == "מורה" and st.session_state.teacher_authenticated:
-        st.markdown("---")
-        if st.button("🔒 נעילת מצב מורה (התנתקות)", use_container_width=True):
-            st.session_state.teacher_authenticated = False
-            st.session_state.app_mode = "תלמיד"
-            st.session_state.current_room = "דף הבית"
-            st.rerun()
-
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
-student_context = f"משתמש: {st.session_state.user_name}, שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה/מסלול: {chosen_major}."
+student_context = f"משתמש: {st.session_state.user_name} ({st.session_state.user_role}), שכבת לימוד: {chosen_grade}, מתמטיקה: {math_units}, אנגלית: {eng_units}, מגמה: {chosen_major}."
 
-col_nav_logo, col_nav_mode, col_nav_btn = st.columns([2.5, 1.5, 1])
+# ----------------- סרגל עליון (ללא כפתור מעבר בין תלמיד למורה) -----------------
+col_nav_logo, col_nav_role_badge, col_nav_btn = st.columns([2.5, 1.5, 1])
 with col_nav_logo:
     st.markdown(f"""
         <div class="learnit-navbar">
@@ -712,61 +648,23 @@ with col_nav_logo:
         </div>
     """, unsafe_allow_html=True)
 
-with col_nav_mode:
-    mode_selection = st.radio(
-        "מצב מערכת:",
-        ["תלמיד 🎓", "מורה וצוות 🧑‍🏫"],
-        index=0 if st.session_state.app_mode == "תלמיד" else 1,
-        horizontal=True,
-        label_visibility="collapsed"
-    )
-    new_mode = "תלמיד" if "תלמיד" in mode_selection else "מורה"
-    if new_mode != st.session_state.app_mode:
-        st.session_state.app_mode = new_mode
-        st.session_state.current_room = "דף הבית"
-        st.rerun()
+with col_nav_role_badge:
+    role_color = "#16a34a" if st.session_state.user_role == "תלמיד" else "#2563eb"
+    st.markdown(f"""
+        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:14px; padding:10px 14px; text-align:center; font-weight:800; color:{role_color}; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+            מרחב: {st.session_state.user_role} 🔒
+        </div>
+    """, unsafe_allow_html=True)
 
 with col_nav_btn:
     if st.button("🏠 דף הבית", key="nav_home_main", use_container_width=True):
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
-# נעילת אבטחה הרמטית למצב מורה
-if st.session_state.app_mode == "מורה" and not st.session_state.teacher_authenticated:
-    st.markdown("""
-        <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 40px auto; border-top: 5px solid #0f2b5c;">
-            <div style="font-size: 44px; margin-bottom: 8px;">🔒</div>
-            <h2 style="color: #0f2b5c; margin: 0 0 8px 0; font-weight: 800;">אזור מוגן לצוות הוראה והנהלה</h2>
-            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
-                מרחב זה מכיל כלי בקרה להנהלה, מחוללי בחנים ומחוונים רשמיים.<br>
-                הכניסה מותרת לצוות מורשה בלבד באמצעות קוד גישה מורה.
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    col_lock1, col_lock2, col_lock3 = st.columns([1, 1.2, 1])
-    with col_lock2:
-        code_input = st.text_input("הזן קוד מורה:", type="password", placeholder="הזן קוד גישה...")
-        if st.button("🔓 כניסה למרחב ההוראה", use_container_width=True):
-            if code_input.strip() == TEACHER_ACCESS_CODE:
-                st.session_state.teacher_authenticated = True
-                st.success("קוד גישה אומת בהצלחה!")
-                time.sleep(0.5)
-                st.rerun()
-            else:
-                st.error("קוד גישה שגוי. הכניסה לתלמידים חסומה.")
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("⬅️ חזרה למצב תלמיד", use_container_width=True):
-            st.session_state.app_mode = "תלמיד"
-            st.session_state.current_room = "דף הבית"
-            st.rerun()
-    st.stop()
-
 # ----------------- דף הבית -----------------
 if st.session_state.current_room == "דף הבית":
-    mode_title = f"שלום {st.session_state.user_name}, הדרך שלך להצלחה מתחילה כאן." if st.session_state.app_mode == "תלמיד" else f"שלום {st.session_state.user_name}, מרחב הפדגוגיה וההוראה החכמה."
-    mode_sub = "לימודים קלים יותר, בכל מקום ובכל זמן. כל מה שצריך כדי להצליח – במקום אחד." if st.session_state.app_mode == "תלמיד" else "הכנת מערכי שיעור, בחני פתע, לוח בקרה בית ספרי ומחוונים רשמיים בתוך שניות."
+    mode_title = f"שלום {st.session_state.user_name}, הדרך שלך להצלחה מתחילה כאן." if st.session_state.user_role == "תלמיד" else f"שלום {st.session_state.user_name}, מרחב הפדגוגיה וההוראה החכמה."
+    mode_sub = "לימודים קלים יותר, בכל מקום ובכל זמן. כל מה שצריך כדי להצליח – במקום אחד." if st.session_state.user_role == "תלמיד" else "הכנת מערכי שיעור, בחני פתע, לוח בקרה בית ספרי ומחוונים רשמיים בתוך שניות."
     
     st.markdown(f"""
         <div class="hero-banner">
@@ -791,14 +689,14 @@ if st.session_state.current_room == "דף הבית":
             if st.button("🎙️ כניסה ישירה לסימולטור בגרות בעל פה באנגלית", use_container_width=True):
                 st.session_state.current_room = "בגרות בעל פה"
                 st.rerun()
-        elif any(w in q_lower for w in ["מערך", "שיעור", "מורה"]):
+        elif any(w in q_lower for w in ["מערך", "שיעור", "מורה"]) and st.session_state.user_role == "מורה":
             if st.button("⏱️ כניסה למחולל מערכי שיעור", use_container_width=True):
                 st.session_state.current_room = "מערכי שיעור"
                 st.rerun()
         else:
             with st.spinner("מעבד תשובה ממוקדת..."):
                 try:
-                    res_bot = generate_ai(f"אתה עוזר לימודי אישי חכם ({'לתלמיד' if st.session_state.app_mode == 'תלמיד' else 'למורה'}). פנה אל המשתמש בשם {st.session_state.user_name}. בהקשר: {student_context}. ענה על השאלה ישירות, ברור וקצר לתכל'ס בלי חפירות: {query_search}. {anti_yap_rule}", use_cache=True)
+                    res_bot = generate_ai(f"אתה עוזר לימודי אישי חכם עבור {st.session_state.user_role}. פנה אל המשתמש בשם {st.session_state.user_name}. בהקשר: {student_context}. ענה על השאלה ישירות, ברור וקצר לתכל'ס בלי חפירות: {query_search}. {anti_yap_rule}", use_cache=True)
                     st.markdown(f"""
                         <div class="room-content-card" style="border-right: 4px solid #2563eb;">
                             <span class="room-badge-pill" style="background:#e0f2fe; color:#0369a1;">💡 מענה מהיר של דן AI</span>
@@ -842,7 +740,7 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # טבלת ההשוואה מעל הסיפור הקצר
+    # טבלת השוואה מעל הסיפור הקצר
     st.markdown("""
         <div class="compare-card-learnit">
             <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.35rem; font-weight: 800;">למה The Dan Method ולא סתם בינה מלאכותית רגילה?</h3>
@@ -900,7 +798,8 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    if st.session_state.app_mode == "תלמיד":
+    # אם המשתמש תלמיד - מציג אך ורק כלי תלמידים
+    if st.session_state.user_role == "תלמיד":
         col_c1, col_c2, col_c3, col_c4, col_c5, col_c6 = st.columns(6)
         with col_c1:
             st.markdown('<div class="pastel-tile tile-purple"><div class="pastel-tile-icon">🧮</div><div class="pastel-tile-title">מתמטיקה</div><div class="pastel-tile-count">פירוק שלב-אחר-שלב</div></div>', unsafe_allow_html=True)
@@ -975,8 +874,8 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "מחשבון"
                 st.rerun()
 
+    # אם המשתמש מורה - מציג אך ורק כלי הוראה והנהלה
     else:
-        # אזור כלים למורים (מוצג אך ורק לאחר אימות קוד מורה DAN100)
         col_m1, col_m2, col_m3, col_m4, col_m5, col_m6 = st.columns(6)
         with col_m1:
             st.markdown('<div class="pastel-tile tile-indigo"><div class="pastel-tile-icon">📊</div><div class="pastel-tile-title">לוח בקרה</div><div class="pastel-tile-count">מדדי בית ספר</div></div>', unsafe_allow_html=True)
@@ -1051,7 +950,7 @@ if st.session_state.current_room == "דף הבית":
                 st.session_state.current_room = "דפי הדפסה"
                 st.rerun()
 
-    # אזור חוות דעת ומשובים
+    # אזור חוות דעת של תלמידים ומורים
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
         <div style="margin-bottom: 12px;">
@@ -1352,7 +1251,6 @@ elif st.session_state.current_room == "חדר זום":
         <div class="zoom-video-stage">
             <div class="zoom-live-pill"><span class="live-dot"></span> שידור חי פועל</div>
             <img class="zoom-video-img" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80" alt="המורה מיה">
-            <div class="zoom-audio-indicator">🎤 מחוברת</div>
             <div class="zoom-teacher-tag">המורה מיה (בשיחה חיה)</div>
         </div>
         """
@@ -1481,8 +1379,8 @@ elif st.session_state.current_room == "חדר זום":
                 except Exception as err:
                     st.error(f"שגיאה בתקשורת עם המורה: {err}")
 
-# ----------------- חדר: בנק הערכות ומשובים לתעודות -----------------
-elif st.session_state.current_room == "בנק הערכות":
+# ----------------- חדר: בנק הערכות ומשובים לתעודות (רק למורה) -----------------
+elif st.session_state.current_room == "בנק הערכות" and st.session_state.user_role == "מורה":
     st.markdown('<span class="room-badge-pill" style="background:#fef9c3; color:#a16207;">✍️ Report Cards & Evaluations</span>', unsafe_allow_html=True)
     st.title("מחולל הערכות ומשובים לתעודות ולימי הורים")
     st.caption("ניסוח משובים פדגוגיים, מכבדים ומעצימים המוכנים להעתקה ישירה למשו״ב / סמארטסקול.")
@@ -1522,8 +1420,8 @@ elif st.session_state.current_room == "בנק הערכות":
         else:
             st.warning("נא להזין שם תלמיד ומקצוע לימוד.")
 
-# ----------------- חדר: הודעות וואטסאפ להורים -----------------
-elif st.session_state.current_room == "הודעות הורים":
+# ----------------- חדר: הודעות וואטסאפ להורים (רק למורה) -----------------
+elif st.session_state.current_room == "הודעות הורים" and st.session_state.user_role == "מורה":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📱 Classroom WhatsApp Broadcast</span>', unsafe_allow_html=True)
     st.title("מחולל הודעות וואטסאפ רשמיות להורים")
     st.caption("ניסוח הודעות ברורות, חמות ומאורגנות לקבוצת ההורים או להורה ספציפי.")
@@ -1565,8 +1463,8 @@ elif st.session_state.current_room == "הודעות הורים":
         else:
             st.warning("נא להזין מקצוע או נושא.")
 
-# ----------------- חדר: מבדק דיפרנציאלי -----------------
-elif st.session_state.current_room == "מבדק דיפרנציאלי":
+# ----------------- חדר: מבדק דיפרנציאלי (רק למורה) -----------------
+elif st.session_state.current_room == "מבדק דיפרנציאלי" and st.session_state.user_role == "מורה":
     st.markdown('<span class="room-badge-pill" style="background:#f3e8ff; color:#6b21a8;">🪜 Differentiated Assessment</span>', unsafe_allow_html=True)
     st.title("מחולל מבדק דיפרנציאלי ב-3 רמות")
     st.caption("יצירת תרגול המותאם לכיתה הטרוגנית: רמת בסיס, רמת ליבה ורמת אתגר ומצוינות.")
@@ -1600,8 +1498,8 @@ elif st.session_state.current_room == "מבדק דיפרנציאלי":
         else:
             st.warning("נא להזין מקצוע ונושא.")
 
-# ----------------- חדר: פתיחת שיעור מסקרנת -----------------
-elif st.session_state.current_room == "פתיחת שיעור":
+# ----------------- חדר: פתיחת שיעור מסקרנת (רק למורה) -----------------
+elif st.session_state.current_room == "פתיחת שיעור" and st.session_state.user_role == "מורה":
     st.markdown('<span class="room-badge-pill" style="background:#ccfbf1; color:#0f766e;">💡 5-Minute Class Hook</span>', unsafe_allow_html=True)
     st.title("מחולל פתיחת שיעור מסקרנת (Hook)")
     st.caption("רעיונות להפעלות של 5 דקות בתחילת השיעור שמעוררות עניין וסקרנות בקרב התלמידים.")
@@ -1636,8 +1534,8 @@ elif st.session_state.current_room == "פתיחת שיעור":
         else:
             st.warning("נא להזין מקצוע ונושא.")
 
-# ----------------- חדר: מכתב להנהלה -----------------
-elif st.session_state.current_room == "הנהלה":
+# ----------------- חדר: מכתב להנהלה (רק למורה) -----------------
+elif st.session_state.current_room == "הנהלה" and st.session_state.user_role == "מורה":
     st.markdown('<span class="room-badge-pill" style="background:#f1f5f9; color:#334155;">🏛️ Leadership Proposal</span>', unsafe_allow_html=True)
     st.title("מכתב רשמי להנהלת בית הספר ולצוות הייעוץ")
     
@@ -1748,7 +1646,7 @@ elif st.session_state.current_room == "רווחה":
             timer_placeholder.markdown('<div style="font-size:2.8rem; font-weight:900; color:#0f2b5c; text-align:center; margin-bottom:8px;">25:00</div>', unsafe_allow_html=True)
 
 # ----------------- שאר החדרים -----------------
-elif st.session_state.current_room == "מערכי שיעור":
+elif st.session_state.current_room == "מערכי שיעור" and st.session_state.user_role == "מורה":
     st.markdown('<span class="room-badge-pill" style="background:#e0e7ff; color:#4338ca;">⏱️ 45 Min Lesson Plan</span>', unsafe_allow_html=True)
     st.title("מחולל מערך שיעור ממוקד")
     l_sub = st.text_input("מקצוע השיעור:")
@@ -1761,7 +1659,7 @@ elif st.session_state.current_room == "מערכי שיעור":
                 st.markdown(f'<div class="room-content-card">{res_plan.text}</div>', unsafe_allow_html=True)
                 st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_plan.text)}" target="_blank">📲 שתף מערך שיעור בוואטסאפ</a>', unsafe_allow_html=True)
 
-elif st.session_state.current_room == "בחנים ומחוונים":
+elif st.session_state.current_room == "בחנים ומחוונים" and st.session_state.user_role == "מורה":
     st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📝 Assessment & Rubric</span>', unsafe_allow_html=True)
     st.title("מחולל בוחן כיתתי + מחוון משרד החינוך")
     q_sub = st.text_input("מקצוע הבוחן:")
