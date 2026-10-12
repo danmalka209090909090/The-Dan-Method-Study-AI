@@ -9,7 +9,6 @@ import re
 import time
 import urllib.parse
 import hashlib
-import random
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -24,6 +23,14 @@ ALLOWED_SCHOOL_DOMAINS = [
     "k12.gov.il"
 ]
 
+# רשימת התלמידים המאושרים מראש לפיילוט (תוכל להוסיף כאן כל כתובת מייל)
+INITIAL_APPROVED_EMAILS = [
+    "dan.malka@tichonoz.org.il",
+    "danmalka2090@gmail.com",
+    "student@tichonoz.org.il",
+    "pilot@tichonoz.org.il"
+]
+
 st.set_page_config(
     page_title="The Dan Method | לומדים. מתקדמים.",
     page_icon="🎓",
@@ -31,7 +38,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# עיצוב מותאם Rubik ומותאם באופן אחיד לווינדוס, מק ומובייל
+# עיצוב מותאם Rubik ומותאם לווינדוס, מק ומובייל
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
@@ -353,56 +360,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------- פונקציית שליחת אימייל חסינת חסימות דרך HTTPS -----------------
-def send_email_otp(recipient_email, code):
-    api_key_resend = st.secrets.get("RESEND_API_KEY", "")
-    
-    if not api_key_resend:
-        return False, "מפתח RESEND_API_KEY אינו מוגדר ב-Secrets של Streamlit."
-    
-    url = "https://api.resend.com/emails"
-    headers = {
-        "Authorization": f"Bearer {api_key_resend}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "from": "The Dan Method <onboarding@resend.dev>",
-        "to": [recipient_email],
-        "subject": f"{code} - קוד האימות שלך ל-The Dan Method",
-        "html": f"""
-        <div style="direction: rtl; font-family: sans-serif; padding: 20px; color: #0f2b5c;">
-            <h2>שלום!</h2>
-            <p>קוד האימות החד-פעמי שלך לכניסה למערכת The Dan Method הוא:</p>
-            <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #2563eb; margin: 20px 0;">
-                {code}
-            </div>
-            <p>הקוד תקף לשימוש מיידי בלבד.</p>
-            <br>
-            <p>בהצלחה בלימודים!<br><b>צוות The Dan Method</b></p>
-        </div>
-        """
-    }
-    
-    try:
-        response = requests.post(url, headers=headers, json=payload, timeout=10)
-        if response.status_code in [200, 201]:
-            return True, "הקוד נשלח בהצלחה!"
-        else:
-            return False, response.text
-    except Exception as e:
-        return False, str(e)
-
 # ----------------- משתני מצב -----------------
+if "approved_emails" not in st.session_state:
+    st.session_state.approved_emails = set(INITIAL_APPROVED_EMAILS)
+if "access_requests" not in st.session_state:
+    st.session_state.access_requests = []
 if "teacher_current_code" not in st.session_state:
     st.session_state.teacher_current_code = DEFAULT_TEACHER_CODE
 if "user_authenticated" not in st.session_state:
     st.session_state.user_authenticated = False
-if "otp_sent" not in st.session_state:
-    st.session_state.otp_sent = False
-if "generated_otp" not in st.session_state:
-    st.session_state.generated_otp = None
-if "pending_user_data" not in st.session_state:
-    st.session_state.pending_user_data = {}
 if "user_role" not in st.session_state:
     st.session_state.user_role = "תלמיד"
 if "user_email" not in st.session_state:
@@ -438,97 +404,96 @@ if "reviews" not in st.session_state:
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה נקודות!"}
     ]
 
-# ----------------- מסך אימות והתחברות -----------------
+# ----------------- מסך אימות וכניסה מאובטח (ללא תקלות שרת) -----------------
 if not st.session_state.user_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 30px auto; border-top: 5px solid #0f2b5c;">
             <div style="font-size: 46px; margin-bottom: 6px;">🎓</div>
             <h2 style="color: #0f2b5c; margin: 0 0 6px 0; font-weight: 800;">The Dan Method</h2>
             <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 18px;">
-                כניסה מאובטחת באמצעות קוד אימות למייל
+                מרחב הלמידה הבית-ספרי המאובטח
             </p>
         </div>
     """, unsafe_allow_html=True)
     
     col_l1, col_l2, col_l3 = st.columns([1, 1.4, 1])
     with col_l2:
-        if not st.session_state.otp_sent:
-            chosen_type = st.radio("סוג משתמש:", ["תלמיד/ה 🎓", "מורה / איש צוות 🧑‍🏫"], horizontal=True)
-            is_teacher = "מורה" in chosen_type
+        chosen_type = st.radio("סוג משתמש:", ["תלמיד/ה 🎓", "מורה / איש צוות 🧑‍🏫"], horizontal=True)
+        is_teacher = "מורה" in chosen_type
 
-            with st.form("step1_login_form"):
-                in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")
-                allow_guest = st.checkbox("אני מבית ספר אחר (פיילוט)")
-                in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
-                
-                st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:6px;'>בחר אווטאר:</div>", unsafe_allow_html=True)
-                avatar_list = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🏫 מורה", "🔬 חוקר"]
-                in_avatar = st.selectbox("אווטאר:", avatar_list, index=6 if is_teacher else 0, label_visibility="collapsed")
-                
-                teacher_pass_input = ""
-                if is_teacher:
-                    st.markdown("---")
-                    teacher_pass_input = st.text_input("קוד גישה למורה:", type="password", placeholder="הזן סיסמת מורה...")
+        with st.form("clean_auth_form"):
+            in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")
+            allow_guest = st.checkbox("אני מבית ספר אחר (פיילוט)")
+            in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
+            
+            st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:6px;'>בחר אווטאר:</div>", unsafe_allow_html=True)
+            avatar_list = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🏫 מורה", "🔬 חוקר"]
+            in_avatar = st.selectbox("אווטאר:", avatar_list, index=6 if is_teacher else 0, label_visibility="collapsed")
+            
+            teacher_pass_input = ""
+            if is_teacher:
+                st.markdown("---")
+                teacher_pass_input = st.text_input("קוד גישה למורה:", type="password", placeholder="הזן סיסמת מורה...")
 
-                btn_send_code = st.form_submit_button("שלח לי קוד אימות למייל 📩", use_container_width=True)
-                if btn_send_code:
-                    email_clean = in_email.strip().lower()
-                    domain_part = email_clean.split("@")[-1] if "@" in email_clean else ""
-                    
-                    if not email_clean or "@" not in email_clean:
-                        st.error("נא להזין כתובת אימייל תקינה.")
-                    elif not allow_guest and not any(domain_part == d or domain_part.endswith("." + d) for d in ALLOWED_SCHOOL_DOMAINS):
-                        st.error("האימייל אינו שייך לבית ספר מאושר. יש להשתמש בחשבון בית ספרי (למשל: @tichonoz.org.il) או לסמן פיילוט.")
-                    elif not in_name.strip():
-                        st.error("נא להזין שם או כינוי לתצוגה.")
-                    elif is_teacher and teacher_pass_input.strip() != st.session_state.teacher_current_code:
+            btn_login = st.form_submit_button("כניסה למערכת 🚀", use_container_width=True)
+            if btn_login:
+                email_clean = in_email.strip().lower()
+                domain_part = email_clean.split("@")[-1] if "@" in email_clean else ""
+                
+                if not email_clean or "@" not in email_clean:
+                    st.error("נא להזין כתובת אימייל תקינה.")
+                elif not allow_guest and not any(domain_part == d or domain_part.endswith("." + d) for d in ALLOWED_SCHOOL_DOMAINS):
+                    st.error("האימייל אינו שייך לדומיין בית ספרי מאושר (@tichonoz.org.il).")
+                elif not in_name.strip():
+                    st.error("נא להזין שם או כינוי לתצוגה.")
+                elif is_teacher:
+                    if teacher_pass_input.strip() != st.session_state.teacher_current_code:
                         st.error("קוד גישה למורה שגוי.")
                     else:
-                        code_val = str(random.randint(1000, 9999))
-                        with st.spinner("שולח קוד אימות לתיבת המייל שלך..."):
-                            success, msg_err = send_email_otp(email_clean, code_val)
-                            if success:
-                                st.session_state.generated_otp = code_val
-                                st.session_state.pending_user_data = {
-                                    "email": email_clean,
-                                    "name": in_name.strip(),
-                                    "avatar": in_avatar.split()[0],
-                                    "role": "מורה" if is_teacher else "תלמיד"
-                                }
-                                st.session_state.otp_sent = True
-                                st.rerun()
-                            else:
-                                st.error(f"שגיאה בשליחת המייל: {msg_err}")
-
-        else:
-            p_data = st.session_state.pending_user_data
-            st.info(f"קוד אימות בן 4 ספרות נשלח ישירות לתיבת המייל שלך: **{p_data['email']}**\n\nפתח את המייל והזן את הקוד שקיבלת.")
-
-            with st.form("step2_otp_form"):
-                entered_otp = st.text_input("הזן את 4 ספרות הקוד שנשלחו למייל:", placeholder="הזן 4 ספרות...")
-                col_otp_btn1, col_otp_btn2 = st.columns(2)
-                with col_otp_btn1:
-                    btn_verify = st.form_submit_button("אמת קוד והתחבר 🚀", use_container_width=True)
-                with col_otp_btn2:
-                    btn_back = st.form_submit_button("חזור לעריכת מייל", use_container_width=True)
-
-                if btn_verify:
-                    if entered_otp.strip() == st.session_state.generated_otp:
-                        st.session_state.user_email = p_data["email"]
-                        st.session_state.user_name = p_data["name"]
-                        st.session_state.user_avatar = p_data["avatar"]
-                        st.session_state.user_role = p_data["role"]
+                        st.session_state.user_email = email_clean
+                        st.session_state.user_name = in_name.strip()
+                        st.session_state.user_avatar = in_avatar.split()[0]
+                        st.session_state.user_role = "מורה"
                         st.session_state.user_authenticated = True
                         st.session_state.current_room = "דף הבית"
-                        st.success(f"אימות הושלם בהצלחה! ברוך הבא {p_data['name']}.")
+                        st.success(f"שלום {st.session_state.user_name}! נכנסים למרחב ההוראה...")
+                        time.sleep(0.5)
+                        st.rerun()
+                else:
+                    # בדיקת רשימת תלמידים מורשים
+                    if allow_guest or email_clean in st.session_state.approved_emails:
+                        st.session_state.user_email = email_clean
+                        st.session_state.user_name = in_name.strip()
+                        st.session_state.user_avatar = in_avatar.split()[0]
+                        st.session_state.user_role = "תלמיד"
+                        st.session_state.user_authenticated = True
+                        st.session_state.current_room = "דף הבית"
+                        st.success(f"אימות בית-ספרי אומת בהצלחה! ברוך הבא {st.session_state.user_name}.")
                         time.sleep(0.5)
                         st.rerun()
                     else:
-                        st.error("קוד אימות שגוי. בדוק שוב את תיבת הדואר שלך.")
-                elif btn_back:
-                    st.session_state.otp_sent = False
-                    st.session_state.generated_otp = None
-                    st.rerun()
+                        st.error("⚠️ כתובת אימייל זו אינה מופיעה ברשימת התלמידים המאושרים לפיילוט.")
+                        st.session_state["pending_req_email"] = email_clean
+                        st.session_state["pending_req_name"] = in_name.strip()
+
+        # אם תלמיד לא מאושר ניסה להיכנס — מציג כפתור בקשת הצטרפות
+        if "pending_req_email" in st.session_state and not st.session_state.user_authenticated:
+            st.markdown("""
+                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:14px; text-align:center; margin-top:12px;">
+                    <div style="font-weight:700; color:#1e40af; font-size:0.95rem;">מעוניין להצטרף לפיילוט?</div>
+                    <div style="color:#64748b; font-size:0.85rem; margin-bottom:10px;">שלח בקשת הצטרפות לרכזת השכבה לאישור מהיר:</div>
+                </div>
+            """, unsafe_allow_html=True)
+            if st.button("📩 שלח בקשת אישור כניסה לרכזת", use_container_width=True):
+                req_item = {
+                    "email": st.session_state["pending_req_email"],
+                    "name": st.session_state["pending_req_name"],
+                    "time": time.strftime("%H:%M")
+                }
+                st.session_state.access_requests.append(req_item)
+                st.success("✅ בקשתך נשלחה ונרשמה בהצלחה! לאחר אישור הרכזת תוכל להיכנס מיד.")
+                del st.session_state["pending_req_email"]
+
     st.stop()
 
 api_key = st.secrets.get("GEMINI_API_KEY", "")
@@ -636,8 +601,6 @@ with st.sidebar:
     
     if st.button("🚪 התנתק / החלף משתמש", use_container_width=True):
         st.session_state.user_authenticated = False
-        st.session_state.otp_sent = False
-        st.session_state.generated_otp = None
         st.session_state.user_role = "תלמיד"
         st.session_state.current_room = "דף הבית"
         st.rerun()
@@ -659,6 +622,29 @@ with st.sidebar:
                     else:
                         st.session_state.teacher_current_code = new_pass.strip()
                         st.success("הסיסמה עודכנה בהצלחה!")
+
+        with st.expander("👥 ניהול אישורי תלמידים לפיילוט"):
+            st.markdown("<b>הוסף אימייל מורשה חדש:</b>", unsafe_allow_html=True)
+            new_student_email = st.text_input("אימייל תלמיד להוספה:", placeholder="student@tichonoz.org.il", key="add_st_email")
+            if st.button("➕ הוסף תלמיד לרשימה המורשית"):
+                if new_student_email.strip():
+                    st.session_state.approved_emails.add(new_student_email.strip().lower())
+                    st.success(f"האימייל {new_student_email} אושר בהצלחה!")
+                    time.sleep(0.5)
+                    st.rerun()
+
+            if st.session_state.access_requests:
+                st.markdown("---")
+                st.markdown("<b>בקשות הצטרפות ממתינות:</b>", unsafe_allow_html=True)
+                for req in list(st.session_state.access_requests):
+                    col_req_info, col_req_act = st.columns([2, 1])
+                    with col_req_info:
+                        st.write(f"• **{req['name']}** ({req['email']})")
+                    with col_req_act:
+                        if st.button("אשר ✅", key=f"app_{req['email']}"):
+                            st.session_state.approved_emails.add(req['email'])
+                            st.session_state.access_requests.remove(req)
+                            st.rerun()
 
     st.markdown("---")
     st.subheader("👤 הפרופיל הלימודי")
