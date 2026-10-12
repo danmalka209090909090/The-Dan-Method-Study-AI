@@ -110,19 +110,6 @@ st.markdown("""
         letter-spacing: 1.2px;
     }
 
-    .user-profile-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        color: #0f2b5c;
-    }
-
     .hero-banner {
         background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.92)), 
                     url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
@@ -171,6 +158,34 @@ st.markdown("""
         align-items: center;
         justify-content: center;
         font-size: 20px;
+    }
+
+    .compare-card-learnit {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        padding: 26px 30px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+    }
+    .compare-table-learnit {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 14px;
+        text-align: right;
+    }
+    .compare-table-learnit th {
+        padding: 14px;
+        border-bottom: 2px solid #f1f5f9;
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: #475569;
+    }
+    .compare-table-learnit td {
+        padding: 16px 14px;
+        border-bottom: 1px solid #f8fafc;
+        font-size: 0.95rem;
+        line-height: 1.6;
     }
 
     .method-card-learnit {
@@ -442,7 +457,7 @@ if "reviews" not in st.session_state:
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה נקודות!"}
     ]
 
-# מסך כניסה למשתמש
+# מסך כניסה
 if not st.session_state.user_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 40px auto; border-top: 5px solid #2563eb;">
@@ -806,6 +821,57 @@ if st.session_state.current_room == "דף הבית":
                     <div style="color:#64748b; font-size:0.8rem;">מהיסודי ועד הבגרות</div>
                 </div>
             </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # טבלת ההשוואה מעל הסיפור הקצר
+    st.markdown("""
+        <div class="compare-card-learnit">
+            <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.35rem; font-weight: 800;">למה The Dan Method ולא סתם בינה מלאכותית רגילה?</h3>
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 12px;">ChatGPT ודגמי AI רגילים לא מכירים את בתי הספר בישראל ומבזבזים לך זמן. הנה ההבדל:</p>
+            <table class="compare-table-learnit">
+                <thead>
+                    <tr>
+                        <th style="width: 28%;">תכונה</th>
+                        <th style="width: 36%; color: #2563eb;">🎓 The Dan Method</th>
+                        <th style="width: 36%; color: #64748b;">🤖 ChatGPT / מודל רגיל</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 700; color: #0f172a;">התאמה למערכת החינוך</td>
+                        <td style="color: #16a34a; font-weight: 700;">✔️ מכויל בול לפי מחווני בגרות, הקבצות וכיתות ז'-י"ב בישראל</td>
+                        <td style="color: #64748b;">❌ תשובות גנריות באנגלית שתורגמו, לא מכיר מחווני בדיקה</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #0f172a;">אורך המענה והיעילות</td>
+                        <td style="color: #16a34a; font-weight: 700;">✔️ מצב תכל'ס (No Yap) – פירוק ממוקד ב-3 שורות בדיוק למה שצריך</td>
+                        <td style="color: #64748b;">❌ פסקאות פתיחה וסיום ארוכות, חפירות ומריחת זמן מיותרת</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #0f172a;">בדיקת מבחנים וציונים</td>
+                        <td style="color: #16a34a; font-weight: 700;">✔️ חישוב ציון אמיתי מתוך 100 עם הורדת נקודות לפי נימוקים חסרים</td>
+                        <td style="color: #64748b;">❌ סתם מחמיא לתשובה ולא יודע לתת ציון בגרות אמיתי ומדויק</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #0f172a;">חילוץ רגע לפני מבחן</td>
+                        <td style="color: #16a34a; font-weight: 700;">✔️ שליף 60 שניות, מצב חילוץ בלילה ורנטגן שגיאות בוחנים</td>
+                        <td style="color: #64748b;">❌ מייצר טקסטים ענקיים שבלתי אפשרי לקרוא תחת לחץ זמן</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # הסיפור הקצר על השיטה
+    st.markdown("""
+        <div class="method-card-learnit">
+            <div class="method-title-badge">⚡ על השיטה של The Dan Method</div>
+            <p style="font-size: 1.05rem; color: #334155; line-height: 1.75; margin: 0;">
+                נמאס לשבת שעות מול סיכומים ארוכים, מורים שמדברים מסביב ואתרי לימוד שנראים כמו שנת 2005.<br>
+                <b>The Dan Method</b> נבנה במטרה אחת ברורה: לתת לתלמידי ומורי ישראל את הדרך הקצרה, המדויקת והחדה ביותר להצלחה במבחנים ובבגרויות.<br>
+                במקום ללמוד 4 שעות ולזכור חצי – אנחנו מפרקים כל נושא לשלבי ברזל, מסננים חפירות מיותרות (מצב תכל'ס), ומלמדים אותך בדיוק לפי מה שהבוחן מחפש בעין בטופס הבדיקה.
+            </p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -1555,6 +1621,68 @@ elif st.session_state.current_room == "הנהלה":
     """, unsafe_allow_html=True)
     st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(letter_display)}" target="_blank">📲 שתף מכתב להנהלה בוואטסאפ</a>', unsafe_allow_html=True)
 
+# ----------------- חדר: רווחה (כולל טיימר פוקוס פעיל וספירה לאחור) -----------------
+elif st.session_state.current_room == "רווחה":
+    st.markdown('<span class="room-badge-pill" style="background:#ffedd5; color:#c2410c;">🧘 Wellbeing & Calm</span>', unsafe_allow_html=True)
+    st.title("מרחב רווחה, ויסות והפחתת לחץ")
+    col_w1, col_w2 = st.columns(2)
+    with col_w1:
+        st.markdown("""
+            <div class="room-content-card">
+                <h4 style="margin-top:0; color:#0f2b5c;">תרגיל נשימה להורדת דופק (Box Breathing)</h4>
+                <p>1. שאיפה (4 שנ') 🌬️ | 2. החזקה (4 שנ') ⏸️ | 3. נשיפה (4 שנ') 💨 | 4. המתנה (4 שנ') 🧘</p>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("הפעל טיימר נשימה של 30 שניות ⏱️"):
+            prog = st.progress(0)
+            status_text = st.empty()
+            phases = ["שאף מהאף... 🌬️", "החזק... ⏸️", "נשוף לאט... 💨", "המתן ברוגע... 🧘"]
+            for i in range(30):
+                time.sleep(1)
+                prog.progress((i + 1) / 30)
+                status_text.text(phases[i % 4])
+            st.success("מעולה! עכשיו המוח רגוע ומוכן לקלוט חומר בצורה חדה.")
+
+    with col_w2:
+        st.markdown("""
+            <div class="room-content-card">
+                <h4 style="margin-top:0; color:#0f2b5c;">טיימר פוקוס עמוק (Deep Focus - Pomodoro)</h4>
+                <p style="color:#64748b;">למידה ממוקדת של 25 דקות ללא הסחות דעת:</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        timer_placeholder = st.empty()
+        timer_prog = st.empty()
+        
+        col_btn_t1, col_btn_t2 = st.columns(2)
+        with col_btn_t1:
+            start_focus = st.button("▶️ הפעל טיימר פוקוס (25 דקות)", use_container_width=True)
+        with col_btn_t2:
+            demo_focus = st.button("⚡ דמו מהיר (10 שניות לבדיקה)", use_container_width=True)
+
+        if start_focus:
+            total_sec = 25 * 60
+            for sec in range(total_sec, 0, -1):
+                mins = sec // 60
+                secs = sec % 60
+                timer_placeholder.markdown(f'<div style="font-size:2.8rem; font-weight:900; color:#0f2b5c; text-align:center; margin-bottom:8px;">{mins:02d}:{secs:02d}</div>', unsafe_allow_html=True)
+                timer_prog.progress((total_sec - sec) / total_sec)
+                time.sleep(1)
+            st.balloons()
+            st.success("כל הכבוד! סיימת 25 דקות של פוקוס מושלם.")
+        elif demo_focus:
+            total_sec = 10
+            for sec in range(total_sec, 0, -1):
+                mins = sec // 60
+                secs = sec % 60
+                timer_placeholder.markdown(f'<div style="font-size:2.8rem; font-weight:900; color:#0f2b5c; text-align:center; margin-bottom:8px;">{mins:02d}:{secs:02d}</div>', unsafe_allow_html=True)
+                timer_prog.progress((total_sec - sec) / total_sec)
+                time.sleep(1)
+            st.balloons()
+            st.success("בדיקת טיימר הושלמה בהצלחה!")
+        else:
+            timer_placeholder.markdown('<div style="font-size:2.8rem; font-weight:900; color:#0f2b5c; text-align:center; margin-bottom:8px;">25:00</div>', unsafe_allow_html=True)
+
 # ----------------- שאר החדרים -----------------
 elif st.session_state.current_room == "מערכי שיעור":
     st.markdown('<span class="room-badge-pill" style="background:#e0e7ff; color:#4338ca;">⏱️ 45 Min Lesson Plan</span>', unsafe_allow_html=True)
@@ -1581,36 +1709,6 @@ elif st.session_state.current_room == "בחנים ומחוונים":
                 res_quiz = generate_ai(prompt_quiz)
                 st.markdown(f'<div class="room-content-card">{res_quiz.text}</div>', unsafe_allow_html=True)
                 st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_quiz.text)}" target="_blank">📲 שתף בוחן ומחוון בוואטסאפ</a>', unsafe_allow_html=True)
-
-elif st.session_state.current_room == "רווחה":
-    st.markdown('<span class="room-badge-pill" style="background:#ffedd5; color:#c2410c;">🧘 Wellbeing & Calm</span>', unsafe_allow_html=True)
-    st.title("מרחב רווחה, ויסות והפחתת לחץ")
-    col_w1, col_w2 = st.columns(2)
-    with col_w1:
-        st.markdown("""
-            <div class="room-content-card">
-                <h4 style="margin-top:0; color:#0f2b5c;">תרגיל נשימה להורדת דופק (Box Breathing)</h4>
-                <p>1. שאיפה (4 שנ') 🌬️ | 2. החזקה (4 שנ') ⏸️ | 3. נשיפה (4 שנ') 💨 | 4. המתנה (4 שנ') 🧘</p>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("הפעל טיימר נשימה של 30 שניות ⏱️"):
-            prog = st.progress(0)
-            status_text = st.empty()
-            phases = ["שאף מהאף... 🌬️", "החזק... ⏸️", "נשוף לאט... 💨", "המתן ברוגע... 🧘"]
-            for i in range(30):
-                time.sleep(1)
-                prog.progress((i + 1) / 30)
-                status_text.text(phases[i % 4])
-            st.success("מעולה! עכשיו המוח רגוע ומוכן לקלוט חומר בצורה חדה.")
-
-    with col_w2:
-        st.markdown("""
-            <div class="room-content-card">
-                <h4 style="margin-top:0; color:#0f2b5c;">טיימר פוקוס עמוק (Deep Focus)</h4>
-                <p style="color:#64748b;">למידה ממוקדת של 25 דקות ללא הסחות דעת:</p>
-                <div style="font-size:2.8rem; font-weight:900; color:#0f2b5c; text-align:center;">25:00</div>
-            </div>
-        """, unsafe_allow_html=True)
 
 elif st.session_state.current_room == "חילוץ לילה":
     st.markdown('<span class="room-badge-pill" style="background:#fce7f3; color:#be185d;">🆘 Night Shift Rescue</span>', unsafe_allow_html=True)
@@ -1723,7 +1821,7 @@ elif st.session_state.current_room == "מבחני דמה":
         st.markdown(f'<div class="room-content-card">{json.dumps(st.session_state.mock_exam_data, ensure_ascii=False, indent=2)}</div>', unsafe_allow_html=True)
 
 elif st.session_state.current_room == "מעבדת מתמטיקה":
-    st.markdown('<span class="room-badge-pill" style="background:#f3e8ff; color:#6b21a8;">𮀮 Step-by-Step Lab</span>', unsafe_allow_html=True)
+    st.markdown('<span class="room-badge-pill" style="background:#f3e8ff; color:#6b21a8;">🧮 Step-by-Step Lab</span>', unsafe_allow_html=True)
     st.title("מעבדת פירוק מתמטיקה ומדעים")
     m_topic = st.text_input("נושא:")
     m_input = st.text_area("תרגיל:")
