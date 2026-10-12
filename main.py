@@ -16,10 +16,17 @@ from gtts import gTTS
 
 DEFAULT_TEACHER_CODE = "DAN100"
 
-# רשימה סגורה לפיילוט: המייל שלך מורשה ישירות
+# רשימה סגורה לפיילוט
 APPROVED_STUDENT_EMAILS = [
     "dan.malka@tichonoz.org.il",
     "danmalka2090@gmail.com"
+]
+
+ALLOWED_SCHOOL_DOMAINS = [
+    "tichonoz.org.il",
+    "school.org.il",
+    "msh.org.il",
+    "k12.gov.il"
 ]
 
 st.set_page_config(
@@ -29,7 +36,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# הגדרות עיצוב אחידות ומותאמות ב-100% למק (Safari), ווינדוס ומובייל
+# הגדרות עיצוב אחידות המותאמות לסביבות Mac, Windows ומובייל
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
@@ -62,7 +69,6 @@ st.markdown("""
         margin: 0 auto;
     }
 
-    /* התאמת שדות קלט למק/ספארי */
     input, select, textarea {
         -webkit-appearance: none !important;
         appearance: none !important;
@@ -408,7 +414,7 @@ if "reviews" not in st.session_state:
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה נקודות!"}
     ]
 
-# ----------------- מסך אימות וכניסה (נקי, יציב ותואם Mac) -----------------
+# ----------------- מסך כניסה מאובטח -----------------
 if not st.session_state.user_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 30px auto; border-top: 5px solid #0f2b5c;">
@@ -464,7 +470,6 @@ if not st.session_state.user_authenticated:
                         time.sleep(0.5)
                         st.rerun()
                 else:
-                    # בדיקת רשימת תלמידים מורשים
                     if allow_guest or email_clean in st.session_state.approved_emails:
                         st.session_state.user_email = email_clean
                         st.session_state.user_name = in_name.strip()
@@ -655,7 +660,6 @@ with st.sidebar:
             "מדעי החברה / משפטים"
         ])
     
-    st.markdown("---")
     no_yap = st.toggle("מצב תכל'ס (מענה ממוקד ולעניין)", value=True)
 
 anti_yap_rule = "השב ישירות לתכל'ס, ללא פסקאות פתיחה או סיום מיותרות." if no_yap else ""
@@ -691,7 +695,7 @@ with col_nav_btn:
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
-# ----------------- דף הבית (עם כותרות בוגרות ומקצועיות) -----------------
+# ----------------- דף הבית -----------------
 if st.session_state.current_room == "דף הבית":
     mode_title = "מרחב למידה והוראה מותאם אישית"
     mode_sub = "פלטפורמה פדגוגית חכמה לתרגול ממוקד, ליווי לימודי וסגירת פערים לימודיים בתיכון עוז."
@@ -770,56 +774,100 @@ if st.session_state.current_room == "דף הבית":
         </div>
     """, unsafe_allow_html=True)
 
-    # טבלת השוואה פדגוגית
-    st.markdown("""
-        <div class="compare-card-learnit">
-            <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.35rem; font-weight: 800;">הערך המוסף של The Dan Method מול כלי בינה מלאכותית כלליים</h3>
-            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 12px;">מערכת ייעודית המותאמת לתוכנית הלימודים, מחווני הבגרות ודרישות משרד החינוך בישראל:</p>
-            <table class="compare-table-learnit">
-                <thead>
-                    <tr>
-                        <th style="width: 28%;">מדד פדגוגי</th>
-                        <th style="width: 36%; color: #2563eb;">🎓 The Dan Method</th>
-                        <th style="width: 36%; color: #64748b;">🤖 מודלים כלליים (ChatGPT)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="font-weight: 700; color: #0f172a;">התאמה לתוכנית הלימודים</td>
-                        <td style="color: #16a34a; font-weight: 700;">✔️ כיול מלא לפי מחווני בגרות, הקבצות וכיתות ז'-י"ב בישראל</td>
-                        <td style="color: #64748b;">❌ מענה גנרי ומתורגם שאינו מותאם למחווני הבדיקה של משרד החינוך</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: 700; color: #0f172a;">מיקוד ויעילות זמן</td>
-                        <td style="color: #16a34a; font-weight: 700;">✔️ מענה מדורג וממוקד ללא עומס קוגניטיבי מיותר</td>
-                        <td style="color: #64748b;">❌ מלל ארוך ומפוזר הדורש סינון ומאריך את זמן הלמידה</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: 700; color: #0f172a;">הערכה ומשוב מדויק</td>
-                        <td style="color: #16a34a; font-weight: 700;">✔️ מחוון ניקוד רשמי והצבעה מנומקת על חוסרים בתשובה</td>
-                        <td style="color: #64748b;">❌ משוב כללי ללא הערכת ניקוד אמינה ומבוקרת</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight: 700; color: #0f172a;">כלים ממוקדים לקראת בחינה</td>
-                        <td style="color: #16a34a; font-weight: 700;">✔️ תמציות חזרה מהירות, ניתוח מוקשי בחינה ומנגנון ויסות לחץ</td>
-                        <td style="color: #64748b;">❌ חוסר יכולת לחלץ תוכנית למידה ממוקדת בזמן קצר</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    """, unsafe_allow_html=True)
+    # טבלת השוואה וכרטיסיית שיטה מותאמת תפקיד: למורה מול לתלמיד
+    if st.session_state.user_role == "מורה":
+        st.markdown("""
+            <div class="compare-card-learnit">
+                <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.35rem; font-weight: 800;">הערך הפדגוגי לצוות ההוראה: The Dan Method לעומת בינה מלאכותית רגילה</h3>
+                <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 12px;">כלים כלליים מייצרים תוכן עמוס הדורש עריכה ממושכת. המערכת מכוילת ישירות לשגרת העבודה של מורים בישראל:</p>
+                <table class="compare-table-learnit">
+                    <thead>
+                        <tr>
+                            <th style="width: 28%;">מדד מקצועי להוראה</th>
+                            <th style="width: 36%; color: #2563eb;">🎓 The Dan Method (מרחב מורה)</th>
+                            <th style="width: 36%; color: #64748b;">🤖 מודלים כלליים (ChatGPT)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 700; color: #0f172a;">הכנת מערכי שיעור ומצגות</td>
+                            <td style="color: #16a34a; font-weight: 700;">✔️ חלוקה מתוזמנת ל-45 דקות מדורגות ויצוא ישיר לקובץ PowerPoint</td>
+                            <td style="color: #64748b;">❌ פסקאות טקסט כלליות ללא תזמון שיעור וללא קובץ להורדה</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: #0f172a;">בניית בחנים ומחוונים רשמיים</td>
+                            <td style="color: #16a34a; font-weight: 700;">✔️ מחוון ניקוד של משרד החינוך עם חלוקת נקודות ופתרון מלא למורה</td>
+                            <td style="color: #64748b;">❌ שאלות שטחיות ללא מחוון בדיקה וללא נימוקים לפי דרישות מפמ"ר</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: #0f172a;">הוראה דיפרנציאלית בכיתה</td>
+                            <td style="color: #16a34a; font-weight: 700;">✔️ חלוקה מובנית ל-3 רמות קושי (בסיס, ליבה, מצוינות) במשימה אחת</td>
+                            <td style="color: #64748b;">❌ רמת קושי אחידה שאינה מותאמת לכיתות הטרוגניות</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: #0f172a;">חיסכון בזמן הערכה ודיווח</td>
+                            <td style="color: #16a34a; font-weight: 700;">✔️ ניסוח משובים לתעודות והודעות הורים מותאמות להעתקה למשו"ב ב-10 שניות</td>
+                            <td style="color: #64748b;">❌ ניסוחים רובוטיים או מתורגמים שאינם מתאימים לשפה בית-ספרית</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="method-card-learnit">
+                <div class="method-title-badge">🧑‍🏫 העצמת מורים וחיסכון בשעות עבודה שבועיות</div>
+                <p style="font-size: 1.05rem; color: #334155; line-height: 1.75; margin: 0;">
+                    <b>The Dan Method</b> פותחה כעוזר הוראה אישי לצוות החינוכי, במטרה להחזיר למורים את הזמן היקר שמתבזבז על בירוקרטיה והכנת דפי עבודה.<br>
+                    במקום שעות של כתיבת מחוונים, ניסוח מבדקים מדורגים והכנת חומרים ליום הורים – המערכת מפיקה תוצרים פדגוגיים מדויקים לפי תוכנית הלימודים בתוך שניות, ומאפשרת למורה להתמקד בהוראה ובליווי האישי של התלמידים.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+            <div class="compare-card-learnit">
+                <h3 style="margin-top: 0; color: #0f2b5c; font-size: 1.35rem; font-weight: 800;">הערך המוסף של The Dan Method מול כלי בינה מלאכותית כלליים</h3>
+                <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 12px;">מערכת ייעודית המותאמת לתוכנית הלימודים, מחווני הבגרות ודרישות משרד החינוך בישראל:</p>
+                <table class="compare-table-learnit">
+                    <thead>
+                        <tr>
+                            <th style="width: 28%;">מדד פדגוגי</th>
+                            <th style="width: 36%; color: #2563eb;">🎓 The Dan Method</th>
+                            <th style="width: 36%; color: #64748b;">🤖 מודלים כלליים (ChatGPT)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 700; color: #0f172a;">התאמה לתוכנית הלימודים</td>
+                            <td style="color: #16a34a; font-weight: 700;">✔️ כיול מלא לפי מחווני בגרות, הקבצות וכיתות ז'-י"ב בישראל</td>
+                            <td style="color: #64748b;">❌ מענה גנרי ומתורגם שאינו מכיר את מחווני משרד החינוך</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: #0f172a;">מיקוד ויעילות זמן</td>
+                            <td style="color: #16a34a; font-weight: 700;">✔️ מענה מדורג וממוקד ללא עומס קוגניטיבי מיותר</td>
+                            <td style="color: #64748b;">❌ מלל ארוך ומפוזר הדורש סינון ומאריך את זמן הלמידה</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: #0f172a;">הערכה ומשוב מדויק</td>
+                            <td style="color: #16a34a; font-weight: 700;">✔️ מחוון ניקוד רשמי והצבעה מנומקת על חוסרים בתשובה</td>
+                            <td style="color: #64748b;">❌ משוב כללי ללא הערכת ניקוד אמינה ומבוקרת</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 700; color: #0f172a;">כלים ממוקדים לקראת בחינה</td>
+                            <td style="color: #16a34a; font-weight: 700;">✔️ תמציות חזרה מהירות, ניתוח מוקשי בחינה ומנגנון ויסות לחץ</td>
+                            <td style="color: #64748b;">❌ חוסר יכולת לחלץ תוכנית למידה ממוקדת בזמן קצר</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-    # סיכום השיטה הפדגוגית
-    st.markdown("""
-        <div class="method-card-learnit">
-            <div class="method-title-badge">⚡ עקרונות הליבה של The Dan Method</div>
-            <p style="font-size: 1.05rem; color: #334155; line-height: 1.75; margin: 0;">
-                פלטפורמת <b>The Dan Method</b> פותחה במטרה להנגיש למידה עצמאית, מדויקת ומבוססת הצלחה עבור תלמידי ומורי מערכת החינוך בישראל.<br>
-                המערכת מתמקדת בפירוק מיומנויות מורכבות לשלבי ביצוע ברורים, תוך הצגת הדגשים הקריטיים של בוחני הבגרות ומניעת עומס לימודי מיותר.<br>
-                השילוב בין התאמה אישית לרמת התלמיד לבין כלי עזר יעילים לצוות ההוראה מאפשר סגירת פערים מהירה והעלאת מדדי ההצלחה הכיתתיים.
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
+            <div class="method-card-learnit">
+                <div class="method-title-badge">⚡ עקרונות הליבה של The Dan Method</div>
+                <p style="font-size: 1.05rem; color: #334155; line-height: 1.75; margin: 0;">
+                    פלטפורמת <b>The Dan Method</b> פותחה במטרה להנגיש למידה עצמאית, מדויקת ומבוססת הצלחה עבור תלמידי ומורי מערכת החינוך בישראל.<br>
+                    המערכת מתמקדת בפירוק מיומנויות מורכבות לשלבי ביצוע ברורים, תוך הצגת הדגשים הקריטיים של בוחני הבגרות ומניעת עומס לימודי מיותר.<br>
+                    השילוב בין התאמה אישית לרמת התלמיד לבין כלי עזר יעילים לצוות ההוראה מאפשר סגירת פערים מהירה והעלאת מדדי ההצלחה הכיתתיים.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("""
         <div style="margin-top: 10px; margin-bottom: 12px;">
