@@ -9,6 +9,7 @@ import re
 import time
 import urllib.parse
 import hashlib
+import random
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -351,11 +352,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------- ניהול מצבי משתמש וסיסמאות -----------------
+# ----------------- משתני מצב -----------------
 if "teacher_current_code" not in st.session_state:
     st.session_state.teacher_current_code = DEFAULT_TEACHER_CODE
 if "user_authenticated" not in st.session_state:
     st.session_state.user_authenticated = False
+if "otp_sent" not in st.session_state:
+    st.session_state.otp_sent = False
+if "generated_otp" not in st.session_state:
+    st.session_state.generated_otp = None
+if "pending_user_data" not in st.session_state:
+    st.session_state.pending_user_data = {}
 if "user_role" not in st.session_state:
     st.session_state.user_role = "תלמיד"
 if "user_email" not in st.session_state:
@@ -391,59 +398,99 @@ if "reviews" not in st.session_state:
         {"name": "מאיה ר.", "grade": "כיתה י\"א (5 יח')", "rating": 5, "text": "מפרק המתמטיקה ומכתב הערעור זה גאונות. המורה קיבלה את הערעור והחזירה נקודות!"}
     ]
 
-# ----------------- מסך כניסה חכם ומבודד -----------------
+# ----------------- מסך אימות והתחברות (כולל OTP) -----------------
 if not st.session_state.user_authenticated:
     st.markdown("""
         <div class="room-content-card" style="text-align: center; max-width: 520px; margin: 30px auto; border-top: 5px solid #0f2b5c;">
             <div style="font-size: 46px; margin-bottom: 6px;">🎓</div>
-            <h2 style="color: #0f2b5c; margin: 0 0 6px 0; font-weight: 800;">ברוך הבא ל-The Dan Method</h2>
+            <h2 style="color: #0f2b5c; margin: 0 0 6px 0; font-weight: 800;">The Dan Method</h2>
             <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 18px;">
-                בחר את סוג המשתמש לכניסה:
+                כניסה מאובטחת למערכת הלימודים הבית-ספרית
             </p>
         </div>
     """, unsafe_allow_html=True)
     
     col_l1, col_l2, col_l3 = st.columns([1, 1.4, 1])
     with col_l2:
-        chosen_type = st.radio("סוג משתמש:", ["תלמיד/ה 🎓", "מורה / איש צוות 🧑‍🏫"], horizontal=True)
-        is_teacher = "מורה" in chosen_type
+        if not st.session_state.otp_sent:
+            chosen_type = st.radio("סוג משתמש:", ["תלמיד/ה 🎓", "מורה / איש צוות 🧑‍🏫"], horizontal=True)
+            is_teacher = "מורה" in chosen_type
 
-        with st.form("unified_login_form"):
-            in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")
-            allow_guest = st.checkbox("אני מבית ספר אחר (פיילוט)")
-            in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
-            
-            st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:6px;'>בחר אווטאר:</div>", unsafe_allow_html=True)
-            avatar_list = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🏫 מורה", "🔬 חוקר"]
-            in_avatar = st.selectbox("אווטאר:", avatar_list, index=6 if is_teacher else 0, label_visibility="collapsed")
-            
-            teacher_pass_input = ""
-            if is_teacher:
-                st.markdown("---")
-                teacher_pass_input = st.text_input("קוד גישה למורה:", type="password", placeholder="הזן סיסמת מורה...")
-
-            btn_submit_login = st.form_submit_button("כניסה למערכת 🚀", use_container_width=True)
-            if btn_submit_login:
-                email_clean = in_email.strip().lower()
-                domain_part = email_clean.split("@")[-1] if "@" in email_clean else ""
+            with st.form("step1_login_form"):
+                in_email = st.text_input("אימייל בית-ספרי:", placeholder="name@tichonoz.org.il")
+                allow_guest = st.checkbox("אני מבית ספר אחר (פיילוט)")
+                in_name = st.text_input("כינוי / שם לתצוגה:", placeholder="למשל: דן כהן")
                 
-                if not email_clean or "@" not in email_clean:
-                    st.error("נא להזין כתובת אימייל תקינה.")
-                elif not allow_guest and not any(domain_part == d or domain_part.endswith("." + d) for d in ALLOWED_SCHOOL_DOMAINS):
-                    st.error("האימייל אינו שייך לבית ספר מאושר. יש להשתמש בחשבון בית ספרי (למשל: @tichonoz.org.il) או לסמן פיילוט.")
-                elif not in_name.strip():
-                    st.error("נא להזין שם או כינוי לתצוגה.")
-                elif is_teacher and teacher_pass_input.strip() != st.session_state.teacher_current_code:
-                    st.error("קוד גישה למורה שגוי.")
-                else:
-                    st.session_state.user_email = email_clean
-                    st.session_state.user_name = in_name.strip()
-                    st.session_state.user_avatar = in_avatar.split()[0]
-                    st.session_state.user_role = "מורה" if is_teacher else "תלמיד"
-                    st.session_state.user_authenticated = True
-                    st.session_state.current_room = "דף הבית"
-                    st.success(f"שלום {st.session_state.user_name}! נכנסים למערכת...")
-                    time.sleep(0.5)
+                st.markdown("<div style='font-size:0.9rem; font-weight:700; color:#0f2b5c; margin-top:6px;'>בחר אווטאר:</div>", unsafe_allow_html=True)
+                avatar_list = ["👨‍🎓 תלמיד", "👩‍🎓 תלמידה", "🚀 יזם", "🧠 גאון", "⚡ מהיר", "🦉 חכם", "🧑‍🏫 מורה", "🔬 חוקר"]
+                in_avatar = st.selectbox("אווטאר:", avatar_list, index=6 if is_teacher else 0, label_visibility="collapsed")
+                
+                teacher_pass_input = ""
+                if is_teacher:
+                    st.markdown("---")
+                    teacher_pass_input = st.text_input("קוד גישה למורה:", type="password", placeholder="הזן סיסמת מורה...")
+
+                btn_send_code = st.form_submit_button("המשך לקבלת קוד אימות 📩", use_container_width=True)
+                if btn_send_code:
+                    email_clean = in_email.strip().lower()
+                    domain_part = email_clean.split("@")[-1] if "@" in email_clean else ""
+                    
+                    if not email_clean or "@" not in email_clean:
+                        st.error("נא להזין כתובת אימייל תקינה.")
+                    elif not allow_guest and not any(domain_part == d or domain_part.endswith("." + d) for d in ALLOWED_SCHOOL_DOMAINS):
+                        st.error("האימייל אינו שייך לבית ספר מאושר. יש להשתמש בחשבון בית ספרי (למשל: @tichonoz.org.il) או לסמן פיילוט.")
+                    elif not in_name.strip():
+                        st.error("נא להזין שם או כינוי לתצוגה.")
+                    elif is_teacher and teacher_pass_input.strip() != st.session_state.teacher_current_code:
+                        st.error("קוד גישה למורה שגוי.")
+                    else:
+                        code_val = str(random.randint(1000, 9999))
+                        st.session_state.generated_otp = code_val
+                        st.session_state.pending_user_data = {
+                            "email": email_clean,
+                            "name": in_name.strip(),
+                            "avatar": in_avatar.split()[0],
+                            "role": "מורה" if is_teacher else "תלמיד"
+                        }
+                        st.session_state.otp_sent = True
+                        st.rerun()
+
+        else:
+            p_data = st.session_state.pending_user_data
+            st.info(f"קוד אימות נשלח לכתובת: **{p_data['email']}**")
+            
+            # כרטיס הדמיית OTP ייעודי לבדיקה ולהצגה למנהלת
+            st.markdown(f"""
+                <div style="background:#eff6ff; border:1px dashed #2563eb; border-radius:12px; padding:12px; text-align:center; margin-bottom:12px;">
+                    <div style="font-size:0.85rem; color:#1e40af;">קוד האימות החד-פעמי שלך (OTP):</div>
+                    <div style="font-size:1.8rem; font-weight:900; letter-spacing:4px; color:#1d4ed8;">{st.session_state.generated_otp}</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+            with st.form("step2_otp_form"):
+                entered_otp = st.text_input("הזן את 4 ספרות קוד האימות:", placeholder="4 ספרות...")
+                col_otp_btn1, col_otp_btn2 = st.columns(2)
+                with col_otp_btn1:
+                    btn_verify = st.form_submit_button("אמת קוד והתחבר 🚀", use_container_width=True)
+                with col_otp_btn2:
+                    btn_back = st.form_submit_button("חזור לעריכת פרטים", use_container_width=True)
+
+                if btn_verify:
+                    if entered_otp.strip() == st.session_state.generated_otp:
+                        st.session_state.user_email = p_data["email"]
+                        st.session_state.user_name = p_data["name"]
+                        st.session_state.user_avatar = p_data["avatar"]
+                        st.session_state.user_role = p_data["role"]
+                        st.session_state.user_authenticated = True
+                        st.session_state.current_room = "דף הבית"
+                        st.success(f"אימות הושלם בהצלחה! ברוך הבא {p_data['name']}.")
+                        time.sleep(0.5)
+                        st.rerun()
+                    else:
+                        st.error("קוד אימות שגוי. נסה שוב.")
+                elif btn_back:
+                    st.session_state.otp_sent = False
+                    st.session_state.generated_otp = None
                     st.rerun()
     st.stop()
 
@@ -552,11 +599,12 @@ with st.sidebar:
     
     if st.button("🚪 התנתק / החלף משתמש", use_container_width=True):
         st.session_state.user_authenticated = False
+        st.session_state.otp_sent = False
+        st.session_state.generated_otp = None
         st.session_state.user_role = "תלמיד"
         st.session_state.current_room = "דף הבית"
         st.rerun()
 
-    # שינוי סיסמה אך ורק למורה
     if st.session_state.user_role == "מורה":
         with st.expander("🔑 שינוי סיסמת מורה"):
             with st.form("change_pass_form"):
@@ -1626,4 +1674,191 @@ elif st.session_state.current_room == "רווחה":
             for sec in range(total_sec, 0, -1):
                 mins = sec // 60
                 secs = sec % 60
-                timer_placeholder.markdown(f'<div style="font-size:2.8rem; font-weight:900; color:#
+                timer_placeholder.markdown(f'<div style="font-size:2.8rem; font-weight:900; color:#0f2b5c; text-align:center; margin-bottom:8px;">{mins:02d}:{secs:02d}</div>', unsafe_allow_html=True)
+                timer_prog.progress((total_sec - sec) / total_sec)
+                time.sleep(1)
+            st.balloons()
+            st.success("כל הכבוד! סיימת 25 דקות של פוקוס מושלם.")
+        elif demo_focus:
+            total_sec = 10
+            for sec in range(total_sec, 0, -1):
+                mins = sec // 60
+                secs = sec % 60
+                timer_placeholder.markdown(f'<div style="font-size:2.8rem; font-weight:900; color:#0f2b5c; text-align:center; margin-bottom:8px;">{mins:02d}:{secs:02d}</div>', unsafe_allow_html=True)
+                timer_prog.progress((total_sec - sec) / total_sec)
+                time.sleep(1)
+            st.balloons()
+            st.success("בדיקת טיימר הושלמה בהצלחה!")
+        else:
+            timer_placeholder.markdown('<div style="font-size:2.8rem; font-weight:900; color:#0f2b5c; text-align:center; margin-bottom:8px;">25:00</div>', unsafe_allow_html=True)
+
+# ----------------- שאר החדרים -----------------
+elif st.session_state.current_room == "מערכי שיעור" and st.session_state.user_role == "מורה":
+    st.markdown('<span class="room-badge-pill" style="background:#e0e7ff; color:#4338ca;">⏱️ 45 Min Lesson Plan</span>', unsafe_allow_html=True)
+    st.title("מחולל מערך שיעור ממוקד")
+    l_sub = st.text_input("מקצוע השיעור:")
+    l_top = st.text_input("נושא השיעור:")
+    if st.button("בנה מערך שיעור 📚", use_container_width=True):
+        if l_sub and l_top:
+            with st.spinner("בונה מערך שיעור..."):
+                prompt_plan = f"בנה מערך שיעור של 45 דק' לכיתה {chosen_grade}. מקצוע: {l_sub}, נושא: {l_top}. חלק לזמנים מדויקים: פתיחה (7 דק'), גוף (23 דק'), תרגול מדורג (10 דק'), סיכום (5 דק')."
+                res_plan = generate_ai(prompt_plan)
+                st.markdown(f'<div class="room-content-card">{res_plan.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_plan.text)}" target="_blank">📲 שתף מערך שיעור בוואטסאפ</a>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "בחנים ומחוונים" and st.session_state.user_role == "מורה":
+    st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">📝 Assessment & Rubric</span>', unsafe_allow_html=True)
+    st.title("מחולל בוחן כיתתי + מחוון משרד החינוך")
+    q_sub = st.text_input("מקצוע הבוחן:")
+    q_top = st.text_input("נושא הבוחן המדויק:")
+    if st.button("ייצר בוחן ומחוון 📄", use_container_width=True):
+        if q_sub and q_top:
+            with st.spinner("מכין שאלות ומחוון..."):
+                prompt_quiz = f"צור בוחן של 15 דקות ומחוון בדיקה לכיתה {chosen_grade}. מקצוע: {q_sub}, נושא: {q_top}. חלק 1: טופס כיתתי. חלק 2: מחוון מפורט למורה."
+                res_quiz = generate_ai(prompt_quiz)
+                st.markdown(f'<div class="room-content-card">{res_quiz.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res_quiz.text)}" target="_blank">📲 שתף בוחן ומחוון בוואטסאפ</a>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "חילוץ לילה":
+    st.markdown('<span class="room-badge-pill" style="background:#fce7f3; color:#be185d;">🆘 Night Shift Rescue</span>', unsafe_allow_html=True)
+    st.title("מצב חילוץ ב-3 בלילה")
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        panic_sub = st.text_input("מקצוע המבחן:")
+        panic_top = st.text_area("חומר המבחן:")
+    with col_p2:
+        hours_left = st.slider("שעות עד היציאה מהבית:", 1, 8, 3)
+    if st.button("🚨 הצל אותי עכשיו!", use_container_width=True):
+        if panic_sub and panic_top:
+            with st.spinner("מחלץ תוכנית הצלה..."):
+                prompt = f"תוכנית חירום לתלמיד {st.session_state.user_name} ב-{student_context}. מקצוע: {panic_sub}, חומר: {panic_top}, שעות: {hours_left}. 3 מושגי חובה, טריק הבחינה ומשפט פתיחה למאיות."
+                res = generate_ai(prompt)
+                st.markdown(f'<div class="room-content-card" style="border-right: 4px solid #be185d;">{res.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף תוכנית הצלה בוואטסאפ</a>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "רנטגן":
+    st.markdown('<span class="room-badge-pill" style="background:#e0e7ff; color:#4338ca;">🩻 Mistake X-Ray</span>', unsafe_allow_html=True)
+    st.title("רנטגן שגיאות ומלכודות בוחנים")
+    xray_topic = st.text_input("איזה נושא או תרגיל לבדוק?")
+    if st.button("חשוף מלכודות ⚡", use_container_width=True):
+        if xray_topic:
+            with st.spinner("מבצע צילום רנטגן..."):
+                prompt = f"חשוף מלכודות בוחנים בנושא: {xray_topic} עבור {student_context}."
+                res = generate_ai(prompt)
+                st.markdown(f'<div class="room-content-card">{res.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף מוקשים בוואטסאפ</a>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "ערעור":
+    st.markdown('<span class="room-badge-pill" style="background:#e0f2fe; color:#0369a1;">⚖️ Appeal Generator</span>', unsafe_allow_html=True)
+    st.title("מחולל מכתב ערעור על ציון")
+    c_sub = st.text_input("מקצוע המבחן:")
+    c_q = st.text_area("השאלה:")
+    c_ans = st.text_area("תשובתך:")
+    c_lost = st.text_input("הערת המורה ונקודות שירדו:")
+    if st.button("נסח מכתב ערעור 🚀", use_container_width=True):
+        if c_sub and c_ans:
+            with st.spinner("מנסח מכתב ערעור..."):
+                prompt = f"נסח ערעור רשמי ומנומק למורה עבור {student_context}. מקצוע: {c_sub}, שאלה: {c_q}, תשובה: {c_ans}, הערה: {c_lost}."
+                res = generate_ai(prompt)
+                st.markdown(f'<div class="room-content-card">{res.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף נוסח ערעור בוואטסאפ</a>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "כרטיסיות":
+    st.markdown('<span class="room-badge-pill" style="background:#dcfce7; color:#15803d;">🎴 Flashcards</span>', unsafe_allow_html=True)
+    st.title("כרטיסיות חזרה מהירות")
+    f_topic = st.text_input("נושא הכרטיסיות:")
+    if st.button("ייצר כרטיסיות ⚡", use_container_width=True):
+        if f_topic:
+            with st.spinner("מכין כרטיסיות..."):
+                prompt = f"צור 4 כרטיסיות בפורמט JSON בלבד בנושא {f_topic}: [{{\"front\":\"שאלה\",\"back\":\"תשובה\"}}]"
+                res = generate_ai(prompt)
+                st.session_state["flashcards_data"] = extract_json(res.text)
+    if "flashcards_data" in st.session_state:
+        for i, card in enumerate(st.session_state["flashcards_data"]):
+            with st.expander(f"🎴 כרטיסייה {i+1}: {card.get('front', '')}"):
+                st.markdown(f'<div style="background:#f8fafc; padding:14px; border-radius:10px;">{card.get("back", "")}</div>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "מחשבון":
+    st.markdown('<span class="room-badge-pill" style="background:#fef9c3; color:#a16207;">🎯 Target Calculator</span>', unsafe_allow_html=True)
+    st.title("מחשבון ציון יעד לבגרות ומגן")
+    col_c1, col_c2 = st.columns(2)
+    with col_c1:
+        magen_score = st.number_input("ציון מגן:", 0, 100, 85)
+        magen_weight = st.selectbox("משקל המגן באחוזים:", [30, 50, 40, 20], index=0)
+    with col_c2:
+        target_final = st.number_input("ציון סופי מבוקש:", 60, 100, 90)
+    bagrut_weight = 100 - magen_weight
+    needed_bagrut = (target_final * 100 - (magen_score * magen_weight)) / bagrut_weight
+    st.markdown("---")
+    if needed_bagrut > 100:
+        st.error(f"תצטרך מעל 100 בבגרות ({needed_bagrut:.1f}) כדי להגיע ליעד זה.")
+    elif needed_bagrut <= 0:
+        st.success("המגן שלך מספיק גבוה כדי להגיע ליעד בקלות!")
+    else:
+        st.markdown(f"""
+            <div class="room-content-card">
+                <h3 style="color:#0f2b5c; margin:0;">🎯 עליך להוציא לפחות {round(needed_bagrut)} בבחינת הבגרות</h3>
+                <p style="color:#64748b; margin:6px 0 0 0;">לפי משקל מגן של {magen_weight}% ומשקל בגרות של {bagrut_weight}%.</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+elif st.session_state.current_room == "סורק תמונות":
+    st.markdown('<span class="room-badge-pill" style="background:#ffedd5; color:#c2410c;">📸 Homework Scanner</span>', unsafe_allow_html=True)
+    st.title("סורק תמונות ושיעורי בית")
+    photo_topic = st.text_input("מה החומר או המקצוע?")
+    file = st.file_uploader("בחר קובץ תמונה:", type=["png", "jpg", "jpeg"])
+    if st.button("פענח ופתור ⚡", use_container_width=True):
+        if file and photo_topic:
+            img = Image.open(file)
+            with st.spinner("מפענח..."):
+                res = generate_ai([f"פתור והסבר שלב אחרי שלב עבור {student_context}. נושא: {photo_topic}", img])
+                st.markdown(f'<div class="room-content-card">{res.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף פתרון בוואטסאפ</a>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "מבחני דמה":
+    st.markdown('<span class="room-badge-pill" style="background:#f1f5f9; color:#334155;">📝 Mock Exam Builder</span>', unsafe_allow_html=True)
+    st.title("מחולל מבחני דמה מלאים")
+    exam_subject = st.selectbox("מקצוע המבחן:", ["מתמטיקה", "היסטוריה", "אזרחות", "אנגלית"])
+    exam_topic = st.text_input("הנושא:")
+    if st.button("צור מבחן דמה 🔨", use_container_width=True):
+        if exam_topic:
+            with st.spinner("בונה מבחן..."):
+                prompt = f"צור מבחן דמה ב-JSON עבור {student_context}. מקצוע: {exam_subject}, נושא: {exam_topic}."
+                res = generate_ai(prompt)
+                st.session_state.mock_exam_data = extract_json(res.text)
+    if st.session_state.mock_exam_data:
+        st.markdown(f'<div class="room-content-card">{json.dumps(st.session_state.mock_exam_data, ensure_ascii=False, indent=2)}</div>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "מעבדת מתמטיקה":
+    st.markdown('<span class="room-badge-pill" style="background:#f3e8ff; color:#6b21a8;">🧮 Step-by-Step Lab</span>', unsafe_allow_html=True)
+    st.title("מעבדת פירוק מתמטיקה ומדעים")
+    m_topic = st.text_input("נושא:")
+    m_input = st.text_area("תרגיל:")
+    if st.button("פרק תרגיל שלב-אחר-שלב 🧠", use_container_width=True):
+        if m_topic and m_input:
+            with st.spinner("פותר..."):
+                res = generate_ai(f"פתור שלב אחרי שלב עבור {student_context}. נושא: {m_topic}, תרגיל: {m_input}")
+                st.markdown(f'<div class="room-content-card">{res.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף פתרון בוואטסאפ</a>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "שליף חירום":
+    st.markdown('<span class="room-badge-pill" style="background:#fef9c3; color:#a16207;">🚨 60 Sec Cheat Sheet</span>', unsafe_allow_html=True)
+    st.title("שליף חירום: 60 שניות לפני מבחן")
+    p_topic = st.text_input("נושא המבחן:")
+    if st.button("הצל אותי עכשיו ⚡", use_container_width=True):
+        if p_topic:
+            with st.spinner("מחלץ שליף..."):
+                res = generate_ai(f"שליף קצר של 60 שניות לפני מבחן על {p_topic} עבור {student_context}.")
+                st.markdown(f'<div class="room-content-card" style="border-right: 4px solid #f59e0b; background:#fffdfa;">{res.text}</div>', unsafe_allow_html=True)
+                st.markdown(f'<a class="whatsapp-btn" href="{get_whatsapp_share_link(res.text)}" target="_blank">📲 שתף שליף בוואטסאפ</a>', unsafe_allow_html=True)
+
+elif st.session_state.current_room == "דפי הדפסה":
+    st.markdown('<span class="room-badge-pill" style="background:#ffedd5; color:#c2410c;">🖨️ Printable Worksheets</span>', unsafe_allow_html=True)
+    st.title("מחולל דפי תרגול להדפסה")
+    pr_top = st.text_input("נושא הדף:")
+    if st.button("ייצר דף עבודה 📄", use_container_width=True):
+        if pr_top:
+            with st.spinner("מייצר דף..."):
+                res = generate_ai(f"צור דף תרגול ומבחן מעוצב בעברית בנושא {pr_top} עבור {student_context}.")
+                st.markdown(f'<div class="room-content-card">{res.text}</div>', unsafe_allow_html=True)
+                st.markdown("""<button onclick="window.print()" style="padding: 10px 20px; background: #0f2b5c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">🖨️ הדפס דף זה</button>""", unsafe_allow_html=True)
